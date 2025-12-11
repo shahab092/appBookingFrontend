@@ -1,0 +1,83 @@
+# ============================================
+# GitHub Copilot Frontend Rules (React + MERN)
+# ============================================
+
+# ---------------------------
+# GENERAL FRONTEND RULES
+# ---------------------------
+- Always use React functional components with Hooks.
+- Write clean, readable, consistent code.
+- Avoid inline styles; use TailwindCSS classes.
+- Use meaningful, descriptive variable and component names.
+- Break large components into smaller reusable components.
+- Avoid unnecessary re-renders and heavy logic inside components.
+
+# ---------------------------
+# COMMON COMPONENTS
+# ---------------------------
+- Always use these reusable UI components:
+  - MyInput
+  - MySelect
+  - CustomSelect
+  - MyDatePicker
+  - CustomButton
+  - CommonTable
+
+- Never use default HTML <input>, <select>, or Ant Design fields
+  unless specifically required.
+
+# ---------------------------
+# PROJECT STRUCTURE RULES
+# ---------------------------
+- Store reusable components inside: src/components/common/
+- Store dashboard components inside: src/components/dashboard/
+- Store landing page components inside: src/components/landing/
+- Store pages inside: src/pages/
+- Store routes inside: src/routes/index.js
+
+# ---------------------------
+# FORM RULES
+# ---------------------------
+- Use MyInput, MySelect, CustomSelect, and MyDatePicker for all forms.
+- Validate user input before submission.
+- Display error and success messages clearly.
+- Follow controlled-component pattern for all form fields.
+
+# ---------------------------
+# API & STATE RULES
+# ---------------------------
+- Use async/await for all API calls.
+- Keep API calls in a separate service/helper file.
+- Store global state using Context API or Redux (if project uses it).
+- Never hardcode URLs; import from config.
+
+# ---------------------------
+# UI/UX RULES
+# ---------------------------
+- Maintain consistent Tailwind spacing, colors, and fonts.
+- Prefer Flex and Grid layout.
+- Avoid clutter — clean, minimal UI.
+- Keep components responsive (mobile-first).
+- Use loading states and empty-state UI.
+
+# ---------------------------
+# ROUTING RULES
+# ---------------------------
+- Define all routes in src/routes/index.js.
+- Pages should only contain UI + basic logic.
+- Business logic should NOT be inside page components.
+
+# ---------------------------
+# ERROR HANDLING
+# ---------------------------
+- Handle all errors gracefully.
+- Never use console.log in production code.
+- Use toast or UI-level notifications for success/failure.
+
+# ---------------------------
+# NAMING CONVENTIONS
+# ---------------------------
+- Components: PascalCase (MyInput, CustomButton)
+- Files: camelCase (appointmentTable.js)
+- Hooks: useSomething.js
+- Pages: PascalCase (AppointmentPage.jsx)
