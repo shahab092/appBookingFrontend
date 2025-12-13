@@ -1,6 +1,59 @@
+import { memo } from "react";
 import { NavLink } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { LogOut, HeartPulse } from "lucide-react";
 import { SIDEBAR_MENU } from "../../constant/data";
+
+const SidebarLink = memo(({ item, isExpanded }) => {
+  const { label, icon: Icon, path } = item;
+  return (
+    <NavLink
+      to={path || "#"}
+      className={({ isActive }) =>
+        // Note: `border-l-4` is only visible when active, so it doesn't cause a layout shift.
+        `group relative flex items-center gap-3 h-11 px-4 rounded-lg transition-colors duration-200
+        ${
+          isActive
+            ? "bg-blue-100 text-blue-900 font-bold border-l-4 border-blue-500"
+            : "text-gray-500 hover:bg-gray-200/75 hover:text-gray-900"
+        }
+        ${!isExpanded && "justify-center"}`
+      }
+      aria-label={!isExpanded ? label : undefined}
+    >
+      {({ isActive }) => (
+        <>
+          <Icon size={20} strokeWidth={isActive ? 2 : 1.75} className="transition-all duration-200 group-hover:scale-110" />
+          {isExpanded && (
+            <span className="text-sm transition-all duration-200 truncate">{label}</span>
+          )}
+          {!isExpanded && (
+            <div className="absolute left-full ml-4 px-2 py-1.5 text-xs font-medium text-white bg-gray-800 rounded-md shadow-lg opacity-0 scale-95 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-x-2 whitespace-nowrap">
+              {label}
+            </div>
+          )}
+        </>
+      )}
+    </NavLink>
+  );
+});
+
+SidebarLink.displayName = "SidebarLink"; // For better debugging
+
+const UserProfile = memo(({ user, isExpanded }) => (
+  <div className="flex items-center gap-3 p-3">
+    <div className="w-10 h-10 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-lg">
+      {user.name ? user.name.charAt(0).toUpperCase() : "A"}
+    </div>
+    {isExpanded && (
+      <div className="leading-4">
+        <h4 className="font-semibold text-gray-800">{user.name || "Admin"}</h4>
+        <span className="text-xs text-gray-500">{user.role}</span>
+      </div>
+    )}
+  </div>
+));
+
+UserProfile.displayName = "UserProfile"; // For better debugging
 
 const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
   const menu = SIDEBAR_MENU[user.role] || [];
@@ -15,9 +68,9 @@ const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
       )}
 
       <aside
-        className={`
-          fixed lg:sticky top-0 z-30 h-screen bg-white border-r
-          transition-all duration-300
+        className={`overflow-x-hidden
+          fixed lg:sticky top-0 z-30 flex h-screen flex-col bg-gray-50 border-r border-gray-200
+          transition-all duration-300 ease-in-out
           ${isExpanded ? "w-72" : "w-20"}
           ${
             isMobileOpen
@@ -26,48 +79,43 @@ const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
           }
         `}
       >
-        {/* Logo */}
-        <div className="h-16 flex items-center justify-center border-b">
-          <div className="h-9 w-9 bg-blue-600 rounded-lg text-white font-bold flex items-center justify-center">
-            +
-          </div>
-          {isExpanded && <span className="ml-3 font-semibold">HealthCare</span>}
-        </div>
-
-        {/* Menu */}
-        <nav className="py-4 space-y-1">
-          {menu.map(({ label, icon: Icon, path }) => (
-            <NavLink
-              key={label}
-              to={path || "#"}
-              className={({ isActive }) =>
-                `group relative flex items-center gap-3 px-4 py-3 rounded-lg transition
-                ${
-                  isActive
-                    ? "bg-blue-50 text-blue-600"
-                    : "text-gray-600 hover:bg-gray-100"
-                }
-                ${!isExpanded && "justify-center"}`
-              }
+        <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+          {/* Logo Section */}
+          <div className="h-16 flex items-center justify-center border-b border-gray-200">
+            <div
+              className={`flex items-center justify-center transition-all duration-300 ease-in-out ${
+                isExpanded ? "gap-3" : "gap-0"
+              }`}
             >
-              <Icon size={18} />
-
-              {isExpanded && <span>{label}</span>}
-
-              {!isExpanded && (
-                <span className="absolute left-full ml-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100">
-                  {label}
+              <div className="h-9 w-9 bg-blue-600 rounded-lg text-white flex items-center justify-center">
+                <HeartPulse size={22} />
+              </div>
+              {isExpanded && (
+                <span className="ml-1 text-lg font-bold text-gray-800">
+                  HealthCare
                 </span>
               )}
-            </NavLink>
-          ))}
-        </nav>
+            </div>
+          </div>
 
-        {/* Logout */}
-        <div className="mt-auto p-3 border-t">
-          <button className="flex items-center gap-3 text-red-600 hover:bg-red-50 px-4 py-3 rounded-lg w-full justify-center lg:justify-start">
-            <LogOut size={18} />
-            {isExpanded && <span>Logout</span>}
+          {/* Navigation Menu */}
+          <nav className="flex-1 px-3 py-4 space-y-1.5">
+            {menu.map(({ label, icon: Icon, path }) => (
+              <SidebarLink key={label} item={{ label, icon: Icon, path }} isExpanded={isExpanded} />
+            ))}
+          </nav>
+        </div>
+
+        {/* Footer Section */}
+        <div className="p-3 border-t border-gray-200">
+          <UserProfile user={user} isExpanded={isExpanded} />
+          <button
+            type="button"
+            title="Logout"
+            className="group flex items-center gap-3 h-11 mt-2 px-4 rounded-lg w-full text-red-500 hover:bg-red-100 hover:text-red-700 font-medium transition-colors duration-200 justify-center lg:justify-start"
+          >
+            <LogOut size={20} strokeWidth={1.75} />
+            {isExpanded && <span className="text-sm font-medium">Logout</span>}
           </button>
         </div>
       </aside>
