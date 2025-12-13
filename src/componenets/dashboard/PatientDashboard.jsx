@@ -1,8 +1,7 @@
 import React from 'react';
 import { FiCalendar, FiActivity, FiHeart, FiClock, FiMapPin, FiMessageSquare, FiPackage } from 'react-icons/fi';
-import AppointmentModal from './AppointmentModal';
 
-const PatientDashboard = ({ onNewAppointment }) => {
+const PatientDashboard = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Left Column - 2/3 width */}
@@ -14,10 +13,7 @@ const PatientDashboard = ({ onNewAppointment }) => {
               <h2 className="text-2xl font-bold text-[#2F74AA]">Appointment Schedule</h2>
               <p className="text-sm text-gray-500 font-medium mt-1">You have 3 upcoming appointments</p>
             </div>
-            <button 
-              onClick={onNewAppointment}
-              className="bg-gradient-to-r from-[#2F74AA] to-[#3a8ccc] hover:from-[#256a9a] hover:to-[#2d7bb8] text-white px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg"
-            >
+            <button className="bg-gradient-to-r from-[#2F74AA] to-[#3a8ccc] text-white px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-md">
               <FiCalendar className="text-lg" />
               New Appointment
             </button>
@@ -25,7 +21,7 @@ const PatientDashboard = ({ onNewAppointment }) => {
 
           {/* Appointment Cards */}
           <div className="space-y-4">
-            <div className="border-l-4 border-l-green-400 rounded-lg p-4 bg-gradient-to-r from-green-50 to-white shadow-sm hover:shadow-md transition-all duration-200">
+            <div className="border-l-4 border-l-green-400 rounded-lg p-4 bg-gradient-to-r from-green-50 to-white shadow-sm">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
@@ -34,12 +30,12 @@ const PatientDashboard = ({ onNewAppointment }) => {
                   </div>
                   <div className="flex items-center gap-4 text-sm text-[#2F74AA] mb-3">
                     <div className="flex items-center gap-1">
-                      <FiClock className="text-[#2F74AA]" />
+                      <FiClock />
                       <span>Mon, Oct 28, 2024 - 10:30 AM</span>
                     </div>
                     <div className="w-px h-4 bg-gray-300"></div>
                     <div className="flex items-center gap-1">
-                      <FiMapPin className="text-[#2F74AA]" />
+                      <FiMapPin />
                       <span>Dr. Evelyn Reed (Cardiology)</span>
                     </div>
                   </div>
@@ -66,7 +62,7 @@ const PatientDashboard = ({ onNewAppointment }) => {
                   <p className="text-sm text-gray-600">Blood Panel - Oct 23, 2024</p>
                 </div>
               </div>
-              <a href="#" className="text-sm text-[#2F74AA] hover:underline font-medium">View Results</a>
+              <a href="#" className="text-sm text-[#2F74AA] font-medium">View Results</a>
             </div>
           </div>
         </section>
@@ -97,5 +93,3 @@ const PatientDashboard = ({ onNewAppointment }) => {
 };
 
 export default PatientDashboard;
-
-

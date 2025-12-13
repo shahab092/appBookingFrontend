@@ -1,12 +1,12 @@
 import React from 'react';
 import { FiUsers, FiUserPlus, FiCalendar, FiBarChart, FiTrendingUp } from 'react-icons/fi';
 
-const AdminDashboard = ({ onNavigate }) => {
+const AdminDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 cursor-pointer hover:shadow-md transition-shadow" onClick={() => onNavigate('users')}>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Total Users</p>
@@ -18,7 +18,7 @@ const AdminDashboard = ({ onNavigate }) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 cursor-pointer hover:shadow-md transition-shadow" onClick={() => onNavigate('appointments')}>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Total Appointments</p>
@@ -60,17 +60,11 @@ const AdminDashboard = ({ onNavigate }) => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-xl font-bold text-[#2F74AA] mb-4">Quick Actions</h2>
           <div className="space-y-3">
-            <button 
-              onClick={() => onNavigate('create-user')}
-              className="w-full bg-gradient-to-r from-[#2F74AA] to-[#3a8ccc] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#256a9a] hover:to-[#2d7bb8] transition-all flex items-center justify-center gap-2"
-            >
+            <button className="w-full bg-gradient-to-r from-[#2F74AA] to-[#3a8ccc] text-white py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2">
               <FiUserPlus className="text-lg" />
               Create New User
             </button>
-            <button 
-              onClick={() => onNavigate('users')}
-              className="w-full border-2 border-[#2F74AA] text-[#2F74AA] py-3 px-4 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
-            >
+            <button className="w-full border-2 border-[#2F74AA] text-[#2F74AA] py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2">
               <FiUsers className="text-lg" />
               Manage Users
             </button>
@@ -100,5 +94,3 @@ const AdminDashboard = ({ onNavigate }) => {
 };
 
 export default AdminDashboard;
-
-

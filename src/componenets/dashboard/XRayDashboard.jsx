@@ -59,20 +59,44 @@ const XRayDashboard = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-2xl font-bold text-[#2F74AA] mb-6">Pending X-Ray Scans</h2>
         <div className="space-y-4">
-          {[1, 2, 3].map((item) => (
-            <div key={item} className="border-l-4 border-l-yellow-400 rounded-lg p-4 bg-yellow-50">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold text-gray-900">Chest X-Ray - Patient #{1000 + item}</h3>
-                  <p className="text-sm text-gray-600 mt-1">Requested by: Dr. Johnson</p>
-                  <p className="text-sm text-gray-500">Type: Chest X-Ray</p>
-                </div>
-                <button className="px-4 py-2 bg-[#2F74AA] text-white rounded-lg font-medium hover:bg-[#256a9a] transition-colors">
-                  Process
-                </button>
+          <div className="border-l-4 border-l-yellow-400 rounded-lg p-4 bg-yellow-50">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-bold text-gray-900">Chest X-Ray - Patient #1001</h3>
+                <p className="text-sm text-gray-600 mt-1">Requested by: Dr. Johnson</p>
+                <p className="text-sm text-gray-500">Type: Chest X-Ray</p>
               </div>
+              <button className="px-4 py-2 bg-[#2F74AA] text-white rounded-lg font-medium">
+                Process
+              </button>
             </div>
-          ))}
+          </div>
+
+          <div className="border-l-4 border-l-yellow-400 rounded-lg p-4 bg-yellow-50">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-bold text-gray-900">Chest X-Ray - Patient #1002</h3>
+                <p className="text-sm text-gray-600 mt-1">Requested by: Dr. Johnson</p>
+                <p className="text-sm text-gray-500">Type: Chest X-Ray</p>
+              </div>
+              <button className="px-4 py-2 bg-[#2F74AA] text-white rounded-lg font-medium">
+                Process
+              </button>
+            </div>
+          </div>
+
+          <div className="border-l-4 border-l-yellow-400 rounded-lg p-4 bg-yellow-50">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-bold text-gray-900">Chest X-Ray - Patient #1003</h3>
+                <p className="text-sm text-gray-600 mt-1">Requested by: Dr. Johnson</p>
+                <p className="text-sm text-gray-500">Type: Chest X-Ray</p>
+              </div>
+              <button className="px-4 py-2 bg-[#2F74AA] text-white rounded-lg font-medium">
+                Process
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -80,5 +104,3 @@ const XRayDashboard = () => {
 };
 
 export default XRayDashboard;
-
-

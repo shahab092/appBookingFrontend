@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+// import reactLogo from './assets/react.svg'
+// import viteLogo from '/vite.svg'
 import './App.css'
-import Landing from './Pages/landingpage/Landing'
-import Dashboard from './Pages/Dashboard/Dashboard'
-import Xlogin from './Pages/Xlogin'
-import ConsultationModal from './componenets/dashboard/ConsultationModal'
-import Calling from './componenets/dashboard/Calling'
+// import Landing from './Pages/landingpage/Landing'
+// import Dashboard from './Pages/Dashboard/Dashboard'
+// import Xlogin from './Pages/Xlogin'
+// import ConsultationModal from './componenets/dashboard/ConsultationModal'
+// import Calling from './componenets/dashboard/Calling'
 import Index from './routes'
 
 function App() {
