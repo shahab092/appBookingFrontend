@@ -22,9 +22,15 @@ const SidebarLink = memo(({ item, isExpanded }) => {
     >
       {({ isActive }) => (
         <>
-          <Icon size={20} strokeWidth={isActive ? 2 : 1.75} className="transition-all duration-200 group-hover:scale-110" />
+          <Icon
+            size={20}
+            strokeWidth={isActive ? 2 : 1.75}
+            className="transition-all duration-200 group-hover:scale-110"
+          />
           {isExpanded && (
-            <span className="text-sm transition-all duration-200 truncate">{label}</span>
+            <span className="text-sm transition-all duration-200 truncate">
+              {label}
+            </span>
           )}
           {!isExpanded && (
             <div className="absolute left-full ml-4 px-2 py-1.5 text-xs font-medium text-white bg-gray-800 rounded-md shadow-lg opacity-0 scale-95 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-x-2 whitespace-nowrap">
@@ -37,10 +43,10 @@ const SidebarLink = memo(({ item, isExpanded }) => {
   );
 });
 
-SidebarLink.displayName = "SidebarLink"; // For better debugging
+SidebarLink.displayName = "SidebarLink";
 
 const UserProfile = memo(({ user, isExpanded }) => (
-  <div className="flex items-center gap-3 p-3">
+  <div className="flex items-center gap-3 sm:p-3">
     <div className="w-10 h-10 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center font-bold text-lg">
       {user.name ? user.name.charAt(0).toUpperCase() : "A"}
     </div>
@@ -53,7 +59,7 @@ const UserProfile = memo(({ user, isExpanded }) => (
   </div>
 ));
 
-UserProfile.displayName = "UserProfile"; // For better debugging
+UserProfile.displayName = "UserProfile";
 
 const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
   const menu = SIDEBAR_MENU[user.role] || [];
@@ -81,7 +87,7 @@ const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
       >
         <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
           {/* Logo Section */}
-          <div className="h-16 flex items-center justify-center border-b border-gray-200">
+          <div className="h-16 flex items-center justify-center border-b sm:border-none border-gray-200">
             <div
               className={`flex items-center justify-center transition-all duration-300 ease-in-out ${
                 isExpanded ? "gap-3" : "gap-0"
@@ -101,13 +107,17 @@ const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
           {/* Navigation Menu */}
           <nav className="flex-1 px-3 py-4 space-y-1.5">
             {menu.map(({ label, icon: Icon, path }) => (
-              <SidebarLink key={label} item={{ label, icon: Icon, path }} isExpanded={isExpanded} />
+              <SidebarLink
+                key={label}
+                item={{ label, icon: Icon, path }}
+                isExpanded={isExpanded}
+              />
             ))}
           </nav>
         </div>
 
         {/* Footer Section */}
-        <div className="p-3 border-t border-gray-200">
+        <div className=" border-t border-gray-200">
           <UserProfile user={user} isExpanded={isExpanded} />
           <button
             type="button"

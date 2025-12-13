@@ -1,62 +1,75 @@
-// src/dashboard/RecentActivity.jsx
-import React from 'react';
+import {
+  FileDoneOutlined,
+  MessageOutlined,
+  MedicineBoxOutlined,
+} from "@ant-design/icons";
 
 const RecentActivity = () => {
   const activities = [
     {
       id: 1,
-      type: 'lab',
-      title: 'New lab results are available',
-      description: 'Blood Panel - Oct 23, 2024',
-      icon: 'fas fa-file-medical-alt',
-      color: 'text-green-600',
-      bgColor: 'bg-green-50'
+      title: "New lab results are available",
+      description: "Blood Panel - Oct 23, 2024",
+      icon: FileDoneOutlined,
+      iconColor: "text-green-600",
+      iconBg: "bg-green-100",
+      action: "View Results",
     },
     {
       id: 2,
-      type: 'message',
-      title: 'Message from Dr. Evelyn Reed',
-      description: 'Oct 22, 2024',
-      icon: 'fas fa-envelope',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
+      title: "Message from Dr. Evelyn Reed",
+      description: "Oct 22, 2024",
+      icon: MessageOutlined,
+      iconColor: "text-blue-600",
+      iconBg: "bg-blue-100",
+      action: "View Message",
     },
     {
       id: 3,
-      type: 'prescription',
-      title: 'Prescription refill is ready',
-      description: 'Metformin - Ready for pickup',
-      icon: 'fas fa-pills',
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50'
-    }
+      title: "Prescription refill is ready",
+      description: "Metformin - Ready for pickup",
+      icon: MedicineBoxOutlined,
+      iconColor: "text-orange-600",
+      iconBg: "bg-orange-100",
+      action: "View Details",
+    },
   ];
 
   return (
-    <div className="card">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-gray-900">Recent Activity</h3>
-        <div className="w-12 h-12 bg-yellow-50 rounded-full flex items-center justify-center">
-          <i className="fas fa-history text-yellow-600 text-lg"></i>
-        </div>
-      </div>
-      
-      <div className="space-y-4">
-        {activities.map(activity => (
-          <div key={activity.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg hover:border-primary transition-colors duration-200">
-            <div className={`w-12 h-12 ${activity.bgColor} rounded-full flex items-center justify-center flex-shrink-0`}>
-              <i className={`${activity.icon} ${activity.color}`}></i>
+    <section className="bg-white rounded-lg border border-gray-200 p-6">
+      <h2 className="text-lg font-semibold mb-4 text-center sm:text-left">Recent Activity</h2>
+
+      <div className="space-y-3">
+        {activities.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <div
+              key={item.id}
+              className="flex flex-col sm:flex-row sm:justify-between items-center sm:items-start p-3 border border-gray-200 rounded-lg transition hover:border-blue-200"
+            >
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 w-full sm:w-auto">
+                <div
+                  className={`w-10 h-10 ${item.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}
+                >
+                  <Icon className={`${item.iconColor}`} style={{ fontSize: 20 }} />
+                </div>
+
+                <div className="text-center sm:text-left">
+                  <h4 className="font-medium text-gray-900">{item.title}</h4>
+                  <p className="text-sm text-gray-600">{item.description}</p>
+                </div>
+              </div>
+
+              <button className="mt-2 sm:mt-0 text-sm text-blue-600 font-medium hover:underline">
+                {item.action}
+              </button>
             </div>
-            
-            <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-gray-900 mb-1">{activity.title}</h4>
-              <p className="text-sm text-gray-600">{activity.description}</p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-    </div>
+    </section>
   );
 };
 
-export default RecentActivity; // Make sure this line exists
+export default RecentActivity;

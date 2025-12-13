@@ -14,7 +14,6 @@ import {
 } from "@ant-design/icons";
 
 // --- Constants ---
-// Moved outside the component to prevent re-declaration on every render.
 const timeSlots = [
   "09:00 AM",
   "09:30 AM",
@@ -55,7 +54,7 @@ function AppointmentModal({
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date().getDate());
   const [selectedTime, setSelectedTime] = useState("09:00 AM");
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1); // Month is 1-12
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(false);
 
@@ -68,8 +67,7 @@ function AppointmentModal({
         .then((res) => {
           const fetchedDoctors = res.data.data || [];
           setDoctors(fetchedDoctors);
-          setFilteredDoctors(fetchedDoctors); // Initially show all doctors
-          // Dynamically populate departments from the fetched doctors
+          setFilteredDoctors(fetchedDoctors);
           const uniqueDepartments = [
             ...new Set(
               fetchedDoctors.map((doc) => doc.department).filter(Boolean)
@@ -86,16 +84,10 @@ function AppointmentModal({
 
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
   const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay();
-
   const getDaysArray = () => {
     const days = [];
-    // The firstDay is 0 for Sunday, 1 for Monday, etc. which matches the grid start.
-    for (let i = 0; i < firstDay; i++) {
-      days.push(null);
-    }
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(i);
-    }
+    for (let i = 0; i < firstDay; i++) days.push(null);
+    for (let i = 1; i <= daysInMonth; i++) days.push(i);
     return days;
   };
 
@@ -103,22 +95,17 @@ function AppointmentModal({
     if (currentMonth === 1) {
       setCurrentMonth(12);
       setCurrentYear(currentYear - 1);
-    } else {
-      setCurrentMonth(currentMonth - 1);
-    }
+    } else setCurrentMonth(currentMonth - 1);
   };
 
   const handleNextMonth = () => {
     if (currentMonth === 12) {
       setCurrentMonth(1);
       setCurrentYear(currentYear + 1);
-    } else {
-      setCurrentMonth(currentMonth + 1);
-    }
+    } else setCurrentMonth(currentMonth + 1);
   };
 
   const handleBooking = () => {
-    // Validate required fields
     if (
       !appointmentType ||
       !department ||
@@ -130,12 +117,8 @@ function AppointmentModal({
       return;
     }
 
-    // Make API call to create appointment
-
     const payload = {
-      // The backend's createAppointment expects the doctor's ID.
-      // The `doctor` state now holds the ID.
-      doctorId: doctor, // This is now the doctor's _id
+      doctorId: doctor,
       department,
       date: `${monthNames[currentMonth - 1]} ${selectedDate}, ${currentYear}`,
       timeSlot: selectedTime,
@@ -148,10 +131,8 @@ function AppointmentModal({
       .post(`${API_URL}/api/appointments`, payload, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
-
       .then((res) => {
         message.success(res.data?.message || "Appointment booked");
-        // Pass created appointment data to parent if available
         if (onOk) onOk(res.data?.data || payload);
       })
       .catch((err) => {
@@ -164,14 +145,12 @@ function AppointmentModal({
   const handleDepartmentChange = (e) => {
     const selectedDept = e.target.value;
     setDepartment(selectedDept);
-    setDoctor(""); // Reset doctor selection
-    if (selectedDept) {
+    setDoctor("");
+    if (selectedDept)
       setFilteredDoctors(
         doctors.filter((doc) => doc.department === selectedDept)
       );
-    } else {
-      setFilteredDoctors(doctors); // Show all if no department is selected
-    }
+    else setFilteredDoctors(doctors);
   };
 
   return (
@@ -180,22 +159,22 @@ function AppointmentModal({
       footer={null}
       closable={false}
       onCancel={onCancel}
-      width="80vw"
-      style={{ maxWidth: "800px" }}
+      width="100%"
+      style={{ maxWidth: "900px", margin: "0 auto" }}
       bodyStyle={{ padding: 0, maxHeight: "90vh", overflowY: "auto" }}
       centered
     >
       <div className="relative rounded-xl overflow-hidden shadow-2xl">
-        {/* Enhanced Header */}
+        {/* Header */}
         <div className="relative bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 p-4 sm:p-6 md:p-8">
           <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-5 rounded-full -mr-20 -mt-20"></div>
-          <div className="relative flex items-start justify-between gap-3">
+          <div className="relative flex flex-col sm:flex-row items-start justify-between gap-3">
             <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
-              <div className="p-3 sm:p-4 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+              <div className="p-3 sm:p-4 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl flex items-center justify-center shrink-0 shadow-lg">
                 <CalendarOutlined className="text-white text-xl sm:text-2xl md:text-3xl" />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white truncate">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white truncate text-wrap">
                   {title}
                 </h3>
                 <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-blue-50 line-clamp-2">
@@ -207,20 +186,20 @@ function AppointmentModal({
             <button
               onClick={onCancel}
               aria-label="Close"
-              className="w-8 sm:w-10 h-8 sm:h-10 text-white hover:bg-white hover:bg-opacity-20 transition-all rounded-lg flex-shrink-0 flex items-center justify-center duration-300"
+              className="w-8 sm:w-10 h-8 sm:h-10 text-white bg-transparent hover:bg-gradient-to-r hover:from-blue-600 hover:via-blue-500 hover:to-cyan-500 hover:bg-opacity-20 transition-all rounded-lg shrink-0 flex items-center justify-center duration-300 mt-3 sm:mt-0"
             >
               <CloseOutlined className="text-lg sm:text-xl" />
             </button>
           </div>
         </div>
 
-        {/* Enhanced Content */}
-        <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-b from-gray-50 to-white animate-[fadeIn_0.5s_ease-in-out]">
+        {/* Content */}
+        <div className="p-4 sm:p-6 md:p-8 bg-linear-to-b from-gray-50 to-white animate-[fadeIn_0.5s_ease-in-out]">
           <Row gutter={[20, 28]}>
-            {/* Left Column - Form */}
+            {/* Left Column */}
             <Col xs={24} md={12}>
               <div className="space-y-5 sm:space-y-6 md:space-y-7 order-2 md:order-1">
-                {/* Appointment Type Section */}
+                {/* Appointment Type */}
                 <div>
                   <label className="block font-bold text-sm sm:text-base md:text-lg text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
                     <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
@@ -251,10 +230,10 @@ function AppointmentModal({
                         }`}
                       >
                         <div
-                          className={`p-2.5 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                          className={`p-2.5 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300 ${
                             appointmentType === type
                               ? "bg-gradient-to-br from-blue-600 to-cyan-600"
-                              : "bg-gray-100 group-hover:bg-blue-100"
+                              : "bg-gray-100 group-hover:bg-blue-100 hover:text-white"
                           }`}
                         >
                           <Icon
@@ -289,7 +268,7 @@ function AppointmentModal({
                   </div>
                 </div>
 
-                {/* Department Section */}
+                {/* Department */}
                 <div>
                   <label className="block font-bold text-sm sm:text-base md:text-lg text-gray-900 mb-2.5 md:mb-3 flex items-center gap-2">
                     <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
@@ -312,7 +291,7 @@ function AppointmentModal({
                   </div>
                 </div>
 
-                {/* Doctor Section */}
+                {/* Doctor */}
                 <div>
                   <label className="block font-bold text-sm sm:text-base md:text-lg text-gray-900 mb-2.5 md:mb-3 flex items-center gap-2">
                     <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
@@ -340,7 +319,7 @@ function AppointmentModal({
             {/* Right Column - Calendar & Time */}
             <Col xs={24} md={12}>
               <div className="space-y-5 sm:space-y-6 md:space-y-7 order-1 md:order-2">
-                {/* Calendar Section */}
+                {/* Calendar */}
                 <div className="bg-white rounded-xl border-2 border-gray-200 p-4 sm:p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between mb-4 gap-2">
                     <div>
@@ -351,7 +330,7 @@ function AppointmentModal({
                         {currentYear}
                       </p>
                     </div>
-                    <div className="flex gap-1.5 flex-shrink-0">
+                    <div className="flex gap-1.5 shrink-0">
                       <button
                         onClick={handlePrevMonth}
                         aria-label="Previous month"
@@ -369,33 +348,22 @@ function AppointmentModal({
                     </div>
                   </div>
 
-                  {/* Day Headers */}
-                  <div className="grid grid-cols-7 gap-1 mb-2">
-                    {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(
-                      (
-                        day // Calendar starts on Sunday
-                      ) => (
-                        <div
-                          key={day}
-                          className="text-center text-xs font-bold text-gray-600 py-2"
-                        >
-                          {day}
-                        </div>
-                      )
-                    )}
+                  {/* Days */}
+                  <div className="grid grid-cols-7 gap-1 mb-2 text-xs text-gray-600 font-bold text-center">
+                    {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+                      <div key={day}>{day}</div>
+                    ))}
                   </div>
-
-                  {/* Calendar Days */}
                   <div className="grid grid-cols-7 gap-1">
                     {getDaysArray().map((day, idx) => (
                       <button
                         key={idx}
                         onClick={() => day && setSelectedDate(day)}
-                        className={`h-8 sm:h-9 text-xs sm:text-sm rounded-lg transition-all duration-300 flex items-center justify-center font-bold ${
+                        className={`h-9 sm:h-10 text-xs sm:text-sm rounded-lg flex items-center justify-center font-bold transition-all duration-300 ${
                           day === null
                             ? "cursor-default"
                             : selectedDate === day
-                            ? "bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg scale-110"
+                            ? "bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg scale-105"
                             : "text-gray-700 hover:bg-gray-100 hover:scale-105"
                         }`}
                         disabled={day === null}
@@ -406,7 +374,7 @@ function AppointmentModal({
                   </div>
                 </div>
 
-                {/* Time Slots Section */}
+                {/* Time Slots */}
                 <div>
                   <h4 className="font-bold text-sm sm:text-base md:text-lg text-gray-900 mb-3 flex items-center gap-2">
                     <ClockCircleOutlined className="text-blue-600" />
@@ -414,7 +382,7 @@ function AppointmentModal({
                     {selectedDate}, {currentYear}
                   </h4>
 
-                  {/* Mobile: Dropdown */}
+                  {/* Mobile Dropdown */}
                   <div className="block md:hidden">
                     <select
                       value={selectedTime}
@@ -429,9 +397,9 @@ function AppointmentModal({
                     </select>
                   </div>
 
-                  {/* Desktop: Grid */}
+                  {/* Desktop Grid */}
                   <div className="hidden md:block">
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
                       {timeSlots.map((slot) => (
                         <button
                           key={slot}
@@ -452,34 +420,32 @@ function AppointmentModal({
             </Col>
           </Row>
 
-          {/* Enhanced Book Button */}
-          <div className="sticky bottom-0 bg-gradient-to-t from-white via-white to-transparent pt-4 md:pt-6 pb-4 md:pb-6 mt-6 md:mt-8">
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={onCancel}
-                className="px-6 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all duration-300"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleBooking}
-                disabled={loading}
-                className={`px-8 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base text-white shadow-lg transition-all duration-300 flex items-center gap-2 ${
-                  loading
-                    ? "bg-gray-400 opacity-60 cursor-not-allowed"
-                    : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:shadow-xl hover:-translate-y-1"
-                }`}
-              >
-                {loading ? (
-                  <>
-                    <span className="inline-block animate-spin">⚙️</span>
-                    Booking...
-                  </>
-                ) : (
-                  <>✓ Book Appointment</>
-                )}
-              </button>
-            </div>
+          {/* Footer */}
+          <div className="sticky bottom-0 bg-gradient-to-t from-white via-white to-transparent pt-4 sm:pt-6 pb-4 sm:pb-6 mt-6 flex flex-col sm:flex-row gap-3 justify-end">
+            <button
+              onClick={onCancel}
+              className="px-6 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all duration-300"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleBooking}
+              disabled={loading}
+              className={`px-8 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base text-white shadow-lg transition-all duration-300 flex items-center gap-2 ${
+                loading
+                  ? "bg-gray-400 opacity-60 cursor-not-allowed"
+                  : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:shadow-xl hover:-translate-y-1"
+              }`}
+            >
+              {loading ? (
+                <>
+                  <span className="inline-block animate-spin">⚙️</span>
+                  Booking...
+                </>
+              ) : (
+                <>✓ Book Appointment</>
+              )}
+            </button>
           </div>
         </div>
       </div>

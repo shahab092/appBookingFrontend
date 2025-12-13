@@ -96,3 +96,36 @@ export const user = {
   role: "patient", // admin | doctor | patient
   avatar: null, // optional
 };
+
+export const appointments = [
+  {
+    id: 1,
+    title: "Annual Physical Exam",
+    time: "Mon, Oct 28, 2024 - 10:30 AM",
+    doctor: "Dr. Evelyn Reed (Cardiology)",
+    status: "Confirmed",
+    statusColor: "green",
+    type: "In-Clinic",
+    showActions: true,
+  },
+  {
+    id: 2,
+    title: "Follow-up Consultation",
+    time: "Wed, Nov 06, 2024 - 2:00 PM",
+    doctor: "Dr. Ben Carter (Dermatology)",
+    status: "Pending Confirmation",
+    statusColor: "yellow",
+    type: "Online",
+    online: true,
+    showActions: true,
+  },
+  {
+    id: 3,
+    title: "Dermatology Check-up",
+    time: "Fri, Nov 15, 2024 - 9:00 AM",
+    doctor: "Dr. Chloe Davis (Dermatology)",
+    status: "Cancelled by Clinic",
+    statusColor: "red",
+    cancelled: true,
+  },
+];
