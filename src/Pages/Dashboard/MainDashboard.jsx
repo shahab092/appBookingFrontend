@@ -18,7 +18,8 @@ function MainDashboard() {
       <DashboardLayout user={user}>
         {/* render routes based on role */}
         {/* <PatientDashboard /> */}
-        <AdminDashboard />
+        {/* <AdminDashboard /> */}
+        <DoctersDashboard />
       </DashboardLayout>
       {/* <XRayDashboard /> */}
       {/* 
