@@ -8,27 +8,109 @@ import {
   Settings,
 } from "lucide-react";
 
+
+// export const SIDEBAR_MENU = {
+//   admin: [
+//     {
+//       label: "Dashboard",
+//       icon: LayoutDashboard,
+//       //   path: "/admin",
+//     },
+//     {
+//       label: "Users",
+//       icon: Users,
+//       //   path: "/admin/users",
+//     },
+//     {
+//       label: "Reports",
+//       icon: FileText,
+//       //   path: "/admin/reports",
+//     },
+//     {
+//       label: "Settings",
+//       icon: Settings,
+//       //   path: "/admin/settings",
+//     },
+//   ],
+
+//   doctor: [
+//     {
+//       label: "Dashboard",
+//       icon: LayoutDashboard,
+//         path: "/doctor",
+//     },
+//     {
+//       label: "Patients",
+//       icon: Users,
+//         path: "/doctor/patients",
+//     },
+//     {
+//       label: "Prescriptions",
+//       icon: Pill,
+//         path: "/doctor/prescriptions",
+//     },
+//     {
+//       label: "Messages",
+//       icon: MessageSquare,
+//       //   path: "/doctor/messages",
+//     },
+//   ],
+
+//   patient: [
+//     {
+//       label: "Dashboard",
+//       icon: LayoutDashboard,
+//       //   path: "/patient",
+//     },
+//     {
+//       label: "My Records",
+//       icon: FileText,
+//       //   path: "/patient/records",
+//     },
+//     {
+//       label: "Billing",
+//       icon: CreditCard,
+//       //   path: "/patient/billing",
+//     },
+//     {
+//       label: "Prescriptions",
+//       icon: Pill,
+//       //   path: "/patient/prescriptions",
+//     },
+//     {
+//       label: "Messages",
+//       icon: MessageSquare,
+//       //   path: "/patient/messages",
+//     },
+//     {
+//       label: "Settings",
+//       icon: Settings,
+//       //   path: "/patient/settings",
+//     },
+//   ],
+// };
+
 export const SIDEBAR_MENU = {
   admin: [
     {
       label: "Dashboard",
       icon: LayoutDashboard,
-      //   path: "/admin",
+      path: "/admin/dashboard",
     },
     {
       label: "Users",
       icon: Users,
-      //   path: "/admin/users",
+      path: "/admin/users",
     },
     {
       label: "Reports",
       icon: FileText,
-      //   path: "/admin/reports",
+      path: "/admin/reports",
     },
     {
       label: "Settings",
       icon: Settings,
-      //   path: "/admin/settings",
+      path: "/admin/settings",
     },
   ],
 
@@ -36,22 +118,22 @@ export const SIDEBAR_MENU = {
     {
       label: "Dashboard",
       icon: LayoutDashboard,
-      //   path: "/doctor",
+      path: "/doctor/dashboard",
     },
     {
       label: "Patients",
       icon: Users,
-      //   path: "/doctor/patients",
+      path: "/doctor/patients",
     },
     {
       label: "Prescriptions",
       icon: Pill,
-      //   path: "/doctor/prescriptions",
+      path: "/doctor/prescriptions",
     },
     {
       label: "Messages",
       icon: MessageSquare,
-      //   path: "/doctor/messages",
+      path: "/doctor/messages",
     },
   ],
 
@@ -59,43 +141,42 @@ export const SIDEBAR_MENU = {
     {
       label: "Dashboard",
       icon: LayoutDashboard,
-      //   path: "/patient",
+      path: "/patient/dashboard",
     },
     {
       label: "My Records",
       icon: FileText,
-      //   path: "/patient/records",
+      path: "/patient/records",
     },
     {
       label: "Billing",
       icon: CreditCard,
-      //   path: "/patient/billing",
+      path: "/patient/billing",
     },
     {
       label: "Prescriptions",
       icon: Pill,
-      //   path: "/patient/prescriptions",
+      path: "/patient/prescriptions",
     },
     {
       label: "Messages",
       icon: MessageSquare,
-      //   path: "/patient/messages",
+      path: "/patient/messages",
     },
     {
       label: "Settings",
       icon: Settings,
-      //   path: "/patient/settings",
+      path: "/patient/settings",
     },
   ],
 };
-
-export const user = {
-  id: 1,
-  name: "Ali Khan",
-  email: "ali.khan@hospital.com",
-  role: "patient", // admin | doctor | patient
-  avatar: null, // optional
-};
+// export const user = {
+//   id: 1,
+//   name: "Ali Khan",
+//   email: "ali.khan@hospital.com",
+//   role: "doctor", // admin | doctor | patient
+//   avatar: null, // optional
+// };
 
 export const appointments = [
   {

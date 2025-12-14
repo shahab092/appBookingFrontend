@@ -7,7 +7,7 @@ import Header from "../../componenets/dashboard/Header";
 import Sidebar from "../../componenets/dashboard/Sidebar";
 import AdminDashboard from "../../componenets/dashboard/AdminDashboard";
 import DashboardLayout from "../../componenets/dashboard/DashboardLayout";
-import { user } from "../../constant/data";
+
 
 function MainDashboard() {
   return (
@@ -15,12 +15,12 @@ function MainDashboard() {
       {/* <Header />
       <Sidebar /> */}
 
-      <DashboardLayout user={user}>
-        {/* render routes based on role */}
-        {/* <PatientDashboard /> */}
-        {/* <AdminDashboard /> */}
-        <DoctersDashboard />
-      </DashboardLayout>
+      {/* <DashboardLayout user={user}> */}
+      {/* render routes based on role */}
+      {/* <PatientDashboard /> */}
+      {/* <AdminDashboard /> */}
+      <DoctersDashboard />
+      {/* </DashboardLayout> */}
       {/* <XRayDashboard /> */}
       {/* 
             <DoctersDashboard />

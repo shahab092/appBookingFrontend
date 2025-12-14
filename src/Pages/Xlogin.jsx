@@ -47,7 +47,7 @@ const Xlogin = () => {
     try {
       const res = await axios.post(
         'http://localhost:3000/api/v1/auth/google-login',
-        { tokenId: credential }, // backend expects tokenId
+        { tokenId: credential }, 
         { withCredentials: true }
       );
 
@@ -56,7 +56,7 @@ const Xlogin = () => {
         user: res.data.data.user,
       }));
 
-      navigate('/dashboard');
+      navigate('/patient/dashboard');
       alert('Google login successful!');
     } catch (err) {
       console.error('Google login error:', err);
