@@ -1,7 +1,10 @@
 import { memo } from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { NavLink } from "react-router-dom";
 import { LogOut, HeartPulse } from "lucide-react";
 import { SIDEBAR_MENU } from "../../constant/data";
+import { logout } from "../../features/AuthSlice"; // import your logout action
 
 const SidebarLink = memo(({ item, isExpanded }) => {
   const { label, icon: Icon, path } = item;
@@ -9,7 +12,6 @@ const SidebarLink = memo(({ item, isExpanded }) => {
     <NavLink
       to={path || "#"}
       className={({ isActive }) =>
-        // Note: `border-l-4` is only visible when active, so it doesn't cause a layout shift.
         `group relative flex items-center gap-3 h-11 px-4 rounded-lg transition-colors duration-200
         ${
           isActive
@@ -62,7 +64,16 @@ const UserProfile = memo(({ user, isExpanded }) => (
 UserProfile.displayName = "UserProfile";
 
 const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const menu = SIDEBAR_MENU[user.role] || [];
+
+  // Logout handler
+  const handleLogout = () => {
+    dispatch(logout()); // clears Redux and localStorage
+    navigate("/login"); // redirect to login page
+  };
 
   return (
     <>
@@ -78,11 +89,7 @@ const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
           fixed lg:sticky top-0 z-30 flex h-screen flex-col bg-gray-50 border-r border-gray-200
           transition-all duration-300 ease-in-out
           ${isExpanded ? "w-72" : "w-20"}
-          ${
-            isMobileOpen
-              ? "translate-x-0"
-              : "-translate-x-full lg:translate-x-0"
-          }
+          ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
         <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
@@ -117,11 +124,12 @@ const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
         </div>
 
         {/* Footer Section */}
-        <div className=" border-t border-gray-200">
+        <div className="border-t border-gray-200">
           <UserProfile user={user} isExpanded={isExpanded} />
           <button
             type="button"
             title="Logout"
+            onClick={handleLogout} // attach logout here
             className="group flex items-center gap-3 h-11 mt-2 px-4 rounded-lg w-full text-red-500 hover:bg-red-100 hover:text-red-700 font-medium transition-colors duration-200 justify-center lg:justify-start"
           >
             <LogOut size={20} strokeWidth={1.75} />
