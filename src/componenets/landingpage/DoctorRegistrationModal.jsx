@@ -1,132 +1,211 @@
 import React, { useState } from 'react';
 import { Modal, Row, Col, message } from 'antd';
 import axios from 'axios';
-import { FaStethoscope, FaTimes } from 'react-icons/fa';
+import { FaStethoscope, FaTimes, FaUser, FaIdCard, FaMapMarkerAlt } from 'react-icons/fa';
 
-export default function DoctorRegistrationModal({ visible, title = 'Docter Registration', onOk, onCancel }) {
-  const [name, setName] = useState('');
+export default function DoctorRegistrationModal({
+  visible,
+  title = 'Doctor Registration',
+  onOk,
+  onCancel,
+}) {
+  // Personal Information
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [specialization, setSpecialization] = useState('');
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+
+  // Professional Profile
   const [pmdcRegistrationNumber, setPmdcRegistrationNumber] = useState('');
-  const [address, setAddress] = useState('');
-  const [department, setDepartment] = useState('');
   const [experience, setExperience] = useState('');
+  const [specialization, setSpecialization] = useState('');
+  const [department, setDepartment] = useState('');
+
+  // Office Address
+  const [street, setStreet] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [zip, setZip] = useState('');
+  const [country, setCountry] = useState('');
+
   const [about, setAbout] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const API_URL =
+    import.meta.env.VITE_API_URL ||
+    import.meta.env.REACT_APP_API_URL ||
+    'http://localhost:5000';
 
   const handleSubmit = async () => {
-    if (!name || !email || !specialization || !pmdcRegistrationNumber || !address) {
-      message.error('Please fill required fields (name, email, specialization, PMDC registration, address)');
+    if (!firstName || !lastName || !email || !password || !pmdcRegistrationNumber) {
+      message.error('Please fill all required fields');
       return;
     }
 
     const payload = {
-      name,
+      firstName,
+      lastName,
       email,
       phone,
+      password,
       pmdcRegistrationNumber,
+      experience,
       specialization,
       department,
-      address,
-      experience,
+      address: { street, city, state, zip, country },
       about,
+      status: 'pending',
       isAvailable: false,
-      status: 'pending'
     };
 
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const res = await axios.post(`${API_URL}/api/doctors`, payload, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
-      message.success(res.data?.message || 'Registration submitted');
-      if (onOk) onOk(res.data?.data || payload);
+      const res = await axios.post(`${API_URL}/api/doctors/register`, payload);
+      message.success('Registration submitted successfully');
+      onOk?.(res.data);
     } catch (err) {
-      const msg = err.response?.data?.error || err.response?.data?.message || 'Failed to submit registration';
-      message.error(msg);
+      message.error(err.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
   };
+
+  const sectionTitle = (icon, text) => (
+    <div className="flex items-center gap-2 text-blue-600 font-semibold mt-6 mb-4">
+      {icon}
+      <span className="uppercase text-sm tracking-wide">{text}</span>
+    </div>
+  );
+
+  const InputField = ({ label, value, onChange, type = 'text', placeholder }) => (
+    <div className="flex flex-col">
+      <label className="text-gray-700 text-sm mb-1 font-medium">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+      />
+    </div>
+  );
+
+  const TextAreaField = ({ label, value, onChange, rows = 4, placeholder }) => (
+    <div className="flex flex-col">
+      <label className="text-gray-700 text-sm mb-1 font-medium">{label}</label>
+      <textarea
+        rows={rows}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+      />
+    </div>
+  );
 
   return (
     <Modal
       open={visible}
       footer={null}
       closable={false}
-      onCancel={onCancel}
-      width="720px"
+      width={800}
       centered
+      className="p-0"
     >
-      <div className="relative rounded-lg overflow-hidden">
-        <div className="relative bg-gradient-to-r from-blue-50 to-white p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-start gap-3 flex-1 min-w-0">
-              <div className="p-2 bg-blue-100 rounded-lg flex items-center justify-center">
-                <FaStethoscope className="text-blue-600 text-xl" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-lg font-semibold text-blue-800 truncate">{title}</h3>
-                <p className="mt-1 text-sm text-gray-500">Register as a doctor. We will review and contact you.</p>
-              </div>
-            </div>
-
-            <button onClick={onCancel} aria-label="Close" className="w-8 h-8 text-gray-400 hover:text-gray-600 transition flex items-center justify-center">
-              <FaTimes />
-            </button>
+      {/* Header */}
+      <div className="bg-blue-50 p-4 flex justify-between items-start rounded-t-lg">
+        <div className="flex gap-3 items-center">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <FaStethoscope className="text-blue-600 text-2xl" />
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-blue-800">{title}</h3>
+            <p className="text-sm text-gray-500 mt-1">
+              Register as a doctor. We will review and contact you shortly.
+            </p>
           </div>
         </div>
+        <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 text-lg">
+          <FaTimes />
+        </button>
+      </div>
 
-        <div className="p-6 bg-white">
-          <Row gutter={[16, 12]}>
-            <Col xs={24} sm={12}>
-              <label className="block text-sm font-semibold mb-1">Full Name</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="Dr. Jane Doe" />
-            </Col>
-            <Col xs={24} sm={12}>
-              <label className="block text-sm font-semibold mb-1">Email</label>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="email@domain.com" />
-            </Col>
-            <Col xs={24} sm={12}>
-              <label className="block text-sm font-semibold mb-1">Specialization</label>
-              <input value={specialization} onChange={(e) => setSpecialization(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="Cardiology" />
-            </Col>
-            <Col xs={24} sm={12}>
-              <label className="block text-sm font-semibold mb-1">Phone</label>
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="+1 (555) 123-4567" />
-            </Col>
-            <Col xs={24} sm={12}>
-              <label className="block text-sm font-semibold mb-1">PMDC Registration Number *</label>
-              <input value={pmdcRegistrationNumber} onChange={(e) => setPmdcRegistrationNumber(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="PMDC-12345" />
-            </Col>
-            <Col xs={24} sm={12}>
-              <label className="block text-sm font-semibold mb-1">Department</label>
-              <input value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="Cardiology Department" />
-            </Col>
-            <Col xs={24}>
-              <label className="block text-sm font-semibold mb-1">Address *</label>
-              <input value={address} onChange={(e) => setAddress(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="123 Medical St, Karachi" />
-            </Col>
-            <Col xs={24} sm={12}>
-              <label className="block text-sm font-semibold mb-1">Experience (years)</label>
-              <input value={experience} onChange={(e) => setExperience(e.target.value)} className="w-full px-3 py-2 border rounded-lg" placeholder="5" />
-            </Col>
-            <Col xs={24}>
-              <label className="block text-sm font-semibold mb-1">About / Notes</label>
-              <textarea value={about} onChange={(e) => setAbout(e.target.value)} rows={4} className="w-full px-3 py-2 border rounded-lg" placeholder="Brief bio, clinic details, availability..." />
-            </Col>
-          </Row>
+      {/* Body */}
+      <div className="p-6 bg-white max-h-[75vh] overflow-y-auto scrollbar-light">
+        {/* Personal Information */}
+        {sectionTitle(<FaUser className="text-blue-500" />, 'Personal Information')}
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12}>
+            <InputField label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="John" />
+          </Col>
+          <Col xs={24} sm={12}>
+            <InputField label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Doe" />
+          </Col>
+          <Col xs={24} sm={12}>
+            <InputField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="john@example.com" />
+          </Col>
+          <Col xs={24} sm={12}>
+            <InputField label="Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 234 567 890" />
+          </Col>
+          <Col xs={24}>
+            <InputField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="********" />
+          </Col>
+        </Row>
 
-          <div className="mt-4 flex justify-end">
-            <button onClick={onCancel} className="px-4 py-2 rounded-lg border mr-3">Cancel</button>
-            <button onClick={handleSubmit} disabled={loading} className={`px-4 py-2 rounded-lg font-semibold text-white ${loading ? 'bg-blue-600 opacity-60 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
-              {loading ? 'Submitting...' : 'Submit Registration'}
-            </button>
-          </div>
+        {/* Professional Profile */}
+        {sectionTitle(<FaIdCard className="text-blue-500" />, 'Professional Profile')}
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12}>
+            <InputField label="License / PMDC Number" value={pmdcRegistrationNumber} onChange={(e) => setPmdcRegistrationNumber(e.target.value)} placeholder="PMDC12345" />
+          </Col>
+          <Col xs={24} sm={12}>
+            <InputField label="Experience (Years)" value={experience} onChange={(e) => setExperience(e.target.value)} placeholder="5" />
+          </Col>
+          <Col xs={24} sm={12}>
+            <InputField label="Specialization" value={specialization} onChange={(e) => setSpecialization(e.target.value)} placeholder="Cardiology" />
+          </Col>
+          <Col xs={24} sm={12}>
+            <InputField label="Department" value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="Heart Center" />
+          </Col>
+        </Row>
+
+        {/* Office Address */}
+        {sectionTitle(<FaMapMarkerAlt className="text-blue-500" />, 'Office Address')}
+        <Row gutter={[16, 16]}>
+          <Col xs={24}>
+            <InputField label="Street Address" value={street} onChange={(e) => setStreet(e.target.value)} placeholder="123 Main Street" />
+          </Col>
+          <Col xs={24} sm={8}>
+            <InputField label="City" value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" />
+          </Col>
+          <Col xs={24} sm={8}>
+            <InputField label="State / Province" value={state} onChange={(e) => setState(e.target.value)} placeholder="State" />
+          </Col>
+          <Col xs={24} sm={8}>
+            <InputField label="Zip / Postal Code" value={zip} onChange={(e) => setZip(e.target.value)} placeholder="12345" />
+          </Col>
+          <Col xs={24}>
+            <InputField label="Country" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Country" />
+          </Col>
+        </Row>
+
+        <Row className="mt-4">
+          <Col xs={24}>
+            <TextAreaField label="About / Notes" value={about} onChange={(e) => setAbout(e.target.value)} placeholder="Brief description about you" />
+          </Col>
+        </Row>
+
+        {/* Footer Buttons */}
+        <div className="flex justify-end gap-3 mt-6">
+          <button onClick={onCancel} className="px-5 py-2 border rounded-lg hover:bg-gray-100">Cancel</button>
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60"
+          >
+            {loading ? 'Submitting...' : 'Submit Registration'}
+          </button>
         </div>
       </div>
     </Modal>

@@ -97,7 +97,7 @@ const PatientDashboard = () => {
               </div>
             </div>
           </div>  */}
-          <div className="space-y-4 max-h-96 overflow-y-auto scrollbar scrollbar-thumb-blue-500 scrollbar-track-gray-200 scrollbar-thumb-rounded-lg scrollbar-track-rounded-lg hover:scrollbar-thumb-blue-600 transition-colors duration-300">
+          <div className="space-y-4 max-h-96 overflow-y-auto scrollbar-light">
             {appointments.map((appointment) => (
               <AppointmentCard
                 key={appointment.id}
