@@ -1,9 +1,15 @@
 import React, { useState } from "react";
-import { FiCalendar, FiActivity, FiClock, FiMapPin } from "react-icons/fi";
+import {
+  FiCalendar,
+  FiActivity,
+  FiClock,
+  FiMapPin,
+  FiHeart,
+  FiDroplet,
+  FiThermometer,
+} from "react-icons/fi";
 import AppointmentModal from "./AppointmentModal";
-import AppointmentBooking from "./AppointmentBooking";
 import RecentActivity from "./RecentActivity";
-import { CloseOutlined, CloseSquareTwoTone } from "@ant-design/icons";
 import AppointmentCard from "./AppointmentCard";
 import { appointments } from "../../constant/data";
 
@@ -13,14 +19,9 @@ const PatientDashboard = () => {
   const handleOpenModal = () => setModalVisible(true);
   const handleCloseModal = () => setModalVisible(false);
 
-  const handleAppointmentBooked = (appointment) => {
-    console.log("Appointment booked:", appointment);
-    setModalVisible(false);
-  };
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-      {/* Left Column - 2/3 width */}
+      {/* ================= LEFT COLUMN ================= */}
       <div className="lg:col-span-2 space-y-4 sm:space-y-6">
         {/* Upcoming Appointments */}
         <section className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
@@ -38,134 +39,128 @@ const PatientDashboard = () => {
               onClick={handleOpenModal}
               className="w-full sm:w-auto bg-gradient-to-r from-[#2F74AA] to-[#3a8ccc] text-white px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 shadow-md"
             >
-              <FiCalendar className="text-lg" />
+              <FiCalendar />
               New Appointment
             </button>
 
-            {/* Appointment Modal */}
             <AppointmentModal
               visible={modalVisible}
               onCancel={handleCloseModal}
-              onOk={handleAppointmentBooked}
             />
           </div>
 
-          {/* Appointment Cards */}
-          {/* <div className="space-y-4">
-            <div className="border-l-4 border-l-green-400 rounded-lg p-4 bg-gradient-to-r from-green-50 to-white">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="w-3 h-3 bg-green-500 rounded-full" />
-                    <h3 className="font-bold text-gray-900 text-base sm:text-lg">
-                      Annual Physical Exam
-                    </h3>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-[#2F74AA]">
-                    <div className="flex items-center gap-1">
-                      <FiClock />
-                      <span>Mon, Oct 28, 2024 - 10:30 AM</span>
-                    </div>
-
-                    <div className="hidden sm:block w-px h-4 bg-gray-300" />
-
-                    <div className="flex items-center gap-1">
-                      <FiMapPin />
-                      <span>Dr. Evelyn Reed (Cardiology)</span>
-                    </div>
-                  </div>
-                  <span className="self-start px-3 py-1.5 rounded-full mt-5 inline-block text-xs font-bold bg-green-100 text-green-800 border border-green-300">
-                    Confirmed
-                  </span>
-                </div>
-
-                {/* <span className="self-start px-3 py-1.5 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-300">
-                  Reschedule
-                </span> */}
-          {/* <button
-                  onClick={handleOpenModal}
-                  className="w-full sm:w-auto   px-2 py-1 rounded-lg font-semibold text-sm flex items-center border-gray-200 border-2 justify-center gap-2 "
-                >
-                  <FiCalendar className="text-lg" />
-                  Reschedule
-                </button>
-                <button className="w-full sm:w-auto   px-2 py-1 rounded-lg font-semibold text-sm flex items-center  justify-center gap-2  text-red-500  border-gray-200 border-2">
-                  <CloseOutlined />
-                  Cencel
-                </button>
-              </div>
-            </div>
-          </div>  */}
           <div className="space-y-4 max-h-96 overflow-y-auto scrollbar-light">
             {appointments.map((appointment) => (
-              <AppointmentCard
-                key={appointment.id}
-                title={appointment.title}
-                time={appointment.time}
-                doctor={appointment.doctor}
-                status={appointment.status}
-                statusColor={appointment.statusColor}
-                type={appointment.type}
-                online={appointment.online}
-                cancelled={appointment.cancelled}
-                showActions={appointment.showActions}
-              />
+              <AppointmentCard key={appointment.id} {...appointment} />
             ))}
           </div>
-
-          {/* <AppointmentCard/> */}
         </section>
 
         {/* Recent Activity */}
-        {/* <section className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <FiActivity className="text-green-600 text-lg" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900">
-                    New lab results are available
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Blood Panel - Oct 23, 2024
-                  </p>
-                </div>
-              </div>
-              <a href="#" className="text-sm text-[#2F74AA] font-medium">
-                View Results
-              </a>
-            </div>
-          </div>
-        </section> */}
         <RecentActivity />
       </div>
 
-      {/* Right Column - 1/3 width */}
-      <div className="lg:col-span-1 space-y-4 sm:space-y-6">
+      {/* ================= RIGHT COLUMN ================= */}
+      <div className="lg:col-span-1 flex flex-col gap-4 sm:gap-6 ">
         {/* Patient Vitals */}
-        <section className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-4">
+        <section className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 flex-1 ">
+          <div className="flex items-center justify-between mb-5">
             <h2 className="text-lg font-semibold text-[#3a8ccc]">
-              Patient Vitals
+              Patient Vitals & Demographics
             </h2>
-            <FiActivity className="text-[#3a8ccc] text-lg" />
+            <FiActivity className="text-[#3a8ccc]" />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="text-center p-3 border border-blue-200 rounded-lg bg-blue-50/30">
-              <div className="text-xl font-bold text-[#3a8ccc]">42</div>
-              <div className="text-sm text-gray-600">Age</div>
+          {/* Top grid */}
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            {[
+              { label: "Age", value: "42 ", unit: "yrs" },
+              { label: "Weight", value: "78 ", unit: "kg" },
+              { label: "Height", value: "165 ", unit: "cm" },
+              { label: "BSA", value: "1.87 ", unit: "m²" },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className=" p-3 rounded-xl bg-gray-50  space-y-3"
+              >
+                <div className="text-sm text-gray-500">{item.label}</div>
+                <div >
+                <span className="text-3xl font-bold text-gray-900"> {item.value}</span>
+                  <span className="text-sm"> {item.unit}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t border-gray-200 my-4" />
+
+          {/* Detailed vitals */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3 p-2">
+                <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
+                  <FiDroplet className="text-blue-600" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  Blood Pressure
+                </span>
+              </div>
+              <span className="font-semibold">130/85 mmHg</span>
             </div>
 
-            <div className="text-center p-3 border border-green-200 rounded-lg bg-green-50/30">
-              <div className="text-xl font-bold text-green-600">165 cm</div>
-              <div className="text-sm text-gray-600">Height</div>
+            <div className="flex justify-between items-center p-2">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center">
+                  <FiHeart className="text-red-600" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  Heart Rate
+                </span>
+              </div>
+              <span className="font-semibold">72 bpm</span>
+            </div>
+
+            <div className="flex justify-between items-center p-2">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center">
+                  <FiThermometer className="text-orange-600" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  Body Temp
+                </span>
+              </div>
+              <span className="font-semibold">37.0 °C</span>
             </div>
           </div>
+        </section>
+
+        {/* Medical Summary */}
+        <section className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 flex-1">
+          <h2 className="text-lg font-semibold text-gray-800 mb-5">
+            Medical Summary
+          </h2>
+
+          <div className="mb-4">
+            <p className="text-sm font-semibold text-gray-600 mb-1">
+              Conditions
+            </p>
+            <p className="text-sm text-gray-800">
+              Type 2 Diabetes, Hypertension
+            </p>
+          </div>
+
+          <div className="mb-5">
+            <p className="text-sm font-semibold text-gray-600 mb-1">
+              Allergies
+            </p>
+            <p className="text-sm text-gray-800">Penicillin</p>
+          </div>
+
+          <div className="border-t border-gray-200 my-4" />
+
+          <button className="text-sm font-semibold text-[#3a8ccc] hover:underline">
+            View Full Records
+          </button>
         </section>
       </div>
     </div>
