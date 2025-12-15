@@ -16,10 +16,11 @@ import PatientDashboard from "../componenets/dashboard/PatientDashboard";
 import DoctorDashboard from "../Pages/Dashboard/DoctersDashboard";
 import PublicRoute from "../hoc/PublicRoute";
 import { useSelector } from "react-redux";
+import AdminDashboard from "../componenets/dashboard/AdminDashboard";
 
 export default function Index() {
   const user = useSelector((state) => state.auth.user);
-//   const token = useSelector((state) => state.auth.token);
+  //   const token = useSelector((state) => state.auth.token);
   return (
     <Router>
       <Routes>
@@ -33,12 +34,12 @@ export default function Index() {
             </PublicRoute>
           }
         />
-{/* 
-        <Route
-          path="/doctor-register"
+
+        {/* <Route
+          path="/login"
           element={
             <PublicRoute>
-              <DoctorRegistration />
+              <Xlogin />
             </PublicRoute>
           }
         /> */}
@@ -57,19 +58,19 @@ export default function Index() {
           <Route path="settings" element={<PatientSettings />} /> */}
         </Route>
 
-        {/* <Route
+        <Route
           path="/admin"
           element={
-            <ProtectedRoute allowedRoles={["admin"]}>
+            <ProtectedRoute allowedRoles={["patient"]}>
               <DashboardLayout user={user} />
             </ProtectedRoute>
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="reports" element={<AdminReports />} />
-          <Route path="settings" element={<AdminSettings />} />
-        </Route> */}
+          {/* <Route path="users" element={<AdminUsers />} /> */}
+          {/* <Route path="reports" element={<AdminReports />} /> */}
+          {/* <Route path="settings" element={<AdminSettings />} /> */}
+        </Route>
 
         {/* <Route
           path="/doctor"
