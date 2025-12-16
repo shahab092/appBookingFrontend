@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
-import { setCredentials } from './../features/AuthSlice';
-import axios from 'axios';
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import { setCredentials } from "./../features/AuthSlice";
+import axios from "axios";
+import api from "../libs/api";
+import { jwtDecode } from "jwt-decode";
 
 const Xlogin = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -15,27 +17,70 @@ const Xlogin = () => {
   const navigate = useNavigate();
 
   // Email/password login
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+  //   try {
+  //     const res = await api.post(
+  //       "/auth/login",
+  //       { email, password },
+  //       { withCredentials: true }
+  //     );
+
+  //     dispatch(
+  //       setCredentials({
+  //         token: res.data.data.accessToken,
+  //         refreshToken: res.data.data.refreshToken,
+  //         user: res.data.data.user,
+  //       })
+  //     );
+
+  //     navigate("/dashboardme");
+  //     alert("Login successful!");
+  //   } catch (err) {
+  //     console.error("Login error:", err);
+  //     alert("Invalid username or password.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+
     try {
-      const res = await axios.post(
-        'http://localhost:3000/api/v1/auth/login',
-        { email, password },
-        { withCredentials: true }
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+      });
+
+      const { accessToken, refreshToken } = res.data.data;
+
+      // Decode token
+      const decoded = jwtDecode(accessToken);
+
+      // Build user object manually
+      const userData = {
+        email: decoded.email,
+        role: decoded.role,
+        id: decoded.id || decoded._id,
+      };
+
+      dispatch(
+        setCredentials({
+          token: accessToken,
+          refreshToken,
+          user: userData,
+        })
       );
 
-      dispatch(setCredentials({
-        token: res.data.data.accessToken,
-        refreshToken: res.data.data.refreshToken,
-        user: res.data.data.user,
-      }));
-
-      navigate('/dashboardme');
-      alert('Login successful!');
-    } catch (err) {
-      console.error('Login error:', err);
-      alert('Invalid username or password.');
+    
+      if (decoded.role === "admin") {
+        navigate("/admin/dashboard");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Invalid email or password");
     } finally {
       setIsLoading(false);
     }
@@ -45,38 +90,44 @@ const Xlogin = () => {
   const handleGoogleLogin = async (credential) => {
     setIsLoading(true);
     try {
-      const res = await axios.post(
-        'http://localhost:3000/api/v1/auth/google-login',
-        { tokenId: credential }, 
+      const res = await api.post(
+        "/auth/google-login",
+        { tokenId: credential },
         { withCredentials: true }
       );
+      console.log(res, "response in the login section");
+      dispatch(
+        setCredentials({
+          token: res.data.data.accessToken,
+          user: res.data.data.user,
+        })
+      );
 
-      dispatch(setCredentials({
-        token: res.data.data.accessToken,
-        user: res.data.data.user,
-      }));
-
-      navigate('/patient/dashboard');
-      alert('Google login successful!');
+      navigate("/patient/dashboard");
+      alert("Google login successful!");
     } catch (err) {
-      console.error('Google login error:', err);
-      alert('Google login failed!');
+      console.error("Google login error:", err);
+      alert("Google login failed!");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleForgotPassword = () => alert('Forgot password clicked');
-  const handleSignUp = () => alert('Sign up clicked');
+  const handleForgotPassword = () => alert("Forgot password clicked");
+  const handleSignUp = () => alert("Sign up clicked");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-50 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-gray-800 mb-3">HealthCare Inc.</h1>
+          <h1 className="text-4xl font-bold text-gray-800 mb-3">
+            HealthCare Inc.
+          </h1>
           <h2 className="text-2xl text-gray-600 mb-4">Patient Portal Login</h2>
-          <p className="text-gray-500 text-lg">Access your secure health information.</p>
+          <p className="text-gray-500 text-lg">
+            Access your secure health information.
+          </p>
         </div>
 
         {/* Login Card */}
@@ -84,7 +135,7 @@ const Xlogin = () => {
           {/* Google Login */}
           <GoogleLogin
             onSuccess={(res) => handleGoogleLogin(res.credential)}
-            onError={() => alert('Google login failed')}
+            onError={() => alert("Google login failed")}
           />
 
           <div className="flex items-center my-6">
@@ -134,13 +185,13 @@ const Xlogin = () => {
               disabled={isLoading}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg"
             >
-              {isLoading ? 'Logging in...' : 'Sign In'}
+              {isLoading ? "Logging in..." : "Sign In"}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <button
                 type="button"
                 onClick={handleSignUp}

@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 
-const DashboardLayout = ({ user }) => {
+const DashboardLayout = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+
+  //  Get user from Redux directly
+  const user = useSelector((state) => state.auth.user);
 
   const toggleSidebar = () => {
     setIsMobileOpen((prev) => !prev);

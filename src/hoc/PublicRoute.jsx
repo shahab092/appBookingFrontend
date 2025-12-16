@@ -1,16 +1,29 @@
+import React from "react";
+import { Navigate, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Navigate } from "react-router-dom";
 
+/**
+ * PublicRoute
+ * - Only accessible to **unauthenticated users**
+ * - If logged in, redirect to their dashboard based on role
+ */
+const PublicRoute = () => {
+  const { user } = useSelector((state) => state.auth);
 
-const PublicRoute = ({ children }) => {
-      const user = useSelector((state) => state.auth.user);
   if (user) {
-    if (user.role === "patient") return <Navigate to="/patient/dashboard" />;
-    if (user.role === "doctor") return <Navigate to="/doctor/dashboard" />;
-    if (user.role === "admin") return <Navigate to="/admin/dashboard" />;
+    switch (user.role) {
+      case "admin":
+        return <Navigate to="/admin/dashboard" replace />;
+      case "doctor":
+        return <Navigate to="/doctor/dashboard" replace />;
+      case "patient":
+        return <Navigate to="/patient/dashboard" replace />;
+      default:
+        return <Navigate to="/" replace />;
+    }
   }
 
-  return children;
+  return <Outlet />;
 };
 
 export default PublicRoute;

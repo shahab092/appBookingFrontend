@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Modal, Row, Col, message } from "antd";
 import axios from "axios";
 import {
@@ -8,6 +8,7 @@ import {
   FaIdCard,
   FaMapMarkerAlt,
 } from "react-icons/fa";
+import api from "../../libs/api";
 
 // ---------------------- Reusable Input Components ----------------------
 const InputField = ({ label, value, onChange, type = "text", placeholder }) => (
@@ -66,11 +67,6 @@ export default function DoctorRegistrationModal({
   const [about, setAbout] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const API_URL =
-    import.meta.env.VITE_API_URL ||
-    import.meta.env.REACT_APP_API_URL ||
-    "http://localhost:3000/api/doctor/register";
-
   const handleSubmit = async () => {
     if (
       !firstName ||
@@ -105,7 +101,7 @@ export default function DoctorRegistrationModal({
 
     try {
       setLoading(true);
-      const res = await axios.post(`${API_URL}`, payload);
+      const res = await api.post("/doctor/register", payload);
       message.success("Registration submitted successfully");
       onOk?.(res.data);
     } catch (err) {
