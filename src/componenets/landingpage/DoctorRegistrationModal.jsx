@@ -15,6 +15,8 @@ import CustomTextField from "../common/CustomTextField";
 import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { doctorRegistrationSchema } from "../../validation/validation";
+import CustomSelect from "../common/CustomSelect";
+import { departmentOptions, specializationOptions } from "../../constant/data";
 
 export default function DoctorRegistrationModal({
   visible,
@@ -61,6 +63,7 @@ export default function DoctorRegistrationModal({
       message.success("Registration submitted successfully");
       reset();
       onOk?.(res.data);
+      methods.reset();
     } catch (err) {
       message.error(err.response?.data?.message || "Registration failed");
     } finally {
@@ -164,7 +167,7 @@ export default function DoctorRegistrationModal({
                   allowOnly="numeric"
                 />
               </Col>
-              <Col xs={24} sm={12}>
+              {/* <Col xs={24} sm={12}>
                 <CustomTextField
                   name="specialization"
                   label="Specialization"
@@ -177,6 +180,23 @@ export default function DoctorRegistrationModal({
                   label="Department"
                   placeholder="e.g. Heart Center"
                 />
+              </Col> */}
+
+              <Col xs={24} sm={12}>
+                <CustomSelect
+                  name="specialization"
+                  label="Specialization"
+                  options={specializationOptions}
+                  rules={{ required: "Specialization is required" }}
+                />
+              </Col>
+              <Col xs={24} sm={12}>
+                <CustomSelect
+                  name="department"
+                  label="Department"
+                  options={departmentOptions}
+                  rules={{ required: "Department is required" }}
+                />
               </Col>
             </Row>
 
@@ -188,6 +208,7 @@ export default function DoctorRegistrationModal({
                   name="street"
                   label="Street Address"
                   placeholder="Street address"
+                  
                 />
               </Col>
               <Col xs={24} sm={8}>

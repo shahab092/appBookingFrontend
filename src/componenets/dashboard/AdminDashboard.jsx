@@ -175,7 +175,7 @@ export default function AdminDashboard() {
                     <td className="px-4">
                       <div className="flex justify-end gap-2 items-center">
                         <button
-                          onClick={() => openModal(d, "inprogressed")}
+                          onClick={() => openModal(d, "inprogress")}
                           className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-full text-xs hover:bg-green-600"
                         >
                           <Check size={14} /> Approve

@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Row, Col, message } from "antd";
-import axios from "axios";
 import {
   CalendarOutlined,
   CloseOutlined,
-  LeftOutlined,
-  RightOutlined,
   VideoCameraOutlined,
   HomeOutlined,
-  UserOutlined,
-  TeamOutlined,
   ClockCircleOutlined,
 } from "@ant-design/icons";
+import api from "../../libs/api";
+import { useForm, FormProvider } from "react-hook-form";
+import CustomSelect from "../common/CustomSelect";
+import { departmentOptions } from "../../constant/data";
+import { useSelector } from "react-redux";
 
 // --- Constants ---
 const timeSlots = [
@@ -25,6 +25,7 @@ const timeSlots = [
   "01:30 PM",
   "02:00 PM",
 ];
+
 const monthNames = [
   "January",
   "February",
@@ -40,117 +41,105 @@ const monthNames = [
   "December",
 ];
 
-function AppointmentModal({
+export default function AppointmentModal({
   visible,
   title = "Schedule an Appointment",
   onOk,
   onCancel,
 }) {
+   const { user } = useSelector((state) => state.auth);
   const [appointmentType, setAppointmentType] = useState("online");
-  const [department, setDepartment] = useState("");
-  const [departments, setDepartments] = useState([]);
-  const [doctor, setDoctor] = useState("");
   const [doctors, setDoctors] = useState([]);
-  const [filteredDoctors, setFilteredDoctors] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date().getDate());
-  const [selectedTime, setSelectedTime] = useState("09:00 AM");
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(false);
 
-  const API_URL = "http://localhost:5000";
+  const [selectedDate, setSelectedDate] = useState(new Date().getDate());
+  const [selectedTime, setSelectedTime] = useState(timeSlots[0]);
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
+  const methods = useForm({
+    defaultValues: {
+      department: "",
+      doctor: "",
+    },
+  });
+
+  const { watch, handleSubmit, reset } = methods;
+  const selectedDepartment = watch("department");
+
+  /* ---------------- Fetch Doctors ---------------- */
   useEffect(() => {
-    if (visible) {
-      axios
-        .get(`${API_URL}/api/doctors`)
-        .then((res) => {
-          const fetchedDoctors = res.data.data || [];
-          setDoctors(fetchedDoctors);
-          setFilteredDoctors(fetchedDoctors);
-          const uniqueDepartments = [
-            ...new Set(
-              fetchedDoctors.map((doc) => doc.department).filter(Boolean)
-            ),
-          ];
-          setDepartments(uniqueDepartments);
-        })
-        .catch((err) => {
-          console.error("Failed to fetch doctors:", err);
-          message.error("Could not load doctor information.");
-        });
-    }
-  }, [visible, API_URL]);
+    if (visible) fetchDoctors();
+  }, [visible]);
 
+  const fetchDoctors = async () => {
+    try {
+      const res = await api.get("/doctor");
+      setDoctors(res.data?.data || []);
+    } catch (error) {
+      message.error("Failed to fetch doctors");
+    }
+  };
+
+  /* ---------------- Filter Doctors by Department ---------------- */
+  const doctor = selectedDepartment
+    ? doctors.filter((d) => d?.doctorProfile?.department === selectedDepartment)
+    : doctors;
+
+  /* ---------------- Calendar Helpers ---------------- */
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
   const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay();
-  const getDaysArray = () => {
-    const days = [];
-    for (let i = 0; i < firstDay; i++) days.push(null);
-    for (let i = 1; i <= daysInMonth; i++) days.push(i);
-    return days;
-  };
 
   const handlePrevMonth = () => {
     if (currentMonth === 1) {
       setCurrentMonth(12);
-      setCurrentYear(currentYear - 1);
-    } else setCurrentMonth(currentMonth - 1);
+      setCurrentYear((y) => y - 1);
+    } else {
+      setCurrentMonth((m) => m - 1);
+    }
   };
 
   const handleNextMonth = () => {
     if (currentMonth === 12) {
       setCurrentMonth(1);
-      setCurrentYear(currentYear + 1);
-    } else setCurrentMonth(currentMonth + 1);
+      setCurrentYear((y) => y + 1);
+    } else {
+      setCurrentMonth((m) => m + 1);
+    }
   };
-
-  const handleBooking = () => {
-    if (
-      !appointmentType ||
-      !department ||
-      !doctor ||
-      !selectedDate ||
-      !selectedTime
-    ) {
+console.log(doctors,'doctorr')
+  /* ---------------- Submit ---------------- */
+  const onSubmit = async (data) => {
+    if (!appointmentType || !data.department || !data.doctor) {
       message.error("Please fill all required fields");
       return;
     }
 
     const payload = {
-      doctorId: doctor,
-      department,
+      doctorId: data.doctor,
+      department: data.department,
+      patientId: user.id,
       date: `${monthNames[currentMonth - 1]} ${selectedDate}, ${currentYear}`,
       timeSlot: selectedTime,
+      appointmentType,
     };
 
-    setLoading(true);
-    const token = localStorage.getItem("token");
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
 
-    axios
-      .post(`${API_URL}/api/appointments`, payload, {
+      const res = await api.post("/appointments/book", payload, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      .then((res) => {
-        message.success(res.data?.message || "Appointment booked");
-        if (onOk) onOk(res.data?.data || payload);
-      })
-      .catch((err) => {
-        const msg = err.response?.data?.message || "Failed to book appointment";
-        message.error(msg);
-      })
-      .finally(() => setLoading(false));
-  };
+      });
 
-  const handleDepartmentChange = (e) => {
-    const selectedDept = e.target.value;
-    setDepartment(selectedDept);
-    setDoctor("");
-    if (selectedDept)
-      setFilteredDoctors(
-        doctors.filter((doc) => doc.department === selectedDept)
-      );
-    else setFilteredDoctors(doctors);
+      message.success(res.data?.message || "Appointment booked");
+      onOk?.(res.data?.data || payload);
+      reset();
+    } catch (error) {
+      message.error(error.response?.data?.message || "Booking failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -160,297 +149,172 @@ function AppointmentModal({
       closable={false}
       onCancel={onCancel}
       width="100%"
-      style={{ maxWidth: "900px", margin: "0 auto" }}
+      style={{ maxWidth: 900, margin: "0 auto" }}
       bodyStyle={{ padding: 0, maxHeight: "90vh", overflowY: "auto" }}
       centered
     >
-      <div className="relative rounded-xl overflow-hidden shadow-2xl">
-        {/* Header */}
-        <div className="relative bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 p-4 sm:p-6 md:p-8">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-5 rounded-full -mr-20 -mt-20"></div>
-          <div className="relative flex flex-col sm:flex-row items-start justify-between gap-3">
-            <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
-              <div className="p-3 sm:p-4 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl flex items-center justify-center shrink-0 shadow-lg">
-                <CalendarOutlined className="text-white text-xl sm:text-2xl md:text-3xl" />
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="rounded-xl overflow-hidden shadow-2xl">
+            {/* ---------------- Header ---------------- */}
+            <div className="bg-gradient-to-r from-blue-600 to-cyan-500 p-6 flex justify-between items-center">
+              <div className="flex items-center gap-3 text-white">
+                <CalendarOutlined className="text-2xl" />
+                <div>
+                  <h3 className="text-xl font-bold">{title}</h3>
+                  <p className="text-sm opacity-90">
+                    Complete your appointment booking
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white truncate text-wrap">
-                  {title}
-                </h3>
-                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-blue-50 line-clamp-2">
-                  Complete your appointment booking in just a few steps
-                </p>
-              </div>
+              <button onClick={onCancel} className="text-white">
+                <CloseOutlined />
+              </button>
             </div>
 
-            <button
-              onClick={onCancel}
-              aria-label="Close"
-              className="w-8 sm:w-10 h-8 sm:h-10 text-white bg-transparent hover:bg-gradient-to-r hover:from-blue-600 hover:via-blue-500 hover:to-cyan-500 hover:bg-opacity-20 transition-all rounded-lg shrink-0 flex items-center justify-center duration-300 mt-3 sm:mt-0"
-            >
-              <CloseOutlined className="text-lg sm:text-xl" />
-            </button>
-          </div>
-        </div>
+            {/* ---------------- Content ---------------- */}
+            <div className="p-6 bg-gray-50">
+              <Row gutter={[20, 28]}>
+                <Col xs={24} md={12}>
+                  <div className="space-y-5">
+                    {/* Appointment Type */}
+                    <div>
+                      <label className="font-bold mb-2 block">
+                        Appointment Type
+                      </label>
+                      {[
+                        {
+                          type: "online",
+                          icon: VideoCameraOutlined,
+                          label: "Online Consultation",
+                        },
+                        {
+                          type: "in-clinic",
+                          icon: HomeOutlined,
+                          label: "In-clinic Visit",
+                        },
+                      ].map(({ type, icon: Icon, label }) => (
+                        <div
+                          key={type}
+                          onClick={() => setAppointmentType(type)}
+                          className={`p-3 border-2 rounded-lg cursor-pointer flex items-center gap-3 ${
+                            appointmentType === type
+                              ? "border-blue-600 bg-blue-50"
+                              : "border-gray-200"
+                          }`}
+                        >
+                          <Icon />
+                          <span>{label}</span>
+                        </div>
+                      ))}
+                    </div>
 
-        {/* Content */}
-        <div className="p-4 sm:p-6 md:p-8 bg-linear-to-b from-gray-50 to-white animate-[fadeIn_0.5s_ease-in-out]">
-          <Row gutter={[20, 28]}>
-            {/* Left Column */}
-            <Col xs={24} md={12}>
-              <div className="space-y-5 sm:space-y-6 md:space-y-7 order-2 md:order-1">
-                {/* Appointment Type */}
-                <div>
-                  <label className="block font-bold text-sm sm:text-base md:text-lg text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
-                    <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
-                    Appointment Type
-                  </label>
-                  <div className="space-y-2.5 sm:space-y-3">
-                    {[
-                      {
-                        type: "online",
-                        icon: VideoCameraOutlined,
-                        label: "Online Consultation",
-                        desc: "Video call with doctor",
-                      },
-                      {
-                        type: "in-clinic",
-                        icon: HomeOutlined,
-                        label: "In-clinic Visit",
-                        desc: "Visit our clinic",
-                      },
-                    ].map(({ type, icon: Icon, label, desc }) => (
-                      <div
-                        key={type}
-                        onClick={() => setAppointmentType(type)}
-                        className={`p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 items-center flex gap-3 group ${
-                          appointmentType === type
-                            ? "border-blue-600 bg-gradient-to-r from-blue-50 to-cyan-50 shadow-md"
-                            : "border-gray-200 bg-white hover:shadow-md hover:border-blue-300"
-                        }`}
-                      >
-                        <div
-                          className={`p-2.5 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300 ${
-                            appointmentType === type
-                              ? "bg-gradient-to-br from-blue-600 to-cyan-600"
-                              : "bg-gray-100 group-hover:bg-blue-100 hover:text-white"
-                          }`}
-                        >
-                          <Icon
-                            className={`text-base sm:text-lg ${
-                              appointmentType === type
-                                ? "text-white"
-                                : "text-gray-600"
-                            }`}
-                          />
+                    {/* Department */}
+                    <CustomSelect
+                      name="department"
+                      label="Department"
+                      options={departmentOptions}
+                      rules={{ required: "Department is required" }}
+                    />
+
+                    {/* Doctor */}
+                    <CustomSelect
+                      name="doctor"
+                      label="Select Doctor"
+                      options={doctors.map((d) => ({
+                        label: `${d.firstName} ${d.lastName}`,
+                        value: d._id,
+                      }))}
+                      rules={{ required: "Doctor is required" }}
+                    />
+                  </div>
+                </Col>
+
+                {/* Right Side */}
+                <Col xs={24} md={12}>
+                  <div className="space-y-5">
+                    {/* Calendar */}
+                    <div className="bg-white border-2 rounded-xl p-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <div>
+                          <h4 className="font-bold text-blue-600">
+                            {monthNames[currentMonth - 1]}
+                          </h4>
+                          <p className="text-xs text-gray-500">{currentYear}</p>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="font-semibold text-sm sm:text-base text-gray-900">
-                            {label}
-                          </div>
-                          <div className="text-xs sm:text-sm text-gray-500">
-                            {desc}
-                          </div>
-                        </div>
-                        <div
-                          className={`w-5 sm:w-6 h-5 sm:h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all duration-300 ${
-                            appointmentType === type
-                              ? "border-blue-600 bg-gradient-to-br from-blue-600 to-cyan-600"
-                              : "border-gray-300 group-hover:border-blue-400"
-                          }`}
-                        >
-                          {appointmentType === type && (
-                            <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 bg-white rounded-full" />
-                          )}
+                        <div className="flex gap-2">
+                          <button onClick={handlePrevMonth}>←</button>
+                          <button onClick={handleNextMonth}>→</button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
 
-                {/* Department */}
-                <div>
-                  <label className="block font-bold text-sm sm:text-base md:text-lg text-gray-900 mb-2.5 md:mb-3 flex items-center gap-2">
-                    <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
-                    Department
-                  </label>
-                  <div className="relative">
-                    <TeamOutlined className="absolute left-3 top-3 sm:top-3.5 text-blue-500 text-sm sm:text-base" />
-                    <select
-                      value={department}
-                      onChange={handleDepartmentChange}
-                      className="w-full pl-10 pr-4 py-2.5 sm:py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-blue-50 bg-white text-sm sm:text-base text-gray-700 transition-all duration-300 font-medium"
-                    >
-                      <option value="">Select a department</option>
-                      {departments.map((dept) => (
-                        <option key={dept} value={dept}>
-                          {dept}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                      <div className="grid grid-cols-7 gap-1">
+                        {Array.from({ length: firstDay }).map((_, i) => (
+                          <div key={i} />
+                        ))}
+                        {Array.from({ length: daysInMonth }).map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setSelectedDate(i + 1)}
+                            className={`h-9 rounded-lg ${
+                              selectedDate === i + 1
+                                ? "bg-blue-600 text-white"
+                                : "hover:bg-gray-100"
+                            }`}
+                          >
+                            {i + 1}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                {/* Doctor */}
-                <div>
-                  <label className="block font-bold text-sm sm:text-base md:text-lg text-gray-900 mb-2.5 md:mb-3 flex items-center gap-2">
-                    <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
-                    Select Doctor
-                  </label>
-                  <div className="relative">
-                    <UserOutlined className="absolute left-3 top-3 sm:top-3.5 text-blue-500 text-sm sm:text-base" />
-                    <select
-                      value={doctor}
-                      onChange={(e) => setDoctor(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 sm:py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-blue-50 bg-white text-sm sm:text-base text-gray-700 transition-all duration-300 font-medium"
-                    >
-                      <option value="">Select a doctor</option>
-                      {filteredDoctors.map((doc) => (
-                        <option key={doc._id} value={doc._id}>
-                          {doc.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </Col>
-
-            {/* Right Column - Calendar & Time */}
-            <Col xs={24} md={12}>
-              <div className="space-y-5 sm:space-y-6 md:space-y-7 order-1 md:order-2">
-                {/* Calendar */}
-                <div className="bg-white rounded-xl border-2 border-gray-200 p-4 sm:p-5 md:p-6 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between mb-4 gap-2">
+                    {/* Time Slots */}
                     <div>
-                      <h4 className="font-bold text-blue-600 text-base sm:text-lg md:text-xl">
-                        {monthNames[currentMonth - 1]}
+                      <h4 className="font-bold mb-2 flex items-center gap-2">
+                        <ClockCircleOutlined />
+                        Available Slots
                       </h4>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {currentYear}
-                      </p>
-                    </div>
-                    <div className="flex gap-1.5 shrink-0">
-                      <button
-                        onClick={handlePrevMonth}
-                        aria-label="Previous month"
-                        className="w-8 sm:w-9 h-8 sm:h-9 flex items-center justify-center text-gray-600 hover:bg-blue-100 hover:text-blue-600 rounded-lg transition-all duration-300 font-bold"
-                      >
-                        <LeftOutlined />
-                      </button>
-                      <button
-                        onClick={handleNextMonth}
-                        aria-label="Next month"
-                        className="w-8 sm:w-9 h-8 sm:h-9 flex items-center justify-center text-gray-600 hover:bg-blue-100 hover:text-blue-600 rounded-lg transition-all duration-300 font-bold"
-                      >
-                        <RightOutlined />
-                      </button>
+                      <div className="grid grid-cols-3 gap-2">
+                        {timeSlots.map((slot) => (
+                          <button
+                            key={slot}
+                            onClick={() => setSelectedTime(slot)}
+                            className={`py-2 rounded-lg ${
+                              selectedTime === slot
+                                ? "bg-blue-600 text-white"
+                                : "bg-gray-100"
+                            }`}
+                          >
+                            {slot}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
+                </Col>
+              </Row>
 
-                  {/* Days */}
-                  <div className="grid grid-cols-7 gap-1 mb-2 text-xs text-gray-600 font-bold text-center">
-                    {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-                      <div key={day}>{day}</div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-7 gap-1">
-                    {getDaysArray().map((day, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => day && setSelectedDate(day)}
-                        className={`h-9 sm:h-10 text-xs sm:text-sm rounded-lg flex items-center justify-center font-bold transition-all duration-300 ${
-                          day === null
-                            ? "cursor-default"
-                            : selectedDate === day
-                            ? "bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg scale-105"
-                            : "text-gray-700 hover:bg-gray-100 hover:scale-105"
-                        }`}
-                        disabled={day === null}
-                      >
-                        {day}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Time Slots */}
-                <div>
-                  <h4 className="font-bold text-sm sm:text-base md:text-lg text-gray-900 mb-3 flex items-center gap-2">
-                    <ClockCircleOutlined className="text-blue-600" />
-                    Available Slots on {monthNames[currentMonth - 1]}{" "}
-                    {selectedDate}, {currentYear}
-                  </h4>
-
-                  {/* Mobile Dropdown */}
-                  <div className="block md:hidden">
-                    <select
-                      value={selectedTime}
-                      onChange={(e) => setSelectedTime(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg bg-white text-sm font-medium text-gray-700 focus:outline-none focus:border-blue-600 focus:bg-blue-50 transition-all duration-300"
-                    >
-                      {timeSlots.map((slot) => (
-                        <option key={slot} value={slot}>
-                          {slot}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Desktop Grid */}
-                  <div className="hidden md:block">
-                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                      {timeSlots.map((slot) => (
-                        <button
-                          key={slot}
-                          onClick={() => setSelectedTime(slot)}
-                          className={`py-2.5 px-3 rounded-lg text-xs sm:text-sm font-bold transition-all duration-300 transform ${
-                            selectedTime === slot
-                              ? "bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-md scale-105"
-                              : "bg-gray-100 border-2 border-gray-200 text-gray-700 hover:border-blue-300 hover:scale-105"
-                          }`}
-                        >
-                          {slot}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+              {/* Footer */}
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={onCancel}
+                  type="button"
+                  className="px-6 py-2 bg-gray-100 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg"
+                >
+                  {loading ? "Booking..." : "Book Appointment"}
+                </button>
               </div>
-            </Col>
-          </Row>
-
-          {/* Footer */}
-          <div className="sticky bottom-0 bg-gradient-to-t from-white via-white to-transparent pt-4 sm:pt-6 pb-4 sm:pb-6 mt-6 flex flex-col sm:flex-row gap-3 justify-end">
-            <button
-              onClick={onCancel}
-              className="px-6 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all duration-300"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleBooking}
-              disabled={loading}
-              className={`px-8 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base text-white shadow-lg transition-all duration-300 flex items-center gap-2 ${
-                loading
-                  ? "bg-gray-400 opacity-60 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:shadow-xl hover:-translate-y-1"
-              }`}
-            >
-              {loading ? (
-                <>
-                  <span className="inline-block animate-spin">⚙️</span>
-                  Booking...
-                </>
-              ) : (
-                <>✓ Book Appointment</>
-              )}
-            </button>
+            </div>
           </div>
-        </div>
-      </div>
+        </form>
+      </FormProvider>
     </Modal>
   );
 }
-
-export default AppointmentModal;

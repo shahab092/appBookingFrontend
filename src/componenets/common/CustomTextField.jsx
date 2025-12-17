@@ -4,11 +4,11 @@ import { Search } from "lucide-react";
 
 const CustomTextField = ({
   name,
-  type = "text",               // input type
-  variant = "outlined",        // NEW: outlined | standard
+  type = "text",
+  variant = "outlined",
   rules,
   label,
-  height = "56px",
+  height = "56px",       // default height consistent with select
   onBlur,
   minRows,
   maxRows,
@@ -48,16 +48,9 @@ const CustomTextField = ({
     [allowOnly, maxLength]
   );
 
-  // 🎨 Variant styles
   const variantStyles = {
-    outlined: `
-      border border-gray-300 rounded-lg
-      focus-within:ring-2 focus-within:ring-blue-500
-    `,
-    standard: `
-      border-b border-gray-300 rounded-none
-      focus-within:border-blue-500
-    `,
+    outlined: `border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500`,
+    standard: `border-b border-gray-300 rounded-none focus-within:border-blue-500`,
   };
 
   return (
@@ -78,12 +71,15 @@ const CustomTextField = ({
           return (
             <>
               <div
-                className={`flex items-center px-3 bg-transparent
-                  ${variantStyles[variant]}
-                  ${fieldState.error ? "border-red-500 ring-red-500" : ""}
-                  ${disabled ? "opacity-50" : ""}
-                `}
-                style={{ height: multiline ? "auto" : height }}
+                className={`flex items-center px-3 bg-transparent ${
+                  variantStyles[variant]
+                } ${fieldState.error ? "border-red-500 ring-red-500" : ""} ${
+                  disabled ? "opacity-50" : ""
+                }`}
+                style={{
+                  height: multiline ? "auto" : height, // same as select
+                  minHeight: "39px", // ensures minimum height consistency
+                }}
               >
                 {showSearchIcon && (
                   <Search className="mr-2 h-4 w-4 text-gray-400" />
@@ -103,13 +99,11 @@ const CustomTextField = ({
                     onBlur?.(e);
                   }}
                   onFocus={onFocus}
-                  className="w-full bg-transparent py-3 text-sm outline-none placeholder-gray-400 resize-none"
+                  className={`w-full bg-transparent text-sm outline-none placeholder-gray-400 resize-none`}
                 />
 
                 {endAdornment && (
-                  <div className="ml-2 flex items-center">
-                    {endAdornment}
-                  </div>
+                  <div className="ml-2 flex items-center">{endAdornment}</div>
                 )}
               </div>
 
