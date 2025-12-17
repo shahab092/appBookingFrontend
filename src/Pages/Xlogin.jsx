@@ -2,64 +2,37 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
+import { useForm, FormProvider } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { setCredentials } from "./../features/AuthSlice";
-import axios from "axios";
 import api from "../libs/api";
 import { jwtDecode } from "jwt-decode";
 
+import CustomTextField from "../componenets/common/CustomTextField";
+import { loginSchema } from "../validation/validation";
+
 const Xlogin = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const methods = useForm({
+    resolver: yupResolver(loginSchema),
+    mode: "onTouched",
+  });
+
+  const { handleSubmit } = methods;
+
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // Email/password login
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setIsLoading(true);
-  //   try {
-  //     const res = await api.post(
-  //       "/auth/login",
-  //       { email, password },
-  //       { withCredentials: true }
-  //     );
-
-  //     dispatch(
-  //       setCredentials({
-  //         token: res.data.data.accessToken,
-  //         refreshToken: res.data.data.refreshToken,
-  //         user: res.data.data.user,
-  //       })
-  //     );
-
-  //     navigate("/dashboardme");
-  //     alert("Login successful!");
-  //   } catch (err) {
-  //     console.error("Login error:", err);
-  //     alert("Invalid username or password.");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     setIsLoading(true);
-
     try {
-      const res = await api.post("/auth/login", {
-        email,
-        password,
-      });
-
+      const res = await api.post("/auth/login", data);
       const { accessToken, refreshToken } = res.data.data;
 
-      // Decode token
       const decoded = jwtDecode(accessToken);
-
-      // Build user object manually
       const userData = {
         email: decoded.email,
         role: decoded.role,
@@ -74,10 +47,10 @@ const Xlogin = () => {
         })
       );
 
-    
-      if (decoded.role === "admin") {
-        navigate("/admin/dashboard");
-      }
+      if (decoded.role === "admin") navigate("/admin/dashboard");
+      else navigate("/patient/dashboard");
+
+      alert("Login successful!");
     } catch (error) {
       console.error("Login error:", error);
       alert("Invalid email or password");
@@ -90,19 +63,13 @@ const Xlogin = () => {
   const handleGoogleLogin = async (credential) => {
     setIsLoading(true);
     try {
-      const res = await api.post(
-        "/auth/google-login",
-        { tokenId: credential },
-        { withCredentials: true }
-      );
-      console.log(res, "response in the login section");
+      const res = await api.post("/auth/google-login", { tokenId: credential });
       dispatch(
         setCredentials({
           token: res.data.data.accessToken,
           user: res.data.data.user,
         })
       );
-
       navigate("/patient/dashboard");
       alert("Google login successful!");
     } catch (err) {
@@ -145,49 +112,48 @@ const Xlogin = () => {
           </div>
 
           {/* Email/Password Form */}
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email or Username"
-              className="w-full mb-4 px-4 py-3 border-2 border-gray-200 rounded-lg"
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className="w-full mb-4 px-4 py-3 border-2 border-gray-200 rounded-lg"
-            />
+          <FormProvider {...methods}>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <CustomTextField
+                name="email"
+                label="Email or Username"
+                placeholder="Enter your email"
+              />
+              <CustomTextField
+                name="password"
+                type="password"
+                label="Password"
+                placeholder="Enter your password"
+              />
 
-            <div className="flex items-center justify-between mb-4">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="mr-2"
-                />
-                Remember me
-              </label>
+              <div className="flex items-center justify-between mb-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="mr-2"
+                  />
+                  Remember me
+                </label>
+                <button
+                  type="button"
+                  className="text-blue-600"
+                  onClick={handleForgotPassword}
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
               <button
-                type="button"
-                className="text-blue-600"
-                onClick={handleForgotPassword}
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg"
               >
-                Forgot Password?
+                {isLoading ? "Logging in..." : "Sign In"}
               </button>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg"
-            >
-              {isLoading ? "Logging in..." : "Sign In"}
-            </button>
-          </form>
+            </form>
+          </FormProvider>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">

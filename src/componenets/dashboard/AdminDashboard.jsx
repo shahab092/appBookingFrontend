@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Check, X, User, Calendar, Clock, MoreHorizontal } from "lucide-react";
+import { Modal, message } from "antd";
 import api from "../../libs/api";
 
 export default function AdminDashboard() {
@@ -7,18 +8,19 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   // modal + action state
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [actionType, setActionType] = useState(null); // approved | rejected
   const [actionLoading, setActionLoading] = useState(false);
 
-  // fetch pending doctors
+  // Fetch pending doctors
   const getDoctors = async () => {
     try {
       const res = await api.get("/doctor?status=pending");
       setDoctors(res.data.data);
     } catch (error) {
       console.error("Error fetching doctors", error);
+      message.error("Failed to fetch doctors");
     } finally {
       setLoading(false);
     }
@@ -32,11 +34,11 @@ export default function AdminDashboard() {
   const openModal = (doctor, action) => {
     setSelectedDoctor(doctor);
     setActionType(action);
-    setModalOpen(true);
+    setModalVisible(true);
   };
 
   const closeModal = () => {
-    setModalOpen(false);
+    setModalVisible(false);
     setSelectedDoctor(null);
     setActionType(null);
   };
@@ -47,20 +49,16 @@ export default function AdminDashboard() {
 
     try {
       setActionLoading(true);
+      await api.patch(`/doctor/${selectedDoctor._id}/status`, {
+        status: actionType,
+      });
 
-      await api.patch(
-        `/doctor/${selectedDoctor._id}/status`,
-        { status: actionType }
-      );
-
-      // remove from pending list
-      setDoctors((prev) =>
-        prev.filter((d) => d._id !== selectedDoctor._id)
-      );
-
+      setDoctors((prev) => prev.filter((d) => d._id !== selectedDoctor._id));
+      message.success(`Doctor ${actionType} successfully`);
       closeModal();
     } catch (error) {
       console.error("Status update failed", error);
+      message.error("Failed to update doctor status");
     } finally {
       setActionLoading(false);
     }
@@ -70,10 +68,38 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#f7f9fb] p-4 md:p-6">
       {/* STAT CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <Stat title="Total Doctors" value="248" sub="+12 this month" icon={<User />} bg="bg-blue-50" iconBg="bg-blue-500" />
-        <Stat title="Pending Approvals" value={doctors.length} sub="new today" icon={<User />} bg="bg-orange-50" iconBg="bg-orange-500" />
-        <Stat title="Total Appointments" value="1,429" sub="+18% from last week" icon={<Calendar />} bg="bg-green-50" iconBg="bg-green-500" />
-        <Stat title="Avg. Wait Time" value="12m" sub="-3m from last week" icon={<Clock />} bg="bg-gray-50" iconBg="bg-gray-400" />
+        <Stat
+          title="Total Doctors"
+          value="248"
+          sub="+12 this month"
+          icon={<User />}
+          bg="bg-blue-50"
+          iconBg="bg-blue-500"
+        />
+        <Stat
+          title="Pending Approvals"
+          value={doctors.length}
+          sub="new today"
+          icon={<User />}
+          bg="bg-orange-50"
+          iconBg="bg-orange-500"
+        />
+        <Stat
+          title="Total Appointments"
+          value="1,429"
+          sub="+18% from last week"
+          icon={<Calendar />}
+          bg="bg-green-50"
+          iconBg="bg-green-500"
+        />
+        <Stat
+          title="Avg. Wait Time"
+          value="12m"
+          sub="-3m from last week"
+          icon={<Clock />}
+          bg="bg-gray-50"
+          iconBg="bg-gray-400"
+        />
       </div>
 
       {/* TABLE + ACTIVITY */}
@@ -82,7 +108,9 @@ export default function AdminDashboard() {
         <div className="lg:col-span-2 bg-white rounded-2xl border shadow-sm overflow-x-auto">
           <div className="flex items-center justify-between p-4 md:p-6 border-b">
             <div>
-              <h2 className="text-lg font-semibold">Pending Doctor Registrations</h2>
+              <h2 className="text-lg font-semibold">
+                Pending Doctor Registrations
+              </h2>
               <p className="text-sm text-gray-500">
                 Review and approve new doctor applications
               </p>
@@ -147,15 +175,15 @@ export default function AdminDashboard() {
                     <td className="px-4">
                       <div className="flex justify-end gap-2 items-center">
                         <button
-                          onClick={() => openModal(d, "approved")}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-full text-xs"
+                          onClick={() => openModal(d, "inprogressed")}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-full text-xs hover:bg-green-600"
                         >
                           <Check size={14} /> Approve
                         </button>
 
                         <button
                           onClick={() => openModal(d, "rejected")}
-                          className="flex items-center gap-1 px-3 py-1.5 border text-red-500 rounded-full text-xs"
+                          className="flex items-center gap-1 px-3 py-1.5 border text-red-500 rounded-full text-xs hover:bg-red-50"
                         >
                           <X size={14} /> Reject
                         </button>
@@ -193,48 +221,33 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* MODAL */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <h3 className="font-semibold text-lg mb-3">
-              {actionType === "approved" ? "Approve Doctor" : "Reject Doctor"}
-            </h3>
-
-            <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to{" "}
-              <b>{actionType}</b> {selectedDoctor?.fullName}?
-            </p>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={closeModal}
-                className="border px-4 py-2 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={updateDoctorStatus}
-                disabled={actionLoading}
-                className={`px-4 py-2 rounded-lg text-white ${
-                  actionType === "approved"
-                    ? "bg-green-500"
-                    : "bg-red-500"
-                }`}
-              >
-                {actionLoading ? "Processing..." : "Confirm"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ANT DESIGN MODAL */}
+      <Modal
+        title={actionType === "approved" ? "Approve Doctor" : "Reject Doctor"}
+        open={modalVisible}
+        onOk={updateDoctorStatus}
+        confirmLoading={actionLoading}
+        onCancel={closeModal}
+        okText="Confirm"
+        okButtonProps={{
+          danger: actionType === "rejected",
+          type: actionType === "approved" ? "primary" : "default",
+        }}
+      >
+        <p>
+          Are you sure you want to <b>{actionType}</b>{" "}
+          {selectedDoctor?.fullName}?
+        </p>
+      </Modal>
     </div>
   );
 }
 
 function Stat({ title, value, sub, icon, bg, iconBg }) {
   return (
-    <div className={`rounded-2xl border bg-white p-4 md:p-6 flex justify-between items-center ${bg}`}>
+    <div
+      className={`rounded-2xl border bg-white p-4 md:p-6 flex justify-between items-center ${bg}`}
+    >
       <div>
         <p className="text-sm text-gray-500">{title}</p>
         <h3 className="text-2xl font-bold">{value}</h3>
@@ -242,7 +255,9 @@ function Stat({ title, value, sub, icon, bg, iconBg }) {
           {sub}
         </span>
       </div>
-      <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white ${iconBg}`}>
+      <div
+        className={`h-10 w-10 rounded-full flex items-center justify-center text-white ${iconBg}`}
+      >
         {icon}
       </div>
     </div>
