@@ -13,7 +13,7 @@ import CustomSelect from "../common/CustomSelect";
 import { departmentOptions } from "../../constant/data";
 import { useSelector } from "react-redux";
 
-// --- Constants ---
+/* ---------------- Constants ---------------- */
 const timeSlots = [
   "09:00",
   "09:30",
@@ -21,9 +21,9 @@ const timeSlots = [
   "10:30",
   "11:00",
   "11:30",
-  "13:00",
-  "13:30 ",
-  "02:00 ",
+  "14:00",
+  "15:30",
+  "16:00",
 ];
 
 const monthNames = [
@@ -48,6 +48,7 @@ export default function AppointmentModal({
   onCancel,
 }) {
   const { user } = useSelector((state) => state.auth);
+
   const [appointmentType, setAppointmentType] = useState("online");
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -58,10 +59,7 @@ export default function AppointmentModal({
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
   const methods = useForm({
-    defaultValues: {
-      department: "",
-      doctor: "",
-    },
+    defaultValues: { department: "", doctor: "" },
   });
 
   const { watch, handleSubmit, reset } = methods;
@@ -76,15 +74,22 @@ export default function AppointmentModal({
     try {
       const res = await api.get("/doctor");
       setDoctors(res.data?.data || []);
-    } catch (error) {
+    } catch {
       message.error("Failed to fetch doctors");
     }
   };
 
-  /* ---------------- Filter Doctors by Department ---------------- */
-  const doctor = selectedDepartment
-    ? doctors.filter((d) => d?.doctorProfile?.department === selectedDepartment)
-    : doctors;
+  /* ---------------- Time Formatter (DISPLAY ONLY) ---------------- */
+  const formatTo12Hour = (time24) => {
+    const [h, m] = time24.split(":");
+    const date = new Date();
+    date.setHours(h, m);
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
 
   /* ---------------- Calendar Helpers ---------------- */
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
@@ -94,20 +99,16 @@ export default function AppointmentModal({
     if (currentMonth === 1) {
       setCurrentMonth(12);
       setCurrentYear((y) => y - 1);
-    } else {
-      setCurrentMonth((m) => m - 1);
-    }
+    } else setCurrentMonth((m) => m - 1);
   };
 
   const handleNextMonth = () => {
     if (currentMonth === 12) {
       setCurrentMonth(1);
       setCurrentYear((y) => y + 1);
-    } else {
-      setCurrentMonth((m) => m + 1);
-    }
+    } else setCurrentMonth((m) => m + 1);
   };
-  console.log(doctors, "doctorr");
+
   /* ---------------- Submit ---------------- */
   const onSubmit = async (data) => {
     if (!appointmentType || !data.department || !data.doctor) {
@@ -120,19 +121,14 @@ export default function AppointmentModal({
       department: data.department,
       patientId: user.id,
       date: `${monthNames[currentMonth - 1]} ${selectedDate}, ${currentYear}`,
-      timeSlot: selectedTime,
+      timeSlot: selectedTime, // ✅ 24-hour format sent
       appointmentType,
     };
 
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-
-      const res = await api.post("/appointment/book", payload, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-
-      message.success(res.data?.message || "Appointment booked");
+      const res = await api.post("/appointment/book", payload);
+      message.success("Appointment booked");
       onOk?.(res.data?.data || payload);
       reset();
     } catch (error) {
@@ -149,83 +145,73 @@ export default function AppointmentModal({
       closable={false}
       onCancel={onCancel}
       width="100%"
-      style={{ maxWidth: 900, margin: "0 auto" }}
-      bodyStyle={{ padding: 0, maxHeight: "90vh", overflowY: "auto" }}
       centered
+      style={{ maxWidth: 900 }}
     >
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="rounded-xl overflow-hidden shadow-2xl">
-            {/* ---------------- Header ---------------- */}
-            <div className="bg-gradient-to-r from-blue-600 to-cyan-500 p-6 flex justify-between items-center">
-              <div className="flex items-center gap-3 text-white">
-                <CalendarOutlined className="text-2xl" />
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-cyan-500 p-6 flex justify-between items-center text-white">
+              <div className="flex items-center gap-3">
+                <CalendarOutlined />
                 <div>
                   <h3 className="text-xl font-bold">{title}</h3>
-                  <p className="text-sm opacity-90">
-                    Complete your appointment booking
-                  </p>
+                  <p className="text-sm opacity-90">Complete your booking</p>
                 </div>
               </div>
-              <button onClick={onCancel} className="text-white">
+              <button onClick={onCancel}>
                 <CloseOutlined />
               </button>
             </div>
 
-            {/* ---------------- Content ---------------- */}
+            {/* Content */}
             <div className="p-6 bg-gray-50">
               <Row gutter={[20, 28]}>
                 <Col xs={24} md={12}>
                   <div className="space-y-5">
                     {/* Appointment Type */}
-                    <div>
-                      <label className="font-bold mb-2 block">
-                        Appointment Type
-                      </label>
-                      {[
-                        {
-                          type: "online",
-                          icon: VideoCameraOutlined,
-                          label: "Online Consultation",
-                        },
-                        {
-                          type: "in-clinic",
-                          icon: HomeOutlined,
-                          label: "In-clinic Visit",
-                        },
-                      ].map(({ type, icon: Icon, label }) => (
-                        <div
-                          key={type}
-                          onClick={() => setAppointmentType(type)}
-                          className={`p-3 border-2 rounded-lg cursor-pointer flex items-center gap-3 ${
-                            appointmentType === type
-                              ? "border-blue-600 bg-blue-50"
-                              : "border-gray-200"
-                          }`}
-                        >
-                          <Icon />
-                          <span>{label}</span>
-                        </div>
-                      ))}
-                    </div>
+                    {[
+                      {
+                        type: "online",
+                        icon: <VideoCameraOutlined />,
+                        label: "Online Consultation",
+                      },
+                      {
+                        type: "inclinic",
+                        icon: <HomeOutlined />,
+                        label: "In-clinic Visit",
+                      },
+                    ].map((item) => (
+                      <div
+                        key={item.type}
+                        onClick={() => setAppointmentType(item.type)}
+                        className={`p-3 border-2 rounded-lg cursor-pointer flex gap-3 ${
+                          appointmentType === item.type
+                            ? "border-blue-600 bg-blue-50"
+                            : "border-gray-200"
+                        }`}
+                      >
+                        {item.icon}
+                        {item.label}
+                      </div>
+                    ))}
 
-                    {/* Department */}
                     <CustomSelect
                       name="department"
                       label="Department"
                       options={departmentOptions}
-                      rules={{ required: "Department is required" }}
+                      rules={{ required: "Required" }}
                     />
 
-                    {/* Doctor */}
                     <CustomSelect
                       name="doctor"
-                      label="Select Doctor"
+                      label="Doctor"
                       options={doctors.map((d) => ({
                         label: `${d.firstName} ${d.lastName}`,
                         value: d._id,
                       }))}
-                      rules={{ required: "Doctor is required" }}
+                      rules={{ required: "Required" }}
                     />
                   </div>
                 </Col>
@@ -235,12 +221,12 @@ export default function AppointmentModal({
                   <div className="space-y-5">
                     {/* Calendar */}
                     <div className="bg-white border-2 rounded-xl p-4">
-                      <div className="flex justify-between items-center mb-3">
+                      <div className="flex justify-between mb-3">
                         <div>
                           <h4 className="font-bold text-blue-600">
                             {monthNames[currentMonth - 1]}
                           </h4>
-                          <p className="text-xs text-gray-500">{currentYear}</p>
+                          <p className="text-xs">{currentYear}</p>
                         </div>
                         <div className="flex gap-2">
                           <button onClick={handlePrevMonth}>←</button>
@@ -271,9 +257,9 @@ export default function AppointmentModal({
                     {/* Time Slots */}
                     <div>
                       <h4 className="font-bold mb-2 flex items-center gap-2">
-                        <ClockCircleOutlined />
-                        Available Slots
+                        <ClockCircleOutlined /> Available Slots
                       </h4>
+
                       <div className="grid grid-cols-3 gap-2">
                         {timeSlots.map((slot) => (
                           <button
@@ -285,7 +271,7 @@ export default function AppointmentModal({
                                 : "bg-gray-100"
                             }`}
                           >
-                            {slot}
+                            {formatTo12Hour(slot)} {/* ✅ USER SEES AM/PM */}
                           </button>
                         ))}
                       </div>
@@ -298,7 +284,6 @@ export default function AppointmentModal({
               <div className="mt-6 flex justify-end gap-3">
                 <button
                   onClick={onCancel}
-                  type="button"
                   className="px-6 py-2 bg-gray-100 rounded-lg"
                 >
                   Cancel
