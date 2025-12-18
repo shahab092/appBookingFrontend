@@ -5,6 +5,7 @@ import { NavLink } from "react-router-dom";
 import { LogOut, HeartPulse } from "lucide-react";
 import { SIDEBAR_MENU } from "../../constant/data";
 import { logout } from "../../features/AuthSlice"; // import your logout action
+import { message } from "antd/lib";
 
 const SidebarLink = memo(({ item, isExpanded }) => {
   const { label, icon: Icon, path } = item;
@@ -73,6 +74,7 @@ const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
   const handleLogout = () => {
     dispatch(logout()); // clears Redux and localStorage
     navigate("/login"); // redirect to login page
+    message.success("Logged out successfully");
   };
 
   return (
@@ -89,7 +91,11 @@ const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
           fixed lg:sticky top-0 z-30 flex h-screen flex-col bg-gray-50 border-r border-gray-200
           transition-all duration-300 ease-in-out
           ${isExpanded ? "w-72" : "w-20"}
-          ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+          ${
+            isMobileOpen
+              ? "translate-x-0"
+              : "-translate-x-full lg:translate-x-0"
+          }
         `}
       >
         <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">

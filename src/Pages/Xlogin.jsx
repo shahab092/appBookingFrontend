@@ -10,6 +10,7 @@ import { jwtDecode } from "jwt-decode";
 
 import CustomTextField from "../componenets/common/CustomTextField";
 import { loginSchema } from "../validation/validation";
+import { message } from "antd/lib";
 
 const Xlogin = () => {
   const methods = useForm({
@@ -49,11 +50,10 @@ const Xlogin = () => {
 
       if (decoded.role === "admin") navigate("/admin/dashboard");
       else navigate("/patient/dashboard");
-
-      alert("Login successful!");
+      message.success("Login successful!");
     } catch (error) {
-      console.error("Login error:", error);
-      alert("Invalid email or password");
+       message.error("Invalid email or password");
+  
     } finally {
       setIsLoading(false);
     }
@@ -71,10 +71,10 @@ const Xlogin = () => {
         })
       );
       navigate("/patient/dashboard");
-      alert("Google login successful!");
+      message.success("Google login successful!");
     } catch (err) {
-      console.error("Google login error:", err);
-      alert("Google login failed!");
+      
+      message.error("Google login failed!");
     } finally {
       setIsLoading(false);
     }

@@ -47,7 +47,7 @@ export default function AppointmentModal({
   onOk,
   onCancel,
 }) {
-   const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const [appointmentType, setAppointmentType] = useState("online");
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -107,7 +107,7 @@ export default function AppointmentModal({
       setCurrentMonth((m) => m + 1);
     }
   };
-console.log(doctors,'doctorr')
+  console.log(doctors, "doctorr");
   /* ---------------- Submit ---------------- */
   const onSubmit = async (data) => {
     if (!appointmentType || !data.department || !data.doctor) {
@@ -128,7 +128,7 @@ console.log(doctors,'doctorr')
       setLoading(true);
       const token = localStorage.getItem("token");
 
-      const res = await api.post("/appointments/book", payload, {
+      const res = await api.post("/appointment/book", payload, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 

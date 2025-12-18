@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { Modal, Row, Col, message } from "antd";
-// import { useForm, FormProvider } from "react-hook-form";
-
 import {
   FaStethoscope,
   FaTimes,
@@ -9,13 +7,12 @@ import {
   FaIdCard,
   FaMapMarkerAlt,
 } from "react-icons/fa";
-
 import api from "../../libs/api";
 import CustomTextField from "../common/CustomTextField";
+import CustomSelect from "../common/CustomSelect";
 import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { doctorRegistrationSchema } from "../../validation/validation";
-import CustomSelect from "../common/CustomSelect";
 import { departmentOptions, specializationOptions } from "../../constant/data";
 
 export default function DoctorRegistrationModal({
@@ -61,9 +58,12 @@ export default function DoctorRegistrationModal({
       setLoading(true);
       const res = await api.post("/doctor/register", payload);
       message.success("Registration submitted successfully");
+
+      // Reset form after successful submission
       reset();
+
+      // Call optional callback with API response
       onOk?.(res.data);
-      methods.reset();
     } catch (err) {
       message.error(err.response?.data?.message || "Registration failed");
     } finally {
@@ -167,21 +167,6 @@ export default function DoctorRegistrationModal({
                   allowOnly="numeric"
                 />
               </Col>
-              {/* <Col xs={24} sm={12}>
-                <CustomTextField
-                  name="specialization"
-                  label="Specialization"
-                  placeholder="e.g. Cardiology"
-                />
-              </Col>
-              <Col xs={24} sm={12}>
-                <CustomTextField
-                  name="department"
-                  label="Department"
-                  placeholder="e.g. Heart Center"
-                />
-              </Col> */}
-
               <Col xs={24} sm={12}>
                 <CustomSelect
                   name="specialization"
@@ -208,7 +193,6 @@ export default function DoctorRegistrationModal({
                   name="street"
                   label="Street Address"
                   placeholder="Street address"
-                  
                 />
               </Col>
               <Col xs={24} sm={8}>
