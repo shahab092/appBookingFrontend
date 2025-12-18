@@ -1,13 +1,14 @@
-import { CloseOutlined } from "@ant-design/icons";
+import React from "react";
 import { FiClock, FiMapPin, FiCalendar } from "react-icons/fi";
+import { CloseOutlined } from "@ant-design/icons";
 
 const AppointmentCard = ({
   title,
   time,
   doctor,
-  status = "Confirmed", // default
-  statusColor = "green", // green, yellow, red
-  type = "online", // online or in-clinic
+  status = "Confirmed",
+  statusColor = "green",
+  type = "online",
   showActions = true,
   cancelled = false,
   handleOpenModal,
@@ -48,14 +49,14 @@ const AppointmentCard = ({
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-[#2F74AA]">
               <div className="flex items-center gap-1 truncate">
                 <FiClock className="text-base sm:text-lg flex-shrink-0" />
-                <span className="truncate">{time || "Mon, Oct 28, 2024 - 10:30 AM"}</span>
+                <span className="truncate">{time}</span>
               </div>
 
               <div className="hidden sm:block w-px h-4 bg-gray-300" />
 
               <div className="flex items-center gap-1 truncate">
                 <FiMapPin className="text-base sm:text-lg flex-shrink-0" />
-                <span className="truncate">{doctor || "Dr. Evelyn Reed (Cardiology)"}</span>
+                <span className="truncate">{doctor}</span>
               </div>
             </div>
 

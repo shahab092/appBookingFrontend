@@ -6,8 +6,24 @@
     @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-300;
   }
 
-  .btn-primary {
+  /* .btn-primary {
     @apply bg-[#2a7de1] hover:bg-[#1e6bc8] text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200;
+  } */
+
+  .btn-primary {
+    @apply w-full sm:w-auto 
+           bg-gradient-to-r from-[#2F74AA] to-[#3a8ccc]
+           text-white 
+           px-5 py-2.5
+           rounded-lg
+           font-semibold text-sm
+           flex items-center justify-center gap-2
+           shadow-md
+           transition-all duration-300
+           hover:shadow-lg
+           hover:from-[#256398] hover:to-[#337fb8]
+           active:scale-95
+           disabled:opacity-60 disabled:cursor-not-allowed;
   }
 
   .btn-secondary {
@@ -67,3 +83,17 @@
   background-color: #94a3b8; /* slightly darker on hover */
 }
 
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-text-fill-color: #111827 !important; /* gray-900 */
+  caret-color: #111827;
+  transition: background-color 9999s ease-in-out 0s;
+}

@@ -7,8 +7,24 @@ import {
   UserPlus, Search, Filter, Download, Share2,
   Bell, Menu, LogOut, Settings, HelpCircle
 } from "lucide-react";
+import { useSelector } from "react-redux";
+import api from "../../libs/api";
 
 export default function DoctorDashboard() {
+    const { user } = useSelector((state) => state.auth);
+  const fetchAppointments = async () => {
+    // setLoading(true);
+    try {
+      const res = await api.get(`appointment/doctor/${user.id}`);
+      console.log(res.data.data,'doctor appoient')
+      setAppointments(res.data.data || []);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    } finally {
+      // setLoading(false);
+    }
+  };
+  fetchAppointments();
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
 

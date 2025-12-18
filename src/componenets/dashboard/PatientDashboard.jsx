@@ -1,23 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiCalendar,
   FiActivity,
-  FiClock,
-  FiMapPin,
   FiHeart,
   FiDroplet,
   FiThermometer,
 } from "react-icons/fi";
 import AppointmentModal from "./AppointmentModal";
 import RecentActivity from "./RecentActivity";
+import { useSelector } from "react-redux";
+import api from "../../libs/api";
 import AppointmentCard from "./AppointmentCard";
-import { appointments } from "../../constant/data";
 
 const PatientDashboard = () => {
+  const { user } = useSelector((state) => state.auth);
   const [modalVisible, setModalVisible] = useState(false);
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleOpenModal = () => setModalVisible(true);
   const handleCloseModal = () => setModalVisible(false);
+
+  // Fetch appointments
+  const fetchAppointments = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get(`appointment/patient/${user.id}`);
+      setAppointments(res.data.data || []);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [user.id]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -31,13 +50,14 @@ const PatientDashboard = () => {
                 Upcoming Schedule
               </h2>
               <p className="text-sm text-gray-500 font-medium mt-1">
-                You have 3 upcoming appointments
+                You have {appointments.length} upcoming appointment
+                {appointments.length !== 1 && "s"}
               </p>
             </div>
 
             <button
               onClick={handleOpenModal}
-              className="w-full sm:w-auto bg-gradient-to-r from-[#2F74AA] to-[#3a8ccc] text-white px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 shadow-md"
+              className="btn-primary flex items-center gap-2"
             >
               <FiCalendar />
               New Appointment
@@ -46,13 +66,39 @@ const PatientDashboard = () => {
             <AppointmentModal
               visible={modalVisible}
               onCancel={handleCloseModal}
+              onRefresh={fetchAppointments}
             />
           </div>
 
           <div className="space-y-4 max-h-96 overflow-y-auto scrollbar-light">
-            {appointments.map((appointment) => (
-              <AppointmentCard key={appointment.id} {...appointment} />
-            ))}
+            {loading ? (
+              <p className="text-gray-500 text-center">
+                Loading appointments...
+              </p>
+            ) : appointments.length > 0 ? (
+              appointments.map((appt) => (
+                <AppointmentCard
+                  key={appt._id}
+                  title={appt.reason}
+                  time={`${appt.date} - ${appt.timeSlot}`}
+                  doctor={`${appt.doctorId.firstName} ${appt.doctorId.lastName} (${appt.department})`}
+                  status={appt.status}
+                  statusColor={
+                    appt.status === "booked"
+                      ? "green"
+                      : appt.status === "pending"
+                      ? "yellow"
+                      : "red"
+                  }
+                  type="online"
+                  handleOpenModal={() => setModalVisible(true)}
+                />
+              ))
+            ) : (
+              <p className="text-gray-500 text-center">
+                No upcoming appointments
+              </p>
+            )}
           </div>
         </section>
 
@@ -71,7 +117,6 @@ const PatientDashboard = () => {
             <FiActivity className="text-[#3a8ccc]" />
           </div>
 
-          {/* Top grid */}
           <div className="grid grid-cols-2 gap-3 mb-5">
             {[
               { label: "Age", value: "42 ", unit: "yrs" },
@@ -81,11 +126,13 @@ const PatientDashboard = () => {
             ].map((item) => (
               <div
                 key={item.label}
-                className=" p-3 rounded-xl bg-gray-50  space-y-3"
+                className="p-3 rounded-xl bg-gray-50 space-y-3"
               >
                 <div className="text-sm text-gray-500">{item.label}</div>
-                <div >
-                <span className="text-3xl font-bold text-gray-900"> {item.value}</span>
+                <div>
+                  <span className="text-3xl font-bold text-gray-900">
+                    {item.value}
+                  </span>
                   <span className="text-sm"> {item.unit}</span>
                 </div>
               </div>
@@ -94,7 +141,6 @@ const PatientDashboard = () => {
 
           <div className="border-t border-gray-200 my-4" />
 
-          {/* Detailed vitals */}
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3 p-2">
@@ -132,35 +178,6 @@ const PatientDashboard = () => {
               <span className="font-semibold">37.0 °C</span>
             </div>
           </div>
-        </section>
-
-        {/* Medical Summary */}
-        <section className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 flex-1">
-          <h2 className="text-lg font-semibold text-gray-800 mb-5">
-            Medical Summary
-          </h2>
-
-          <div className="mb-4">
-            <p className="text-sm font-semibold text-gray-600 mb-1">
-              Conditions
-            </p>
-            <p className="text-sm text-gray-800">
-              Type 2 Diabetes, Hypertension
-            </p>
-          </div>
-
-          <div className="mb-5">
-            <p className="text-sm font-semibold text-gray-600 mb-1">
-              Allergies
-            </p>
-            <p className="text-sm text-gray-800">Penicillin</p>
-          </div>
-
-          <div className="border-t border-gray-200 my-4" />
-
-          <button className="text-sm font-semibold text-[#3a8ccc] hover:underline">
-            View Full Records
-          </button>
         </section>
       </div>
     </div>

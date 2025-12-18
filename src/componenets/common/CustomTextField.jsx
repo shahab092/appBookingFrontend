@@ -71,7 +71,7 @@ const CustomTextField = ({
           return (
             <>
               <div
-                className={`flex items-center px-3 bg-transparent ${
+                className={`form-input  ${
                   variantStyles[variant]
                 } ${fieldState.error ? "border-red-500 ring-red-500" : ""} ${
                   disabled ? "opacity-50" : ""
@@ -99,7 +99,7 @@ const CustomTextField = ({
                     onBlur?.(e);
                   }}
                   onFocus={onFocus}
-                  className={`w-full bg-transparent text-sm outline-none placeholder-gray-400 resize-none`}
+                  className={`w-full bg-transparent text-sm outline-none placeholder-gray-400 resize-none h-full`}
                 />
 
                 {endAdornment && (

@@ -15,15 +15,15 @@ import { useSelector } from "react-redux";
 
 // --- Constants ---
 const timeSlots = [
-  "09:00 AM",
-  "09:30 AM",
-  "10:00 AM",
-  "10:30 AM",
-  "11:00 AM",
-  "11:30 AM",
-  "01:00 PM",
-  "01:30 PM",
-  "02:00 PM",
+  "09:00",
+  "09:30",
+  "10:00",
+  "10:30",
+  "11:00",
+  "11:30",
+  "13:00",
+  "13:30 ",
+  "02:00 ",
 ];
 
 const monthNames = [
@@ -306,7 +306,7 @@ export default function AppointmentModal({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg"
+                  className="btn-primary"
                 >
                   {loading ? "Booking..." : "Book Appointment"}
                 </button>

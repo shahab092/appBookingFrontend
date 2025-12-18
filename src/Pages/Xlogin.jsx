@@ -52,8 +52,7 @@ const Xlogin = () => {
       else navigate("/patient/dashboard");
       message.success("Login successful!");
     } catch (error) {
-       message.error("Invalid email or password");
-  
+      message.error("Invalid email or password");
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +72,6 @@ const Xlogin = () => {
       navigate("/patient/dashboard");
       message.success("Google login successful!");
     } catch (err) {
-      
       message.error("Google login failed!");
     } finally {
       setIsLoading(false);
@@ -148,7 +146,7 @@ const Xlogin = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg"
+                className="btn-primary w-full"
               >
                 {isLoading ? "Logging in..." : "Sign In"}
               </button>
