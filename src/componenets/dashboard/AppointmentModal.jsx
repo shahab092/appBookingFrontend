@@ -130,7 +130,9 @@ export default function AppointmentModal({
       const res = await api.post("/appointment/book", payload);
       message.success("Appointment booked");
       onOk?.(res.data?.data || payload);
+
       reset();
+      onCancel();
     } catch (error) {
       message.error(error.response?.data?.message || "Booking failed");
     } finally {
