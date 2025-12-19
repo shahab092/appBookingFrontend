@@ -19,7 +19,7 @@ import api from "../../libs/api";
 import RecentPatientCard from "../../componenets/dashboard/RecentPatientCard";
 import ActionCard from "../../componenets/dashboard/ActionCard";
 import DoctorAppointmentCard from "../../componenets/dashboard/DoctorAppointmentCard";
-import Calling from "../../componenets/dashboard/Calling";
+
 
 export default function DoctorDashboard() {
   const { user } = useSelector((state) => state.auth);
@@ -64,7 +64,7 @@ export default function DoctorDashboard() {
   }, [user.id]);
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/20 px-4 sm:px-6 py-8">
-      <Calling/>
+  
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Stat
