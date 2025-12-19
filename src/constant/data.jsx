@@ -104,7 +104,7 @@ export const SIDEBAR_MENU = {
     {
       label: "Reports",
       icon: FileText,
-      path: "/admin/reports",
+      path: "/admin/appiontment",
     },
     {
       label: "Settings",

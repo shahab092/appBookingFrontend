@@ -8,6 +8,8 @@ import PatientDashboard from "../componenets/dashboard/PatientDashboard";
 import DoctorDashboard from "../Pages/Dashboard/DoctersDashboard";
 import PublicRoute from "../hoc/PublicRoute";
 import ProtectedRoute from "../hoc/ProtectedRoute";
+import Users from "../componenets/dashboard/Users";
+import CreateAppiontmentAdmin from "../componenets/dashboard/CreateAppiontmentAdmin";
 
 export default function AppRoutes() {
   return (
@@ -23,6 +25,8 @@ export default function AppRoutes() {
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
           <Route path="/admin" element={<DashboardLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users" element={<Users />} />
+            <Route path="appiontment" element={<CreateAppiontmentAdmin />} />
           </Route>
         </Route>
 

@@ -8,7 +8,7 @@ const CustomTextField = ({
   variant = "outlined",
   rules,
   label,
-  height = "56px",       // default height consistent with select
+  height = "56px", // default height consistent with select
   onBlur,
   minRows,
   maxRows,
@@ -71,11 +71,9 @@ const CustomTextField = ({
           return (
             <>
               <div
-                className={`form-input  ${
-                  variantStyles[variant]
-                } ${fieldState.error ? "border-red-500 ring-red-500" : ""} ${
-                  disabled ? "opacity-50" : ""
-                }`}
+                className={`form-input  ${variantStyles[variant]} ${
+                  fieldState.error ? "border-red-500 ring-red-500" : ""
+                } ${disabled ? "opacity-50" : ""}`}
                 style={{
                   height: multiline ? "auto" : height, // same as select
                   minHeight: "39px", // ensures minimum height consistency
