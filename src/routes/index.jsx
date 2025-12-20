@@ -8,6 +8,8 @@ import PatientDashboard from "../componenets/dashboard/PatientDashboard";
 import DoctorDashboard from "../Pages/Dashboard/DoctersDashboard";
 import PublicRoute from "../hoc/PublicRoute";
 import ProtectedRoute from "../hoc/ProtectedRoute";
+import OnlineConsultation from "../componenets/dashboard/OnlineConsultation";
+import Calling from "../componenets/dashboard/Calling";
 
 export default function AppRoutes() {
   return (
@@ -32,6 +34,7 @@ export default function AppRoutes() {
             <Route path="dashboard" element={<PatientDashboard />} />
           </Route>
         </Route>
+        <Route element={ <Calling />} path="Calling" />
 
         {/* Doctor routes */}
         <Route element={<ProtectedRoute allowedRoles={["doctor"]} />}>

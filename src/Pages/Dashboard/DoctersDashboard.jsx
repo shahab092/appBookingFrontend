@@ -15,15 +15,22 @@ import {
   Download,
 } from "lucide-react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import api from "../../libs/api";
 import RecentPatientCard from "../../componenets/dashboard/RecentPatientCard";
 import ActionCard from "../../componenets/dashboard/ActionCard";
 import DoctorAppointmentCard from "../../componenets/dashboard/DoctorAppointmentCard";
+import { useWebRTC } from "../../hook/useWebRTC";
+import { useVideoCall } from "../../context/VideoCallProvider";
 
 
 export default function DoctorDashboard() {
+  const {socket} = useVideoCall();
   const { user } = useSelector((state) => state.auth);
+  const { startCall } = useWebRTC({socket:socket,localUserId:user?.id,localUserName:user?.email,onCallEnd:()=>{} });
   const [appointments, setAppointments] = useState([]);
+  const navigate = useNavigate();
+console.log(user, "user");
   const fetchAppointments = async () => {
     // setLoading(true);
     try {
@@ -40,10 +47,20 @@ export default function DoctorDashboard() {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
 
-  const startVideoConsultation = (appointment) => {
-    setSelectedAppointment(appointment);
-    setShowVideoModal(true);
-    console.log("Starting video consultation for:", appointment.name);
+const startVideoConsultation = (appointment) => {
+    const patientId = appointment.patientId?.id;
+    const patientName = appointment.patientId?.fullName;
+    if (!patientId) {
+      alert("Patient information is missing");
+      return;
+    }
+
+    // Start the call through VideoCallProvider
+    const success = startCall(patientId, patientName);
+    
+    if (success) {
+    navigate("/Calling")
+    }
   };
   console.log(selectedAppointment, "select");
 

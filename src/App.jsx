@@ -20,7 +20,7 @@ function App() {
       {/* <Landing /> */}
       {/* <Dashboard /> */}
       <GoogleOAuthProvider clientId="855702064548-6jje93hln82jjcd4s1uqftcqhb5qa64d.apps.googleusercontent.com">
-        <VideoCallProvider userId={user._id}>
+        <VideoCallProvider userId={user?.id}>
           <Index />
         </VideoCallProvider>
       </GoogleOAuthProvider>
