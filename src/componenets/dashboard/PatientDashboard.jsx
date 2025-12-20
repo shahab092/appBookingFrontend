@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FiCalendar,
   FiActivity,
@@ -6,17 +6,159 @@ import {
   FiDroplet,
   FiThermometer,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 import AppointmentModal from "./AppointmentModal";
 import RecentActivity from "./RecentActivity";
 import { useSelector } from "react-redux";
 import api from "../../libs/api";
 import AppointmentCard from "./AppointmentCard";
+import { useVideoCall } from "../../context/VideoCallProvider";
 
 const PatientDashboard = () => {
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const { socket } = useVideoCall();
+
   const [modalVisible, setModalVisible] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // Add refs to prevent multiple navigations
+  const hasNavigatedRef = useRef(false);
+  const incomingCallHandlerRef = useRef(null);
+  const isRegisteredRef = useRef(false);
+
+  // Register patient with socket server and set up listeners
+  useEffect(() => {
+    if (!socket || !user?.id) {
+      console.log("❌ PatientDashboard: No socket or user ID");
+      return;
+    }
+
+    console.log("✅ PatientDashboard: Initializing socket listeners for patient:", user.id);
+
+    // Only register once per socket connection
+    if (!isRegisteredRef.current) {
+      console.log("📝 PatientDashboard: Registering patient with socket");
+      socket.emit("register", user.id, (response) => {
+        console.log("✅ Patient registration completed:", response);
+      });
+      isRegisteredRef.current = true;
+    }
+
+    // Define the incoming call handler
+    const handleIncomingCall = (data) => {
+      console.log("📞📞📞 PatientDashboard: INCOMING CALL RECEIVED!");
+      console.log("Call data:", data);
+      
+      // Prevent multiple navigations
+      if (hasNavigatedRef.current) {
+        console.log("⚠️ Already processing a call, ignoring duplicate");
+        return;
+      }
+      
+      hasNavigatedRef.current = true;
+      
+      // Store the handler reference for cleanup
+      incomingCallHandlerRef.current = handleIncomingCall;
+      
+      // Clean up socket listeners for incoming-call to prevent conflicts
+      socket.off("incoming-call", handleIncomingCall);
+      
+      // Navigate to calling page
+      console.log("🚀 Navigating to calling page");
+      navigate("/calling", {
+        state: {
+          isIncoming: true,
+          remoteUserId: data.from,
+          remoteUserName: data.fromName || "Doctor",
+          offer: data.offer, // Important: Pass the WebRTC offer
+        },
+      });
+    };
+
+    // Listen for incoming calls
+    socket.on("incoming-call", handleIncomingCall);
+
+    // Listen for call ended
+    const handleCallEnded = () => {
+      console.log("📞 PatientDashboard: Call ended");
+      // Reset navigation flag when call ends
+      hasNavigatedRef.current = false;
+      // Re-add the incoming call listener for future calls
+      if (incomingCallHandlerRef.current) {
+        socket.off("incoming-call", incomingCallHandlerRef.current);
+        socket.on("incoming-call", incomingCallHandlerRef.current);
+      }
+    };
+
+    socket.on("call-ended", handleCallEnded);
+
+    // Handle socket errors
+    const handleError = (error) => {
+      console.error("🔌 PatientDashboard: Socket error:", error);
+    };
+
+    socket.on("error", handleError);
+
+    return () => {
+      console.log("🧹 PatientDashboard: Cleaning up socket listeners");
+      if (socket) {
+        socket.off("incoming-call", handleIncomingCall);
+        socket.off("call-ended", handleCallEnded);
+        socket.off("error", handleError);
+        
+        // Reset registered flag when component unmounts
+        isRegisteredRef.current = false;
+      }
+    };
+  }, [socket, user?.id, navigate]);
+
+  // Handle socket connection status changes
+  useEffect(() => {
+    if (!socket) {
+      console.log("❌ PatientDashboard: No socket available");
+      return;
+    }
+
+    console.log("✅ PatientDashboard: Socket connected:", socket.id);
+
+    const handleConnect = () => {
+      console.log("✅✅✅ PatientDashboard: Socket RECONNECTED");
+      // Re-register when reconnected
+      if (user?.id) {
+        console.log("📝 PatientDashboard: Re-registering patient after reconnect");
+        socket.emit("register", user.id, (response) => {
+          console.log("✅ Patient re-registration completed:", response);
+        });
+        isRegisteredRef.current = true;
+      }
+      // Reset navigation flag on reconnect
+      hasNavigatedRef.current = false;
+    };
+
+    const handleDisconnect = (reason) => {
+      console.log("❌❌❌ PatientDashboard: Socket DISCONNECTED:", reason);
+      // Reset registered flag when disconnected
+      isRegisteredRef.current = false;
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+
+    return () => {
+      if (socket) {
+        socket.off("connect", handleConnect);
+        socket.off("disconnect", handleDisconnect);
+      }
+    };
+  }, [socket, user?.id]);
+
+  // Reset navigation flag when user changes
+  useEffect(() => {
+    hasNavigatedRef.current = false;
+    isRegisteredRef.current = false;
+  }, [user?.id]);
 
   const handleOpenModal = () => setModalVisible(true);
   const handleCloseModal = () => setModalVisible(false);
@@ -35,12 +177,13 @@ const PatientDashboard = () => {
   };
 
   useEffect(() => {
-    fetchAppointments();
+    if (user?.id) {
+      fetchAppointments();
+    }
   }, [user.id]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-  
       {/* ================= LEFT COLUMN ================= */}
       <div className="lg:col-span-2 space-y-4 sm:space-y-6">
         {/* Upcoming Appointments */}

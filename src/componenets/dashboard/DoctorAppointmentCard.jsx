@@ -1,15 +1,15 @@
-import { Clock, Edit, MoreVertical, Users, Video, X } from "lucide-react";
+import { Clock, Edit, MoreVertical, Users, Video, X, Phone } from "lucide-react";
 
 function DoctorAppointmentCard({
   appointment,
   onStartVideo,
   onCancel,
   onEdit,
+  isCalling = false,
 }) {
   const isVideo = appointment.type === "Video";
   const isPending = appointment.status === "pending";
-  console.log(appointment.type, "sdfsdfjksfojel");
-
+  
   return (
     <div className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200 cursor-pointer bg-white hover:shadow-sm">
       {appointment ? (
@@ -71,22 +71,45 @@ function DoctorAppointmentCard({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onStartVideo();
+                  if (!isCalling) {
+                    onStartVideo();
+                  }
                 }}
-                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm hover:shadow-md flex items-center gap-2"
+                disabled={isCalling}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all shadow-sm hover:shadow-md flex items-center gap-2 ${
+                  isCalling
+                    ? 'bg-blue-100 text-blue-600 cursor-not-allowed animate-pulse'
+                    : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700'
+                }`}
               >
-                <Video className="w-4 h-4" />
-                Start Video
+                {isCalling ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <Video className="w-4 h-4" />
+                    Start Video
+                  </>
+                )}
               </button>
             )}
 
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onEdit();
+                if (!isCalling) {
+                  onEdit();
+                }
               }}
-              className="px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Edit appointment"
+              disabled={isCalling}
+              className={`px-3 py-2 rounded-lg transition-colors ${
+                isCalling
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+              title={isCalling ? "Busy with call" : "Edit appointment"}
             >
               <Edit className="w-4 h-4" />
             </button>
@@ -94,21 +117,35 @@ function DoctorAppointmentCard({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onCancel();
+                if (!isCalling) {
+                  onCancel();
+                }
               }}
-              className="px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-              title="Cancel appointment"
+              disabled={isCalling}
+              className={`px-3 py-2 rounded-lg transition-colors ${
+                isCalling
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-red-600 hover:text-red-700 hover:bg-red-50'
+              }`}
+              title={isCalling ? "Busy with call" : "Cancel appointment"}
             >
               <X className="w-4 h-4" />
             </button>
 
-            <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+            <button 
+              className={`p-2 rounded-lg transition-colors ${
+                isCalling
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+              }`}
+              disabled={isCalling}
+            >
               <MoreVertical className="w-4 h-4" />
             </button>
           </div>
         </>
       ) : (
-        <p>no appointment</p>
+        <p className="text-gray-500">No appointment details available</p>
       )}
     </div>
   );
