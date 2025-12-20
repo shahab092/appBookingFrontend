@@ -30,7 +30,7 @@ export default function DoctorDashboard() {
   const { startCall } = useWebRTC({socket:socket,localUserId:user?.id,localUserName:user?.email,onCallEnd:()=>{} });
   const [appointments, setAppointments] = useState([]);
   const navigate = useNavigate();
-console.log(user, "user");
+
   const fetchAppointments = async () => {
     // setLoading(true);
     try {
