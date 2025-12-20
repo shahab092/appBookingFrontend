@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   CalendarDays,
   Users,
@@ -13,58 +13,226 @@ import {
   X,
   Filter,
   Download,
+  Phone,
+  PhoneOff,
 } from "lucide-react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import api from "../../libs/api";
 import RecentPatientCard from "../../componenets/dashboard/RecentPatientCard";
 import ActionCard from "../../componenets/dashboard/ActionCard";
 import DoctorAppointmentCard from "../../componenets/dashboard/DoctorAppointmentCard";
-
+import { useVideoCall } from "../../context/VideoCallProvider";
 
 export default function DoctorDashboard() {
+  const { socket } = useVideoCall();
   const { user } = useSelector((state) => state.auth);
   const [appointments, setAppointments] = useState([]);
+  const navigate = useNavigate();
+  
+  // Add refs for better state management
+  const socketRegisteredRef = useRef(false);
+  const isMountedRef = useRef(true);
+  const navigationInProgressRef = useRef(false);
+
+  // Register doctor with socket and set up listeners
+  useEffect(() => {
+    isMountedRef.current = true;
+    navigationInProgressRef.current = false;
+
+    console.log("👨‍⚕️ ===== DOCTOR DASHBOARD MOUNTED =====");
+    console.log("Doctor User ID:", user?.id);
+    console.log("Socket available:", !!socket);
+    console.log("Socket connected:", socket?.connected);
+
+    if (!socket || !user?.id) {
+      console.log("❌ Missing socket or user ID");
+      return;
+    }
+
+    // Register doctor with socket server
+    const registerDoctor = () => {
+      if (!socketRegisteredRef.current && socket.connected) {
+        console.log("📝 Registering doctor with socket server...");
+        socket.emit("register", user.id, (response) => {
+          if (isMountedRef.current) {
+            console.log("✅ Doctor registration completed");
+            socketRegisteredRef.current = true;
+          }
+        });
+      }
+    };
+
+    // Handle initial connection
+    if (socket.connected) {
+      registerDoctor();
+    }
+
+    // Listen for connection events
+    const handleConnect = () => {
+      console.log("✅✅✅ Doctor Socket CONNECTED:", socket.id);
+      registerDoctor();
+    };
+
+    const handleDisconnect = (reason) => {
+      console.log("❌❌❌ Doctor Socket DISCONNECTED:", reason);
+      socketRegisteredRef.current = false;
+    };
+
+    const handleConnectError = (error) => {
+      console.error("🔌 Doctor Socket connection error:", error);
+    };
+
+    const handleError = (error) => {
+      console.error("🔌 Doctor Socket error:", error);
+    };
+
+    // Add event listeners
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", handleConnectError);
+    socket.on("error", handleError);
+
+    // Cleanup function
+    return () => {
+      console.log("🧹 DoctorDashboard: Cleaning up socket listeners");
+      isMountedRef.current = false;
+      navigationInProgressRef.current = false;
+      
+      if (socket) {
+        socket.off("connect", handleConnect);
+        socket.off("disconnect", handleDisconnect);
+        socket.off("connect_error", handleConnectError);
+        socket.off("error", handleError);
+      }
+      socketRegisteredRef.current = false;
+    };
+  }, [socket, user?.id]);
+
   const fetchAppointments = async () => {
-    // setLoading(true);
     try {
       const res = await api.get(`appointment/doctor/${user.id}`);
-      console.log(res.data.data, "doctor appoient");
+      console.log("📅 Doctor appointments fetched:", res.data.data);
       setAppointments(res.data.data || []);
     } catch (error) {
       console.error("Error fetching appointments:", error);
-    } finally {
-      // setLoading(false);
     }
   };
 
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [isCalling, setIsCalling] = useState(false);
 
-  const startVideoConsultation = (appointment) => {
+  const startVideoConsultation = async (appointment) => {
+    console.log("👨‍⚕️ ========== STARTING VIDEO CALL ==========");
+    console.log("Appointment details:", appointment);
+
+    // Check if already navigating
+    if (navigationInProgressRef.current) {
+      console.log("⚠️ Navigation already in progress");
+      return;
+    }
+
+    navigationInProgressRef.current = true;
+
+    // Extract patient ID
+    const patientId = appointment.patientId?.id || appointment.patientId?._id;
+    const patientName = appointment.patientId?.fullName || "Patient";
+
+    console.log("Patient ID:", patientId);
+    console.log("Patient Name:", patientName);
+
+    if (!patientId) {
+      alert("Cannot start call: Patient information is missing");
+      navigationInProgressRef.current = false;
+      return;
+    }
+
+    if (!socket || !socket.connected) {
+      alert("Network connection issue. Please check your internet connection and refresh the page.");
+      console.error("Socket not connected:", {
+        socket: socket,
+        connected: socket?.connected,
+        id: socket?.id
+      });
+      navigationInProgressRef.current = false;
+      return;
+    }
+
+    console.log("✅ Socket is connected, proceeding with call...");
+    console.log("Doctor ID:", user.id);
+    console.log("Doctor Name:", user.fullName || user.email);
+
+    // Set calling state
+    setIsCalling(true);
     setSelectedAppointment(appointment);
-    setShowVideoModal(true);
-    console.log("Starting video consultation for:", appointment.name);
+
+    // Navigate to calling page with patient info
+    console.log("🚀 Navigating to calling page...");
+    navigate("/calling", {
+      state: {
+        isIncoming: false, // Doctor is initiating the call
+        remoteUserId: patientId,
+        remoteUserName: patientName,
+        userRole: "doctor", // Explicitly set user role
+        doctorId: user.id,
+        doctorName: user.fullName || user.email,
+        appointmentId: appointment._id,
+        appointmentType: appointment.appointmentType || "online",
+        reason: appointment.reason,
+      },
+    });
+
+    // Don't start the call here - let the Calling page handle it
+    // The Calling page will use useWebRTC hook to start the call
   };
-  console.log(selectedAppointment, "select");
 
   const cancelAppointment = (appointment) => {
     console.log("Cancelling appointment for:", appointment.name);
-    // In a real app, this would trigger an API call
     alert(`Cancel appointment with ${appointment.name}?`);
   };
 
   const editAppointment = (appointment) => {
     console.log("Editing appointment for:", appointment.name);
-    // In a real app, this would open an edit modal
     alert(`Edit appointment with ${appointment.name}`);
   };
 
   useEffect(() => {
-    fetchAppointments();
+    if (user?.id) {
+      fetchAppointments();
+    }
   }, [user.id]);
+
+  // Show connection status
+  const getConnectionStatus = () => {
+    if (!socket) return { text: "Disconnected", color: "text-red-600", bg: "bg-red-100" };
+    if (socket.connected) return { text: "Connected", color: "text-green-600", bg: "bg-green-100" };
+    return { text: "Connecting...", color: "text-yellow-600", bg: "bg-yellow-100" };
+  };
+
+  const status = getConnectionStatus();
+
+  // Reset calling state when component mounts or when socket reconnects
+  useEffect(() => {
+    setIsCalling(false);
+    navigationInProgressRef.current = false;
+  }, [socket?.connected]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/20 px-4 sm:px-6 py-8">
-  
+      {/* Connection Status Bar */}
+      <div className="mb-6">
+        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${status.bg} ${status.color}`}>
+          <div className={`w-2 h-2 rounded-full ${socket?.connected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+          <span className="text-sm font-medium">Video Call Status: {status.text}</span>
+          {socket?.connected && (
+            <span className="text-xs bg-white/50 px-2 py-0.5 rounded">
+              ID: {user?.id?.substring(0, 8)}...
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Stat
@@ -116,7 +284,7 @@ export default function DoctorDashboard() {
                   Today's Schedule
                 </h3>
                 <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100">
-                  4 appointments
+                  {appointments.length} appointments
                 </span>
               </div>
               <p className="text-sm text-gray-500">
@@ -141,7 +309,7 @@ export default function DoctorDashboard() {
                 key={appointment._id}
                 appointment={{
                   time: appointment.timeSlot,
-                  name: appointment.patientName,
+                  name: appointment.patientId?.fullName || "Unknown Patient",
                   info: appointment.reason,
                   type:
                     appointment.appointmentType === "online"
@@ -153,6 +321,7 @@ export default function DoctorDashboard() {
                 onStartVideo={() => startVideoConsultation(appointment)}
                 onCancel={() => cancelAppointment(appointment)}
                 onEdit={() => editAppointment(appointment)}
+                isCalling={isCalling && selectedAppointment?._id === appointment._id}
               />
             ))}
           </div>
@@ -170,7 +339,7 @@ export default function DoctorDashboard() {
                     <span className="text-sm font-medium text-gray-900 ml-2">
                       6 appointments
                     </span>
-                  </div>
+                </div>
                 </div>
                 <div className="hidden sm:flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
@@ -213,7 +382,14 @@ export default function DoctorDashboard() {
                 label="Start Video Call"
                 color="from-blue-500 to-blue-600"
                 icon={<Video className="w-4 h-4 text-white" />}
-                onClick={() => setShowVideoModal(true)}
+                onClick={() => {
+                  if (appointments.length > 0) {
+                    setSelectedAppointment(appointments[0]);
+                    startVideoConsultation(appointments[0]);
+                  } else {
+                    alert("No appointments available for video call");
+                  }
+                }}
               />
               <ActionCard
                 label="Write Prescription"
@@ -388,12 +564,23 @@ export default function DoctorDashboard() {
                 <button
                   onClick={() => {
                     setShowVideoModal(false);
-                    alert("Starting video call...");
+                    if (selectedAppointment) {
+                      startVideoConsultation(selectedAppointment);
+                    }
                   }}
                   className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm hover:shadow-md font-medium flex items-center justify-center gap-2"
                 >
-                  <Video className="w-5 h-5" />
-                  Start Video Call
+                  {isCalling ? (
+                    <>
+                      <PhoneOff className="w-5 h-5" />
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <Phone className="w-5 h-5" />
+                      Start Video Call
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={() => setShowVideoModal(false)}
@@ -409,7 +596,6 @@ export default function DoctorDashboard() {
     </div>
   );
 }
-
 
 function Stat({ title, value, badge, badgeColor, icon, iconBg, trend }) {
   return (
