@@ -34,10 +34,12 @@ const Xlogin = () => {
       const { accessToken, refreshToken } = res.data.data;
 
       const decoded = jwtDecode(accessToken);
+      console.log(decoded, "all the user information");
       const userData = {
         email: decoded.email,
         role: decoded.role,
         id: decoded.id || decoded._id,
+        name: decoded.name,
       };
 
       dispatch(
@@ -63,6 +65,7 @@ const Xlogin = () => {
     setIsLoading(true);
     try {
       const res = await api.post("/auth/google-login", { tokenId: credential });
+      console.log(res, "response in the login page of user");
       dispatch(
         setCredentials({
           token: res.data.data.accessToken,

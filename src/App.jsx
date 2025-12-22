@@ -14,7 +14,7 @@ import { useSelector } from "react-redux";
 
 function App() {
   const { user } = useSelector((state) => state.auth);
-
+  console.log(user, "user in the app page");
   return (
     <div className="h-screen w-screen m-0 p-0 overflow-x-hidden">
       {/* <Landing /> */}

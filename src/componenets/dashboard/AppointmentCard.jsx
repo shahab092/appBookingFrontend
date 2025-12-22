@@ -1,5 +1,12 @@
 import React from "react";
-import { FiClock, FiMapPin, FiCalendar } from "react-icons/fi";
+import {
+  FiClock,
+  FiCalendar,
+  FiUser,
+  FiVideo,
+  FiHome,
+} from "react-icons/fi";
+import { FaUserMd } from "react-icons/fa";
 import { CloseOutlined } from "@ant-design/icons";
 
 const AppointmentCard = ({
@@ -9,6 +16,7 @@ const AppointmentCard = ({
   status = "Confirmed",
   statusColor = "green",
   type = "online",
+  typeIcon,
   showActions = true,
   cancelled = false,
   handleOpenModal,
@@ -17,6 +25,32 @@ const AppointmentCard = ({
     green: "bg-green-100 text-green-800 border border-green-300",
     yellow: "bg-yellow-100 text-yellow-800 border border-yellow-300",
     red: "bg-red-100 text-red-800 border border-red-300",
+    blue: "bg-blue-100 text-blue-800 border border-blue-300",
+    gray: "bg-gray-100 text-gray-800 border border-gray-300",
+  };
+
+  // Determine appointment type icon
+  const getAppointmentTypeIcon = () => {
+    if (typeIcon) {
+      return typeIcon;
+    }
+    return type === "online" ? (
+      <FiVideo className="mr-1" />
+    ) : (
+      <FiHome className="mr-1" />
+    );
+  };
+
+  // Get appointment type text
+  const getAppointmentTypeText = () => {
+    return type === "online" ? "Online Consultation" : "In-Clinic Visit";
+  };
+
+  // Get appointment type badge style
+  const getAppointmentTypeStyle = () => {
+    return type === "online" 
+      ? "bg-blue-100 text-blue-700 border border-blue-200" 
+      : "bg-cyan-100 text-cyan-700 border border-cyan-200";
   };
 
   return (
@@ -31,41 +65,55 @@ const AppointmentCard = ({
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-3 mb-2">
               <span
-                className={`w-3 h-3 rounded-full ${
+                className={`w-3 h-3 rounded-full flex-shrink-0 mt-2 ${
                   statusColor === "green"
                     ? "bg-green-500"
                     : statusColor === "yellow"
                     ? "bg-yellow-500"
-                    : "bg-red-500"
+                    : statusColor === "red"
+                    ? "bg-red-500"
+                    : statusColor === "blue"
+                    ? "bg-blue-500"
+                    : "bg-gray-500"
                 }`}
               />
-              <h3 className="font-bold text-gray-900 text-base sm:text-lg truncate">
-                {title}
-              </h3>
-            </div>
+              <div className="flex-1">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                  <h3 className="font-bold text-gray-900 text-base sm:text-lg truncate">
+                    {title}
+                  </h3>
+                  <span className={`flex items-center text-xs sm:text-sm px-3 py-1.5 rounded-md ${getAppointmentTypeStyle()}`}>
+                    {getAppointmentTypeIcon()}
+                    {getAppointmentTypeText()}
+                  </span>
+                </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-[#2F74AA]">
-              <div className="flex items-center gap-1 truncate">
-                <FiClock className="text-base sm:text-lg flex-shrink-0" />
-                <span className="truncate">{time}</span>
-              </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-[#2F74AA]">
+                  <div className="flex items-center gap-2 truncate">
+                    <FiClock className="text-base sm:text-lg flex-shrink-0" />
+                    <span className="truncate">{time}</span>
+                  </div>
 
-              <div className="hidden sm:block w-px h-4 bg-gray-300" />
+                  <div className="hidden sm:block w-px h-4 bg-gray-300" />
 
-              <div className="flex items-center gap-1 truncate">
-                <FiMapPin className="text-base sm:text-lg flex-shrink-0" />
-                <span className="truncate">{doctor}</span>
+                  <div className="flex items-center gap-2 truncate">
+                    <FaUserMd className="text-base sm:text-lg flex-shrink-0 text-[#2F74AA]" />
+                    <span className="truncate font-medium">{doctor}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Status Badge */}
-            <span
-              className={`self-start px-3 py-1.5 rounded-full mt-3 sm:mt-4 inline-block text-xs font-bold ${statusStyles[statusColor]}`}
-            >
-              {status}
-            </span>
+            <div className="flex flex-wrap items-center gap-2 mt-4">
+              <span
+                className={`self-start px-3 py-1.5 rounded-full inline-block text-xs font-bold ${statusStyles[statusColor]}`}
+              >
+                {status}
+              </span>
+            </div>
           </div>
 
           {/* Actions */}

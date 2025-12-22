@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Mic,
   Video,
   PhoneOff,
   Monitor,
-  MoreVertical,
   MessageSquare,
   FileText,
   Paperclip,
@@ -16,13 +15,23 @@ import {
   ChevronDown,
   Shield,
   AlertCircle,
+  Clock,
+  Wifi,
+  WifiOff,
+  CameraOff,
+  MicOff,
+  Download,
+  Eye,
+  AlertTriangle,
+  CheckCircle,
+  RefreshCw,
+  VideoOff,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 
 export default function OnlineConsultation(props) {
-  // Destructure props instead of using useLocation
+  // Destructure props
   const {
-    // WebRTC props
     localStream,
     remoteStream,
     callState,
@@ -32,15 +41,8 @@ export default function OnlineConsultation(props) {
     toggleMic,
     toggleCamera,
     isRequestingMedia,
-    startCall,
-
-    // Call info props
-    remoteUserId,
     remoteUserName,
     userRole,
-    callStartedAt,
-
-    // Socket
     socket,
   } = props;
 
@@ -53,18 +55,89 @@ export default function OnlineConsultation(props) {
   const [callDuration, setCallDuration] = useState(0);
   const [hasCallEnded, setHasCallEnded] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
+  const [networkStatus, setNetworkStatus] = useState("good");
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      sender: "doctor",
+      text: "Hello, how are you feeling today?",
+      time: "2:30 PM",
+      avatar: "DC",
+    },
+    {
+      id: 2,
+      sender: "user",
+      text: "I'm feeling a bit better, thank you. Just a slight cough remains.",
+      time: "2:31 PM",
+      avatar: "ME",
+    },
+  ]);
+  const [notes, setNotes] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
+  const chatContainerRef = useRef(null);
   const durationIntervalRef = useRef(null);
-  const callCheckRef = useRef(null);
-  const callSetupRef = useRef(false);
+  const networkCheckRef = useRef(null);
   const retryCountRef = useRef(0);
+
+  // Format time helper
+  const formatTime = useCallback((seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  }, []);
+
+  // Get participant info
+  const getDisplayName = useCallback(() => {
+    if (callState.remoteUserName) return callState.remoteUserName;
+    if (remoteUserName) return remoteUserName;
+    return userRole === "patient" ? "Dr. John Carter" : "Patient";
+  }, [callState.remoteUserName, remoteUserName, userRole]);
+
+  const getParticipantImage = useCallback(() => {
+    const fallbackImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      getDisplayName()
+    )}&background=random&color=fff&size=256`;
+    
+    if (userRole === "patient") {
+      return "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=300&q=80";
+    }
+    return "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=300&q=80";
+  }, [getDisplayName, userRole]);
+
+  // Network status monitoring
+  useEffect(() => {
+    const checkNetworkStatus = () => {
+      if (!navigator.onLine) {
+        setNetworkStatus("disconnected");
+        return;
+      }
+
+      if (socket && !socket.connected) {
+        setNetworkStatus("poor");
+      } else {
+        setNetworkStatus("good");
+      }
+    };
+
+    checkNetworkStatus();
+    networkCheckRef.current = setInterval(checkNetworkStatus, 5000);
+
+    window.addEventListener("online", checkNetworkStatus);
+    window.addEventListener("offline", checkNetworkStatus);
+
+    return () => {
+      if (networkCheckRef.current) clearInterval(networkCheckRef.current);
+      window.removeEventListener("online", checkNetworkStatus);
+      window.removeEventListener("offline", checkNetworkStatus);
+    };
+  }, [socket]);
 
   // Track call duration
   useEffect(() => {
     if (callState.isCallActive && !hasCallEnded) {
-      console.log("⏱️ [OnlineConsultation] Starting call timer");
       setCallDuration(0);
       durationIntervalRef.current = setInterval(() => {
         setCallDuration((prev) => prev + 1);
@@ -77,148 +150,39 @@ export default function OnlineConsultation(props) {
     }
 
     return () => {
-      if (durationIntervalRef.current) {
-        clearInterval(durationIntervalRef.current);
-      }
+      if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
     };
   }, [callState.isCallActive, hasCallEnded]);
 
   // Set up video streams
   useEffect(() => {
-    console.log("🎥 [OnlineConsultation] Setting up video streams");
-    console.log("Local stream:", localStream ? "Available" : "Not available");
-    console.log("Remote stream:", remoteStream ? "Available" : "Not available");
-    console.log("Call state:", callState);
-
-    // Set up local video
     if (localStream && localVideoRef.current) {
-      console.log("🎥 Setting local video");
       localVideoRef.current.srcObject = localStream;
-
-      // Ensure tracks are enabled based toggles
-      const audioTracks = localStream.getAudioTracks();
-      const videoTracks = localStream.getVideoTracks();
-
-      if (audioTracks.length > 0) {
-        audioTracks.forEach((track) => {
-          track.enabled = micEnabled;
-        });
-      }
-
-      if (videoTracks.length > 0) {
-        videoTracks.forEach((track) => {
-          track.enabled = cameraEnabled;
-        });
-      }
     }
+  }, [localStream]);
 
-    // Set up remote video
+  useEffect(() => {
     if (remoteStream && remoteVideoRef.current) {
-      console.log("🎥 Setting remote video");
       remoteVideoRef.current.srcObject = remoteStream;
     }
-  }, [localStream, remoteStream, micEnabled, cameraEnabled]);
+  }, [remoteStream]);
 
-  // Initialize call when component mounts
+  // Auto-scroll chat
   useEffect(() => {
-    console.log("📍 [OnlineConsultation] Initializing call...");
-    console.log("Remote user:", remoteUserId, remoteUserName);
-    console.log("User role:", userRole || user?.role);
-    console.log("Socket connected:", socket?.connected);
-
-    if (callSetupRef.current) {
-      console.log("⏭️ Call already set up");
-      return;
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
+  }, [messages]);
 
-    if (!socket || !socket.connected) {
-      console.log("❌ Socket not connected, waiting...");
-      const timeout = setTimeout(() => {
-        if (!socket?.connected) {
-          console.error("Socket connection timeout");
-          setHasCallEnded(true);
-        }
-      }, 5000);
-      return () => clearTimeout(timeout);
-    }
-
-    if (!remoteUserId) {
-      console.log("❌ No remote user ID");
-      setHasCallEnded(true);
-      return;
-    }
-
-    // Set flag to prevent multiple setups
-    callSetupRef.current = true;
-
-    // Check if call is already active (should be from parent component)
-    console.log("✅ Call setup complete - waiting for WebRTC connection...");
-
-    // Monitor connection status
-    callCheckRef.current = setInterval(() => {
-      if (!callState.isCallActive && !hasCallEnded && !isReconnecting) {
-        console.log("⚠️ Call not active, attempting reconnection...");
-
-        // Only retry a few times
-        if (retryCountRef.current < 3) {
-          retryCountRef.current++;
-          setIsReconnecting(true);
-
-          // Try to re-establish connection
-          setTimeout(() => {
-            if (startCall && remoteUserId && remoteUserName) {
-              console.log("🔄 Attempting to restart call...");
-              startCall(remoteUserId, remoteUserName)
-                .then(() => {
-                  console.log("✅ Call restarted successfully");
-                  setIsReconnecting(false);
-                })
-                .catch((error) => {
-                  console.error("❌ Failed to restart call:", error);
-                  setIsReconnecting(false);
-                });
-            }
-          }, 1000);
-        } else {
-          console.log("❌ Max retries reached, ending call");
-          endCall();
-        }
-      } else if (callState.isCallActive) {
-        retryCountRef.current = 0; // Reset retry count on successful connection
-      }
-    }, 10000); // Check every 10 seconds
-
-    return () => {
-      if (callCheckRef.current) {
-        clearInterval(callCheckRef.current);
-      }
-    };
-  }, [
-    socket,
-    remoteUserId,
-    remoteUserName,
-    userRole,
-    endCall,
-    startCall,
-    callState.isCallActive,
-    hasCallEnded,
-  ]);
-
-  // Handle responsive design
+  // Responsive design
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
-
-    return () => {
-      window.removeEventListener("resize", checkMobile);
-    };
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Start consultation timer
+  // Consultation timer
   useEffect(() => {
     const timer = setInterval(() => {
       setRemainingTime((prev) => {
@@ -231,32 +195,54 @@ export default function OnlineConsultation(props) {
       });
     }, 1000);
 
-    return () => {
-      clearInterval(timer);
-    };
+    return () => clearInterval(timer);
   }, []);
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
+  // Auto-reconnect on network issues
+  useEffect(() => {
+    if (networkStatus === "disconnected" && callState.isCallActive) {
+      const timeout = setTimeout(() => {
+        if (networkStatus === "disconnected") {
+          handleReconnect();
+        }
+      }, 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [networkStatus, callState.isCallActive]);
 
+  // Event handlers
   const handleSendMessage = () => {
     if (message.trim()) {
-      console.log("Sending message:", message);
-      // Here you would integrate with your chat system
+      const newMessage = {
+        id: messages.length + 1,
+        sender: "user",
+        text: message.trim(),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        avatar: "ME",
+      };
+      setMessages([...messages, newMessage]);
       setMessage("");
+      
+      // Simulate typing response
+      setIsTyping(true);
+      setTimeout(() => {
+        const response = {
+          id: messages.length + 2,
+          sender: "doctor",
+          text: "That's good to hear. Let me know if the cough persists.",
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          avatar: userRole === "patient" ? "DC" : "PT",
+        };
+        setMessages(prev => [...prev, response]);
+        setIsTyping(false);
+      }, 1500);
     }
   };
 
   const handleEndCall = () => {
     if (window.confirm("Are you sure you want to end the consultation?")) {
-      console.log("📞 [OnlineConsultation] Ending call...");
       setHasCallEnded(true);
-      endCall();
+      if (endCall) endCall();
     }
   };
 
@@ -268,49 +254,107 @@ export default function OnlineConsultation(props) {
   };
 
   const handleToggleMic = () => {
-    console.log("🎤 Toggling microphone:", !micEnabled);
-    toggleMic();
+    if (toggleMic) toggleMic();
   };
 
   const handleToggleVideo = () => {
-    console.log("📹 Toggling camera:", !cameraEnabled);
-    toggleCamera();
+    if (toggleCamera) toggleCamera();
   };
 
-  const getDisplayName = () => {
-    if (callState.remoteUserName) return callState.remoteUserName;
-    if (remoteUserName) return remoteUserName;
-    return userRole === "patient" ? "Dr. John Carter" : "Patient";
-  };
-
-  const getDisplayImage = () => {
-    if (userRole === "patient") {
-      return "https://images.unsplash.com/photo-1537368910025-700350fe46c7";
-    } else {
-      return "https://images.unsplash.com/photo-1544005313-94ddf0286df2";
+  const handleReconnect = () => {
+    if (retryCountRef.current < 3) {
+      retryCountRef.current++;
+      setIsReconnecting(true);
+      
+      setTimeout(() => {
+        // Simulate reconnection
+        setNetworkStatus("good");
+        setIsReconnecting(false);
+      }, 2000);
     }
   };
 
-  // Cleanup on unmount
+  const handleDownloadFile = (filename) => {
+    alert(`Downloading ${filename}...`);
+    // Implement actual download logic
+  };
+
+  const handleViewFile = (filename) => {
+    alert(`Opening ${filename}...`);
+    // Implement actual view logic
+  };
+
+  const handleSaveNotes = () => {
+    if (notes.trim()) {
+      alert("Notes saved successfully!");
+      // Implement save logic
+    }
+  };
+
+  // Network status helpers
+  const getNetworkIcon = () => {
+    switch (networkStatus) {
+      case "good":
+        return <Wifi className="w-4 h-4 text-green-500" />;
+      case "poor":
+        return <Wifi className="w-4 h-4 text-yellow-500" />;
+      case "disconnected":
+        return <WifiOff className="w-4 h-4 text-red-500" />;
+      default:
+        return <Wifi className="w-4 h-4 text-gray-500" />;
+    }
+  };
+
+  const getNetworkText = () => {
+    switch (networkStatus) {
+      case "good":
+        return "Good Connection";
+      case "poor":
+        return "Poor Connection";
+      case "disconnected":
+        return "No Connection";
+      default:
+        return "Unknown";
+    }
+  };
+
+  // Cleanup
   useEffect(() => {
     return () => {
-      console.log("🧹 [OnlineConsultation] Component unmounting");
-      if (callCheckRef.current) {
-        clearInterval(callCheckRef.current);
-      }
-      if (durationIntervalRef.current) {
-        clearInterval(durationIntervalRef.current);
-      }
+      if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
+      if (networkCheckRef.current) clearInterval(networkCheckRef.current);
     };
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-3 md:p-6">
+      {/* Network Error Banner */}
+      {networkStatus === "disconnected" && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+            <span className="text-red-700 text-sm">No internet connection</span>
+          </div>
+          <button
+            onClick={handleReconnect}
+            disabled={isReconnecting}
+            className="flex items-center gap-2 text-sm text-red-700 hover:text-red-900"
+          >
+            {isReconnecting ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            Reconnect
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 md:mb-6 gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-            <MessageSquare className="w-5 h-5 md:w-6 md:h-6 text-white" />
+            <Video className="w-5 h-5 md:w-6 md:h-6 text-white" />
           </div>
           <div>
             <h1 className="text-lg md:text-xl font-bold text-gray-800">
@@ -322,13 +366,21 @@ export default function OnlineConsultation(props) {
               <div className="w-1 h-1 rounded-full bg-gray-400"></div>
               <span className="text-blue-600">Video Call</span>
               <div className="w-1 h-1 rounded-full bg-gray-400"></div>
-              <span
-                className={`${
-                  callState.isCallActive ? "text-green-600" : "text-yellow-600"
-                }`}
-              >
-                {callState.isCallActive ? "✅ Connected" : "⚠️ Connecting"} (
-                {formatTime(callDuration)})
+              <span className={`flex items-center gap-1 ${
+                callState.isCallActive ? "text-green-600" : "text-yellow-600"
+              }`}>
+                {callState.isCallActive ? (
+                  <>
+                    <CheckCircle className="w-3 h-3" />
+                    Connected
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="w-3 h-3" />
+                    Connecting
+                  </>
+                )}
+                ({formatTime(callDuration)})
               </span>
             </div>
           </div>
@@ -337,22 +389,16 @@ export default function OnlineConsultation(props) {
         <div className="flex flex-col md:flex-row items-start md:items-center gap-3 w-full md:w-auto">
           <div className="flex items-center gap-2 bg-gradient-to-r from-red-50 to-red-100 text-red-600 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm w-full md:w-auto justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              <span>⏱ {formatTime(remainingTime)}</span>
+              <Clock className="w-4 h-4" />
+              <span>{formatTime(remainingTime)}</span>
             </div>
             <span className="text-xs">Remaining</span>
           </div>
 
           <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl text-gray-700 text-sm border border-gray-200 shadow-sm w-full md:w-auto justify-between">
             <div className="flex items-center gap-2">
-              <div
-                className={`w-2 h-2 ${
-                  socket?.connected ? "bg-green-500" : "bg-red-500"
-                } rounded-full`}
-              ></div>
-              <span>
-                {socket?.connected ? "✅ Connected" : "❌ Disconnected"}
-              </span>
+              {getNetworkIcon()}
+              <span>{getNetworkText()}</span>
             </div>
             <ChevronDown className="w-4 h-4" />
           </div>
@@ -363,12 +409,8 @@ export default function OnlineConsultation(props) {
       <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 md:gap-6">
         {/* Video Area */}
         <div className="lg:col-span-9 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl md:rounded-3xl relative overflow-hidden shadow-2xl">
-          {/* Remote Video (Doctor/Patient) */}
-          <div
-            className={`relative ${
-              !cameraEnabled || !remoteStream ? "bg-gray-900" : ""
-            }`}
-          >
+          {/* Remote Video */}
+          <div className="relative">
             {remoteStream ? (
               <video
                 ref={remoteVideoRef}
@@ -376,16 +418,19 @@ export default function OnlineConsultation(props) {
                 playsInline
                 className="w-full h-[50vh] md:h-[600px] object-cover"
               />
-            ) : !cameraEnabled ? (
-              <img
-                src={getDisplayImage()}
-                className="w-full h-[50vh] md:h-[600px] object-cover"
-                alt="Remote Participant"
-              />
             ) : (
-              <div className="w-full h-[50vh] md:h-[600px] flex items-center justify-center">
+              <div className="w-full h-[50vh] md:h-[600px] flex items-center justify-center bg-gray-900">
                 <div className="text-center">
-                  <User className="w-20 h-20 text-gray-600 mx-auto mb-4" />
+                  <img
+                    src={getParticipantImage()}
+                    alt={getDisplayName()}
+                    className="w-32 h-32 rounded-full object-cover mx-auto mb-4 border-4 border-white"
+                    onError={(e) => {
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        getDisplayName()
+                      )}&background=random&color=fff&size=128`;
+                    }}
+                  />
                   <p className="text-gray-500">
                     {callState.isCallActive
                       ? "Waiting for video..."
@@ -395,7 +440,7 @@ export default function OnlineConsultation(props) {
               </div>
             )}
 
-            {/* Remote Participant Info Card */}
+            {/* Remote Participant Info */}
             <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm text-white px-4 py-3 rounded-xl flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
                 <User className="w-5 h-5" />
@@ -440,7 +485,11 @@ export default function OnlineConsultation(props) {
                 />
               ) : (
                 <div className="w-full h-full bg-gray-800 flex items-center justify-center">
-                  <User className="w-8 h-8 text-gray-600" />
+                  {cameraEnabled ? (
+                    <Video className="w-8 h-8 text-gray-600" />
+                  ) : (
+                    <VideoOff className="w-8 h-8 text-gray-600" />
+                  )}
                 </div>
               )}
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
@@ -463,12 +512,10 @@ export default function OnlineConsultation(props) {
               } transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
               title={micEnabled ? "Mute microphone" : "Unmute microphone"}
             >
-              <Mic
-                size={isMobile ? 18 : 20}
-                className={!micEnabled ? "line-through" : ""}
-              />
-              {!micEnabled && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+              {micEnabled ? (
+                <Mic size={isMobile ? 18 : 20} />
+              ) : (
+                <MicOff size={isMobile ? 18 : 20} />
               )}
             </button>
 
@@ -482,20 +529,13 @@ export default function OnlineConsultation(props) {
               } transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
               title={cameraEnabled ? "Turn off camera" : "Turn on camera"}
             >
-              <Video size={isMobile ? 18 : 20} />
-              {!cameraEnabled && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+              {cameraEnabled ? (
+                <Video size={isMobile ? 18 : 20} />
+              ) : (
+                <CameraOff size={isMobile ? 18 : 20} />
               )}
             </button>
 
-            <button
-              onClick={() => console.log("Screen sharing not implemented yet")}
-              disabled={isRequestingMedia || !callState.isCallActive}
-              className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
-              title="Share screen"
-            >
-              <Monitor size={isMobile ? 18 : 20} />
-            </button>
 
             <button
               onClick={handleEndCall}
@@ -506,14 +546,7 @@ export default function OnlineConsultation(props) {
               <PhoneOff size={isMobile ? 20 : 24} />
             </button>
 
-            <button
-              onClick={() => console.log("Volume control not implemented")}
-              disabled={isRequestingMedia || !callState.isCallActive}
-              className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Adjust volume"
-            >
-              <Volume2 size={isMobile ? 18 : 20} />
-            </button>
+           
 
             <button
               onClick={() => document.documentElement.requestFullscreen()}
@@ -524,45 +557,20 @@ export default function OnlineConsultation(props) {
               <Maximize2 size={isMobile ? 18 : 20} />
             </button>
 
-            <button
-              onClick={() => console.log("Settings not implemented")}
-              disabled={isRequestingMedia || !callState.isCallActive}
-              className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Settings"
-            >
-              <Settings size={isMobile ? 18 : 20} />
-            </button>
+         
           </div>
 
-          {/* WebRTC Status Indicators */}
+          {/* Status Indicators */}
           <div className="absolute top-4 right-4 md:right-auto md:left-1/2 md:transform md:-translate-x-1/2 flex flex-col gap-1">
-            {!remoteStream && callState.isCallActive && (
-              <div className="bg-yellow-600/80 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-2">
-                <div className="w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></div>
-                Waiting for remote video...
-              </div>
-            )}
-            {!localStream && callState.isCallActive && (
-              <div className="bg-red-600/80 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-2">
-                <div className="w-2 h-2 bg-red-300 rounded-full animate-pulse"></div>
-                Local camera not available
-              </div>
-            )}
             {isRequestingMedia && (
               <div className="bg-blue-600/80 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-2">
-                <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></span>
+                <RefreshCw className="w-3 h-3 animate-spin" />
                 Initializing media...
               </div>
             )}
-            {!callState.isCallActive && !hasCallEnded && (
-              <div className="bg-yellow-600/80 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-2">
-                <span className="animate-pulse">⚠️</span>
-                Setting up call...
-              </div>
-            )}
             {isReconnecting && (
-              <div className="bg-blue-600/80 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-2">
-                <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></span>
+              <div className="bg-yellow-600/80 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-2">
+                <RefreshCw className="w-3 h-3 animate-spin" />
                 Reconnecting...
               </div>
             )}
@@ -583,9 +591,6 @@ export default function OnlineConsultation(props) {
             >
               <MessageSquare className="w-4 h-4" />
               <span className="font-medium">Chat</span>
-              {activeTab === "chat" && (
-                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-              )}
             </button>
             <button
               onClick={() => setActiveTab("notes")}
@@ -614,33 +619,58 @@ export default function OnlineConsultation(props) {
           {/* Chat Content */}
           {activeTab === "chat" && (
             <>
-              {/* Messages */}
-              <div className="flex-1 p-4 space-y-4 overflow-y-auto max-h-[400px]">
-                {/* Doctor Message */}
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">
-                      {userRole === "patient" ? "DC" : "PT"}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="bg-gray-100 px-4 py-3 rounded-2xl rounded-tl-none text-sm max-w-[80%]">
-                      Hello, how are you feeling today?
+              <div 
+                ref={chatContainerRef}
+                className="flex-1 p-4 space-y-4 overflow-y-auto max-h-[400px]"
+              >
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex gap-3 ${
+                      msg.sender === "user" ? "justify-end" : ""
+                    }`}
+                  >
+                    {msg.sender !== "user" && (
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">
+                          {msg.avatar}
+                        </span>
+                      </div>
+                    )}
+                    <div className={`${msg.sender === "user" ? "text-right" : ""}`}>
+                      <div
+                        className={`px-4 py-3 rounded-2xl text-sm max-w-[80%] ${
+                          msg.sender === "user"
+                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-tr-none"
+                            : "bg-gray-100 rounded-tl-none"
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+                      <span className="text-xs text-gray-500 mt-1 block">
+                        {msg.sender === "user" ? "You" : getDisplayName()} • {msg.time}
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-500 mt-1 block">
-                      {userRole === "patient" ? "Dr. Carter" : "Patient"} • 2:30
-                      PM
-                    </span>
                   </div>
-                </div>
+                ))}
 
-                {/* User Message */}
-                <div className="flex justify-end">
-                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-2xl rounded-tr-none text-sm max-w-[80%]">
-                    I'm feeling a bit better, thank you. Just a slight cough
-                    remains.
+                {/* Typing Indicator */}
+                {isTyping && (
+                  <div className="flex gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">
+                        {userRole === "patient" ? "DC" : "PT"}
+                      </span>
+                    </div>
+                    <div className="bg-gray-100 px-4 py-3 rounded-2xl rounded-tl-none">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Prescription Alert */}
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4">
@@ -654,47 +684,13 @@ export default function OnlineConsultation(props) {
                     {userRole === "patient" ? "Dr. Carter has" : "You have"}{" "}
                     sent a new prescription for your cough.
                   </p>
-                  <button className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-medium px-4 py-3 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-2">
+                  <button 
+                    onClick={() => handleViewFile("Prescription.pdf")}
+                    className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-medium px-4 py-3 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-2"
+                  >
                     View Prescription
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M14 5l7 7m0 0l-7 7m7-7H3"
-                      />
-                    </svg>
+                    <Eye className="w-4 h-4" />
                   </button>
-                </div>
-
-                {/* Typing Indicator */}
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">
-                      {userRole === "patient" ? "DC" : "PT"}
-                    </span>
-                  </div>
-                  <div className="bg-gray-100 px-4 py-3 rounded-2xl rounded-tl-none">
-                    <div className="flex gap-1">
-                      <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      ></div>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -710,11 +706,12 @@ export default function OnlineConsultation(props) {
                     onKeyDown={handleKeyPress}
                     className="flex-1 px-2 py-3 text-sm focus:outline-none"
                     placeholder="Type your message here..."
+                    disabled={!callState.isCallActive}
                   />
                   <button
                     onClick={handleSendMessage}
-                    className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full flex items-center justify-center hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50"
-                    disabled={!message.trim()}
+                    className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full flex items-center justify-center hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!message.trim() || !callState.isCallActive}
                   >
                     <Send className="w-4 h-4" />
                   </button>
@@ -723,7 +720,7 @@ export default function OnlineConsultation(props) {
             </>
           )}
 
-          {/* Notes Tab Content */}
+          {/* Notes Tab */}
           {activeTab === "notes" && (
             <div className="flex-1 p-4">
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
@@ -735,17 +732,28 @@ export default function OnlineConsultation(props) {
                 </p>
               </div>
               <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
                 className="w-full h-64 border border-gray-300 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Start typing consultation notes here..."
               />
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={handleSaveNotes}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                >
+                  <FileText className="w-4 h-4" />
+                  Save Notes
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Files Tab Content */}
+          {/* Files Tab */}
           {activeTab === "files" && (
             <div className="flex-1 p-4">
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                       <FileText className="w-5 h-5 text-blue-600" />
@@ -755,12 +763,15 @@ export default function OnlineConsultation(props) {
                       <p className="text-xs text-gray-500">2.4 MB • Today</p>
                     </div>
                   </div>
-                  <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                    Download
+                  <button 
+                    onClick={() => handleDownloadFile("Prescription.pdf")}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <Download className="w-5 h-5" />
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
                       <FileText className="w-5 h-5 text-gray-600" />
@@ -772,8 +783,11 @@ export default function OnlineConsultation(props) {
                       </p>
                     </div>
                   </div>
-                  <button className="text-gray-600 hover:text-gray-800 text-sm font-medium">
-                    View
+                  <button 
+                    onClick={() => handleViewFile("Medical_History.pdf")}
+                    className="text-gray-600 hover:text-gray-800"
+                  >
+                    <Eye className="w-5 h-5" />
                   </button>
                 </div>
               </div>
@@ -800,12 +814,16 @@ export default function OnlineConsultation(props) {
               !cameraEnabled ? "text-red-600" : "text-gray-500"
             }`}
           >
-            <Video className="w-5 h-5" />
+            {cameraEnabled ? (
+              <Video className="w-5 h-5" />
+            ) : (
+              <VideoOff className="w-5 h-5" />
+            )}
             <span className="text-xs mt-1">Video</span>
           </button>
           <button
             onClick={handleEndCall}
-            className="w-14 h-14 bg-red-500 text-white rounded-full flex items-center justify-center -mt-6 shadow-lg"
+            className="w-14 h-14 bg-red-500 text-white rounded-full flex items-center justify-center -mt-6 shadow-lg hover:bg-red-600 transition-colors"
             disabled={isRequestingMedia}
           >
             <PhoneOff className="w-6 h-6" />
@@ -816,92 +834,24 @@ export default function OnlineConsultation(props) {
               !micEnabled ? "text-red-600" : "text-gray-500"
             }`}
           >
-            <Mic className="w-5 h-5" />
+            {micEnabled ? (
+              <Mic className="w-5 h-5" />
+            ) : (
+              <MicOff className="w-5 h-5" />
+            )}
             <span className="text-xs mt-1">Mic</span>
           </button>
-          <button className="flex flex-col items-center text-gray-500">
-            <MoreVertical className="w-5 h-5" />
-            <span className="text-xs mt-1">More</span>
+          <button
+            onClick={() => setActiveTab("files")}
+            className={`flex flex-col items-center ${
+              activeTab === "files" ? "text-blue-600" : "text-gray-500"
+            }`}
+          >
+            <Paperclip className="w-5 h-5" />
+            <span className="text-xs mt-1">Files</span>
           </button>
         </div>
       )}
-
-      {/* Debug Info (remove in production) */}
-      <div className="mt-6 p-4 bg-white rounded-lg shadow-sm border border-gray-200 max-w-md mx-auto">
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">Call Info:</h3>
-        <div className="text-xs text-gray-600 space-y-1">
-          <div>
-            User Role: <span className="font-mono">{userRole}</span>
-          </div>
-          <div>
-            Remote Name: <span className="font-mono">{getDisplayName()}</span>
-          </div>
-          <div>
-            Call Duration:{" "}
-            <span className="font-mono">{formatTime(callDuration)}</span>
-          </div>
-          <div>
-            Call Active:{" "}
-            <span
-              className={`font-mono ${
-                callState.isCallActive ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {callState.isCallActive ? "Yes" : "No"}
-            </span>
-          </div>
-          <div>
-            Local Stream:{" "}
-            <span
-              className={`font-mono ${
-                localStream ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {localStream ? "Active" : "Inactive"}
-            </span>
-          </div>
-          <div>
-            Remote Stream:{" "}
-            <span
-              className={`font-mono ${
-                remoteStream ? "text-green-600" : "text-yellow-600"
-              }`}
-            >
-              {remoteStream ? "Active" : "Waiting..."}
-            </span>
-          </div>
-          <div>
-            Microphone:{" "}
-            <span
-              className={`font-mono ${
-                micEnabled ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {micEnabled ? "On" : "Off"}
-            </span>
-          </div>
-          <div>
-            Camera:{" "}
-            <span
-              className={`font-mono ${
-                cameraEnabled ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {cameraEnabled ? "On" : "Off"}
-            </span>
-          </div>
-          <div>
-            Socket Connected:{" "}
-            <span
-              className={`font-mono ${
-                socket?.connected ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {socket?.connected ? "Yes" : "No"}
-            </span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

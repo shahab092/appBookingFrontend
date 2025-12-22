@@ -5,6 +5,8 @@ import {
   FiHeart,
   FiDroplet,
   FiThermometer,
+  FiVideo,
+  FiHome,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import AppointmentModal from "./AppointmentModal";
@@ -22,8 +24,7 @@ const PatientDashboard = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  // Add refs to prevent multiple navigations
+
   const hasNavigatedRef = useRef(false);
   const incomingCallHandlerRef = useRef(null);
   const isRegisteredRef = useRef(false);
@@ -31,48 +32,35 @@ const PatientDashboard = () => {
   // Register patient with socket server and set up listeners
   useEffect(() => {
     if (!socket || !user?.id) {
-      console.log("❌ PatientDashboard: No socket or user ID");
       return;
     }
 
-    console.log("✅ PatientDashboard: Initializing socket listeners for patient:", user.id);
-
     // Only register once per socket connection
     if (!isRegisteredRef.current) {
-      console.log("📝 PatientDashboard: Registering patient with socket");
-      socket.emit("register", user.id, (response) => {
-        console.log("✅ Patient registration completed:", response);
-      });
+      socket.emit("register", user.id);
       isRegisteredRef.current = true;
     }
 
     // Define the incoming call handler
     const handleIncomingCall = (data) => {
-      console.log("📞📞📞 PatientDashboard: INCOMING CALL RECEIVED!");
-      console.log("Call data:", data);
-      
       // Prevent multiple navigations
       if (hasNavigatedRef.current) {
-        console.log("⚠️ Already processing a call, ignoring duplicate");
         return;
       }
-      
+
       hasNavigatedRef.current = true;
-      
-      // Store the handler reference for cleanup
       incomingCallHandlerRef.current = handleIncomingCall;
-      
+
       // Clean up socket listeners for incoming-call to prevent conflicts
       socket.off("incoming-call", handleIncomingCall);
-      
+
       // Navigate to calling page
-      console.log("🚀 Navigating to calling page");
       navigate("/calling", {
         state: {
           isIncoming: true,
           remoteUserId: data.from,
           remoteUserName: data.fromName || "Doctor",
-          offer: data.offer, // Important: Pass the WebRTC offer
+          offer: data.offer,
         },
       });
     };
@@ -82,7 +70,6 @@ const PatientDashboard = () => {
 
     // Listen for call ended
     const handleCallEnded = () => {
-      console.log("📞 PatientDashboard: Call ended");
       // Reset navigation flag when call ends
       hasNavigatedRef.current = false;
       // Re-add the incoming call listener for future calls
@@ -96,18 +83,17 @@ const PatientDashboard = () => {
 
     // Handle socket errors
     const handleError = (error) => {
-      console.error("🔌 PatientDashboard: Socket error:", error);
+      console.error("Socket error:", error);
     };
 
     socket.on("error", handleError);
 
     return () => {
-      console.log("🧹 PatientDashboard: Cleaning up socket listeners");
       if (socket) {
         socket.off("incoming-call", handleIncomingCall);
         socket.off("call-ended", handleCallEnded);
         socket.off("error", handleError);
-        
+
         // Reset registered flag when component unmounts
         isRegisteredRef.current = false;
       }
@@ -117,28 +103,20 @@ const PatientDashboard = () => {
   // Handle socket connection status changes
   useEffect(() => {
     if (!socket) {
-      console.log("❌ PatientDashboard: No socket available");
       return;
     }
 
-    console.log("✅ PatientDashboard: Socket connected:", socket.id);
-
     const handleConnect = () => {
-      console.log("✅✅✅ PatientDashboard: Socket RECONNECTED");
       // Re-register when reconnected
       if (user?.id) {
-        console.log("📝 PatientDashboard: Re-registering patient after reconnect");
-        socket.emit("register", user.id, (response) => {
-          console.log("✅ Patient re-registration completed:", response);
-        });
+        socket.emit("register", user.id);
         isRegisteredRef.current = true;
       }
       // Reset navigation flag on reconnect
       hasNavigatedRef.current = false;
     };
 
-    const handleDisconnect = (reason) => {
-      console.log("❌❌❌ PatientDashboard: Socket DISCONNECTED:", reason);
+    const handleDisconnect = () => {
       // Reset registered flag when disconnected
       isRegisteredRef.current = false;
     };
@@ -182,6 +160,62 @@ const PatientDashboard = () => {
     }
   }, [user.id]);
 
+  // Format appointment data securely
+  const formatAppointmentData = (appt) => {
+    const doctorName = appt.doctorId?.fullName
+      ? `Dr. ${appt.doctorId.fullName}`
+      : "Dr. Name not available";
+
+    const appointmentType = appt.appointmentType || "in-clinic";
+    const appointmentIcon =
+      appointmentType === "online" ? (
+        <FiVideo className="mr-1" />
+      ) : (
+        <FiHome className="mr-1" />
+      );
+
+    const department = appt.department || "General";
+    const reason = appt.reason || "General consultation";
+
+    // Format date and time
+    const date = appt.date || "Date not specified";
+    const timeSlot = appt.timeSlot || "Time not specified";
+    const formattedTime = `${date} - ${timeSlot}`;
+
+    // Get status with appropriate color
+    const getStatusColor = (status) => {
+      switch (status?.toLowerCase()) {
+        case "booked":
+          return "green";
+        case "pending":
+          return "yellow";
+        case "cancelled":
+          return "red";
+        case "completed":
+          return "blue";
+        default:
+          return "gray";
+      }
+    };
+
+    // Get status display text
+    const getStatusText = (status) => {
+      if (!status) return "Pending";
+      return status.charAt(0).toUpperCase() + status.slice(1);
+    };
+
+    return {
+      id: appt._id,
+      title: reason,
+      time: formattedTime,
+      doctor: `${doctorName} (${department})`,
+      status: getStatusText(appt.status),
+      statusColor: getStatusColor(appt.status),
+      type: appointmentType,
+      typeIcon: appointmentIcon,
+    };
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       {/* ================= LEFT COLUMN ================= */}
@@ -220,24 +254,22 @@ const PatientDashboard = () => {
                 Loading appointments...
               </p>
             ) : appointments.length > 0 ? (
-              appointments.map((appt) => (
-                <AppointmentCard
-                  key={appt._id}
-                  title={appt.reason}
-                  time={`${appt.date} - ${appt.timeSlot}`}
-                  doctor={`${appt.doctorId.firstName} ${appt.doctorId.lastName} (${appt.department})`}
-                  status={appt.status}
-                  statusColor={
-                    appt.status === "booked"
-                      ? "green"
-                      : appt.status === "pending"
-                      ? "yellow"
-                      : "red"
-                  }
-                  type="online"
-                  handleOpenModal={() => setModalVisible(true)}
-                />
-              ))
+              appointments.map((appt) => {
+                const formattedAppt = formatAppointmentData(appt);
+                return (
+                  <AppointmentCard
+                    key={formattedAppt.id}
+                    title={formattedAppt.title}
+                    time={formattedAppt.time}
+                    doctor={formattedAppt.doctor}
+                    status={formattedAppt.status}
+                    statusColor={formattedAppt.statusColor}
+                    type={formattedAppt.type}
+                    typeIcon={formattedAppt.typeIcon}
+                    handleOpenModal={handleOpenModal}
+                  />
+                );
+              })
             ) : (
               <p className="text-gray-500 text-center">
                 No upcoming appointments
@@ -251,9 +283,9 @@ const PatientDashboard = () => {
       </div>
 
       {/* ================= RIGHT COLUMN ================= */}
-      <div className="lg:col-span-1 flex flex-col gap-4 sm:gap-6 ">
+      <div className="lg:col-span-1 flex flex-col gap-4 sm:gap-6">
         {/* Patient Vitals */}
-        <section className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 flex-1 ">
+        <section className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 flex-1">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-lg font-semibold text-[#3a8ccc]">
               Patient Vitals & Demographics

@@ -129,7 +129,7 @@ export default function DoctorDashboard() {
 
     // Check if already navigating
     if (navigationInProgressRef.current) {
-      console.log("⚠️ Navigation already in progress");
+      console.log(" Navigation already in progress");
       return;
     }
 
@@ -159,7 +159,7 @@ export default function DoctorDashboard() {
       return;
     }
 
-    console.log("✅ Socket is connected, proceeding with call...");
+    console.log("Socket is connected, proceeding with call...");
     console.log("Doctor ID:", user.id);
     console.log("Doctor Name:", user.fullName || user.email);
 
@@ -221,7 +221,7 @@ export default function DoctorDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/20 px-4 sm:px-6 py-8">
       {/* Connection Status Bar */}
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${status.bg} ${status.color}`}>
           <div className={`w-2 h-2 rounded-full ${socket?.connected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
           <span className="text-sm font-medium">Video Call Status: {status.text}</span>
@@ -231,7 +231,7 @@ export default function DoctorDashboard() {
             </span>
           )}
         </div>
-      </div>
+      </div> */}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

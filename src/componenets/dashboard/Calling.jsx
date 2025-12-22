@@ -1,10 +1,30 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Mic, Video } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+  Mic,
+  Video,
+  Phone,
+  PhoneOff,
+  User,
+  Clock,
+  Wifi,
+  WifiOff,
+  Shield,
+  MicOff,
+  CameraOff,
+  X,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle,
+  Volume2,
+  Bell,
+  AlertCircle,
+  Info,
+} from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useVideoCall } from "../../context/VideoCallProvider";
 import { useWebRTC } from "../../hook/useWebRTC";
 import { useSelector } from "react-redux";
-import OnlineConsultation from "./OnlineConsultation"; // Import the OnlineConsultation component
+import OnlineConsultation from "./OnlineConsultation";
 
 export default function Calling() {
   const navigate = useNavigate();
@@ -15,37 +35,41 @@ export default function Calling() {
   const { isIncoming, remoteUserId, remoteUserName, offer } =
     location.state || {};
 
-  // Add callInfo state
+  // State
   const [callInfo, setCallInfo] = useState({
-    doctorName: "Dr. John Carter",
-    doctorSpecialty: "Cardiology Specialist",
-    doctorImage:
-      "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=300&q=80",
-    patientImage:
-      "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80",
+    doctorName: remoteUserName || "Dr. John Carter",
+    doctorSpecialty: "Cardiologist",
   });
 
-  // Add error state
   const [error, setError] = useState(null);
   const [isStartingCall, setIsStartingCall] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [isAcceptingCall, setIsAcceptingCall] = useState(false);
   const [callStatus, setCallStatus] = useState("Initializing...");
-  const [hasNavigatedToVideoCall, setHasNavigatedToVideoCall] = useState(false);
   const [showOnlineConsultation, setShowOnlineConsultation] = useState(false);
+  const [networkStatus, setNetworkStatus] = useState("connected");
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRinging, setIsRinging] = useState(false);
+  const [ringerVolume, setRingerVolume] = useState(0.5);
+  const [isMobile, setIsMobile] = useState(false);
+  const [acceptAttempted, setAcceptAttempted] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Refs
   const initializationDoneRef = useRef(false);
   const callStartedRef = useRef(false);
   const hasOfferRef = useRef(false);
-  const manualCallStateRef = useRef({
-    // MANUAL STATE for when WebRTC hook fails
-    isCallIncoming: false,
-    isCallDataReady: false,
-    remoteUserName: null,
-  });
+  const durationIntervalRef = useRef(null);
+  const waitingTimeoutRef = useRef(null);
+  const networkCheckRef = useRef(null);
+  const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const audioRef = useRef(null);
+  const ringtoneIntervalRef = useRef(null);
+  const acceptTimeoutRef = useRef(null);
+  const networkRetryRef = useRef(0);
 
-  // Use WebRTC hook - MODIFIED: Remove onCallActive callback
+  // WebRTC Hook
   const {
     localStream,
     remoteStream,
@@ -64,51 +88,162 @@ export default function Calling() {
     socket: socket,
     localUserId: user?.id,
     localUserName: user?.fullName || user?.email,
-    onCallEnd: () => {
-      console.log("📞 [Calling] Call ended via hook");
-
-      // Reset refs
-      callStartedRef.current = false;
-      initializationDoneRef.current = false;
-      hasOfferRef.current = false;
-      manualCallStateRef.current = {
-        isCallIncoming: false,
-        isCallDataReady: false,
-        remoteUserName: null,
-      };
-
-      // Hide online consultation and go back to dashboard
-      setShowOnlineConsultation(false);
-      setTimeout(() => {
-        navigateToDashboard();
-      }, 1000);
-    },
-    // REMOVED onCallActive callback - we'll handle it manually
+    onCallEnd: handleCallEnd,
   });
 
-  const localVideoRef = useRef(null);
-  const remoteVideoRef = useRef(null);
-  const durationIntervalRef = useRef(null);
-  const waitingTimeoutRef = useRef(null);
-  const socketCheckRef = useRef(null);
-
-  // Helper function to navigate to dashboard
-  const navigateToDashboard = () => {
-    console.log("🏠 [Calling] Navigating to dashboard");
+  // Helper functions
+  const navigateToDashboard = useCallback(() => {
     if (user?.role === "doctor") {
       navigate("/doctor/dashboard");
     } else {
       navigate("/patient/dashboard");
     }
+  }, [navigate, user?.role]);
+
+  function handleCallEnd() {
+    callStartedRef.current = false;
+    initializationDoneRef.current = false;
+    hasOfferRef.current = false;
+    setShowOnlineConsultation(false);
+    stopRingtone();
+    setIsProcessing(false);
+
+    setTimeout(() => {
+      navigateToDashboard();
+    }, 1500);
+  }
+
+  const formatDuration = useCallback((seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  }, []);
+
+  // Generate avatar URL
+  const getAvatarUrl = useCallback((name) => {
+    const encodedName = encodeURIComponent(name || "User");
+    return `https://ui-avatars.com/api/?name=${encodedName}&background=random&color=fff&size=256`;
+  }, []);
+
+  // Ringtone functions
+  const playRingtone = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = ringerVolume;
+      audioRef.current
+        .play()
+        .catch((e) => console.log("Ringtone play failed:", e));
+      setIsRinging(true);
+    }
+  }, [ringerVolume]);
+
+  const stopRingtone = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setIsRinging(false);
+    if (ringtoneIntervalRef.current) {
+      clearInterval(ringtoneIntervalRef.current);
+    }
+  }, []);
+
+  const handleVolumeChange = (e) => {
+    const volume = parseFloat(e.target.value);
+    setRingerVolume(volume);
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
   };
 
-  // Track call duration
+  // Check responsive
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Network monitoring with enhanced logic
+  useEffect(() => {
+    const checkNetworkStatus = () => {
+      if (!navigator.onLine) {
+        setNetworkStatus("disconnected");
+        setError("No internet connection. Please check your network.");
+        return;
+      }
+
+      if (socket && !socket.connected) {
+        setNetworkStatus("poor");
+        // Only show error if we're not already in a call attempt
+        if (!isProcessing && !callState.isCallActive) {
+          setError("Connection unstable. Trying to reconnect...");
+        }
+      } else {
+        setNetworkStatus("connected");
+        // Clear non-critical errors when connection is good
+        if (
+          error?.includes("Connection unstable") ||
+          error?.includes("trying to reconnect")
+        ) {
+          setError(null);
+        }
+      }
+    };
+
+    checkNetworkStatus();
+    networkCheckRef.current = setInterval(checkNetworkStatus, 3000);
+
+    window.addEventListener("online", checkNetworkStatus);
+    window.addEventListener("offline", checkNetworkStatus);
+
+    return () => {
+      if (networkCheckRef.current) clearInterval(networkCheckRef.current);
+      window.removeEventListener("online", checkNetworkStatus);
+      window.removeEventListener("offline", checkNetworkStatus);
+    };
+  }, [socket, error, isProcessing, callState.isCallActive]);
+
+  // Enhanced network recovery logic
   useEffect(() => {
     if (
-      (callState.isCallActive || manualCallStateRef.current.isCallIncoming) &&
-      !hasNavigatedToVideoCall
+      networkStatus === "poor" &&
+      !callState.isCallActive &&
+      acceptAttempted
     ) {
-      console.log("⏱️ [Calling] Starting call timer");
+      // Try to recover network for call acceptance
+      const recoverNetwork = async () => {
+        networkRetryRef.current++;
+
+        if (networkRetryRef.current <= 3) {
+          setError(
+            `Network unstable. Retrying... (${networkRetryRef.current}/3)`
+          );
+
+          // Wait a bit then check again
+          setTimeout(() => {
+            if (socket && !socket.connected) {
+              socket.connect();
+            }
+          }, 1000 * networkRetryRef.current);
+        } else {
+          setError(
+            "Network connection failed after multiple attempts. Please check your internet."
+          );
+          setAcceptAttempted(false);
+          setIsProcessing(false);
+          networkRetryRef.current = 0;
+        }
+      };
+
+      recoverNetwork();
+    }
+  }, [networkStatus, callState.isCallActive, acceptAttempted, socket]);
+
+  // Call duration timer
+  useEffect(() => {
+    if (callState.isCallActive && !showOnlineConsultation) {
       setCallDuration(0);
       durationIntervalRef.current = setInterval(() => {
         setCallDuration((prev) => prev + 1);
@@ -125,274 +260,145 @@ export default function Calling() {
         clearInterval(durationIntervalRef.current);
       }
     };
-  }, [callState.isCallActive, hasNavigatedToVideoCall]);
+  }, [callState.isCallActive, showOnlineConsultation]);
 
-  // Update call status based on callState OR manual state
+  // Update call status and handle ringtone
   useEffect(() => {
-    console.log("🔄 [Calling] Updating call status", {
-      callState,
-      manualState: manualCallStateRef.current,
-      userRole: user?.role,
-    });
-
-    // Use manual state if WebRTC hook isn't working
-    const effectiveCallState = {
-      ...callState,
-      ...(manualCallStateRef.current.isCallIncoming
-        ? {
-            isCallIncoming: true,
-            isCallDataReady: manualCallStateRef.current.isCallDataReady,
-            remoteUserName:
-              manualCallStateRef.current.remoteUserName ||
-              callState.remoteUserName,
-          }
-        : {}),
-    };
-
-    // NEW: Show OnlineConsultation when call is active
-    if (effectiveCallState.isCallActive && !showOnlineConsultation) {
-      console.log("✅ [Calling] Call is active, showing OnlineConsultation");
+    if (callState.isCallActive && !showOnlineConsultation) {
       setShowOnlineConsultation(true);
       setCallStatus("Connected");
-    } else if (
-      effectiveCallState.isCallIncoming &&
-      effectiveCallState.isCallDataReady
-    ) {
-      setCallStatus("📞 Incoming call ready to accept!");
-    } else if (
-      effectiveCallState.isCallIncoming &&
-      !effectiveCallState.isCallDataReady
-    ) {
-      setCallStatus("Processing call...");
-    } else if (effectiveCallState.isCallOutgoing) {
-      setCallStatus("Calling...");
+      stopRingtone();
+      setIsProcessing(false);
+      setAcceptAttempted(false);
+      return;
+    }
+
+    let status = "Ready";
+
+    if (callState.isCallIncoming && callState.isCallDataReady) {
+      status = "Incoming call ready";
+      // Play ringtone for incoming call
+      if (!isRinging) {
+        playRingtone();
+      }
+    } else if (callState.isCallIncoming) {
+      status = "Processing call...";
+    } else if (callState.isCallOutgoing) {
+      status = "Calling...";
+      // Play ringtone for outgoing call (ringing tone)
+      if (!isRinging) {
+        playRingtone();
+      }
     } else if (user?.role === "patient") {
-      if (hasOfferRef.current && manualCallStateRef.current.isCallIncoming) {
-        setCallStatus("📞 Incoming call ready to accept!");
-      } else if (hasOfferRef.current) {
-        setCallStatus("📞 Processing incoming call...");
+      if (hasOfferRef.current) {
+        status = "Processing call...";
       } else if (isIncoming === true) {
-        setCallStatus("Waiting for doctor to start call...");
-      } else {
-        setCallStatus("Ready");
+        status = "Waiting for doctor...";
       }
     } else if (user?.role === "doctor" && isIncoming === false) {
-      setCallStatus("Ready to start call");
-    } else {
-      setCallStatus("Ready");
+      status = "Ready to start call";
     }
-  }, [callState, user, isIncoming, showOnlineConsultation]);
 
-  // Set up video streams
+    setCallStatus(status);
+  }, [
+    callState,
+    user?.role,
+    isIncoming,
+    showOnlineConsultation,
+    playRingtone,
+    stopRingtone,
+    isRinging,
+  ]);
+
+  // Setup video streams
   useEffect(() => {
     if (localStream && localVideoRef.current) {
-      console.log("🎥 [Calling] Setting up local video");
       localVideoRef.current.srcObject = localStream;
     }
   }, [localStream]);
 
   useEffect(() => {
     if (remoteStream && remoteVideoRef.current) {
-      console.log("🎥 [Calling] Setting up remote video");
       remoteVideoRef.current.srcObject = remoteStream;
     }
   }, [remoteStream]);
 
-  // Check socket connection status
-  useEffect(() => {
-    if (!socket) {
-      console.log("❌ [Calling] No socket available");
-      setError("No connection to server. Please check your internet.");
-      return;
-    }
-
-    console.log("🔌 [Calling] Socket status:", {
-      connected: socket.connected,
-      id: socket.id,
-    });
-
-    if (!socket.connected) {
-      console.log(
-        "⚠️ [Calling] Socket not connected, attempting to connect..."
-      );
-      socket.connect();
-    }
-
-    socketCheckRef.current = setInterval(() => {
-      if (!socket.connected) {
-        console.log("⚠️ [Calling] Socket disconnected, reconnecting...");
-        socket.connect();
-      }
-    }, 5000);
-
-    return () => {
-      if (socketCheckRef.current) {
-        clearInterval(socketCheckRef.current);
-      }
-    };
-  }, [socket]);
-
-  // Clean up on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      console.log("🧹 [Calling] Cleaning up timeouts");
-      if (waitingTimeoutRef.current) {
-        clearTimeout(waitingTimeoutRef.current);
-      }
-      if (socketCheckRef.current) {
-        clearInterval(socketCheckRef.current);
-      }
-      if (durationIntervalRef.current) {
+      if (waitingTimeoutRef.current) clearTimeout(waitingTimeoutRef.current);
+      if (networkCheckRef.current) clearInterval(networkCheckRef.current);
+      if (durationIntervalRef.current)
         clearInterval(durationIntervalRef.current);
-      }
-
+      if (ringtoneIntervalRef.current)
+        clearInterval(ringtoneIntervalRef.current);
+      if (acceptTimeoutRef.current) clearTimeout(acceptTimeoutRef.current);
       initializationDoneRef.current = false;
       callStartedRef.current = false;
       hasOfferRef.current = false;
+      stopRingtone();
+      setIsProcessing(false);
+      setAcceptAttempted(false);
     };
-  }, []);
+  }, [stopRingtone]);
 
-  // CRITICAL FIX: Direct WebRTC offer processing
+  // Process offer for patient
   useEffect(() => {
-    console.log("📍 [Calling] Processing offer effect");
-    console.log("User role:", user?.role);
-    console.log("Has offer?", !!offer);
-    console.log("Offer data:", offer);
-
     if (user?.role === "patient" && offer && !hasOfferRef.current) {
-      console.log("🚨 [Calling] PATIENT: Processing offer from location state");
       hasOfferRef.current = true;
 
-      // Try to use prepareForIncomingCall first
       if (prepareForIncomingCall) {
-        console.log("📤 [Calling] Using prepareForIncomingCall");
         const callData = {
           from: remoteUserId,
           fromName: remoteUserName || "Doctor",
           offer: offer,
         };
-
-        const success = prepareForIncomingCall(callData);
-        console.log("prepareForIncomingCall result:", success);
-      } else {
-        console.log("❌ [Calling] prepareForIncomingCall not available");
+        prepareForIncomingCall(callData);
       }
 
-      // MANUAL FALLBACK: Set manual state if WebRTC hook doesn't update
-      console.log("🔄 [Calling] Setting manual call state as fallback");
-      manualCallStateRef.current = {
-        isCallIncoming: true,
-        isCallDataReady: true,
-        remoteUserName: remoteUserName || "Doctor",
-      };
-
-      // Check after 1 second if WebRTC state updated
-      setTimeout(() => {
-        console.log("⏰ [Calling] Checking if WebRTC state updated...");
-        console.log("callState.isCallIncoming:", callState.isCallIncoming);
-        console.log("manualCallStateRef.current:", manualCallStateRef.current);
-
-        if (!callState.isCallIncoming) {
-          console.log(
-            "⚠️ [Calling] WebRTC state not updated, using manual state"
-          );
-        } else {
-          console.log("✅ [Calling] WebRTC state updated successfully");
-        }
-      }, 1000);
+      setCallInfo((prev) => ({
+        ...prev,
+        doctorName: remoteUserName || "Doctor",
+      }));
     }
-  }, [
-    user,
-    offer,
-    remoteUserId,
-    remoteUserName,
-    prepareForIncomingCall,
-    callState,
-  ]);
+  }, [user, offer, remoteUserId, remoteUserName, prepareForIncomingCall]);
 
-  // Main initialization effect
+  // Main initialization
   useEffect(() => {
-    console.log("📍 [Calling] Main initialization effect");
-    console.log("User role:", user?.role);
-    console.log("Location state:", {
-      isIncoming,
-      remoteUserId,
-      remoteUserName,
-    });
+    if (initializationDoneRef.current) return;
+    initializationDoneRef.current = true;
 
-    if (initializationDoneRef.current) {
-      console.log("⏭️ [Calling] Already initialized, skipping");
+    // Patient waiting for call
+    if (user?.role === "patient" && isIncoming === true && !offer) {
+      waitingTimeoutRef.current = setTimeout(() => {
+        if (!callState.isCallIncoming && !hasOfferRef.current) {
+          setCallStatus("Call timed out");
+          setError("No call received. Please ask the doctor to call again.");
+          setTimeout(() => navigateToDashboard(), 3000);
+        }
+      }, 30000);
+    }
+  }, [user, isIncoming, offer, callState.isCallIncoming, navigateToDashboard]);
+
+  // Enhanced event handlers with network recovery
+  const handleStartDoctorCall = async () => {
+    if (networkStatus === "disconnected") {
+      setError("No internet connection. Please check your network.");
       return;
     }
 
-    initializationDoneRef.current = true;
-
-    if (waitingTimeoutRef.current) {
-      clearTimeout(waitingTimeoutRef.current);
-      waitingTimeoutRef.current = null;
-    }
-
-    // PATIENT: Waiting for call
-    if (user?.role === "patient" && isIncoming === true) {
-      console.log("🚨 [Calling] PATIENT: Incoming call flow");
-
-      if (!offer) {
-        console.log("⏳ [Calling] Patient waiting for doctor to call");
-
-        waitingTimeoutRef.current = setTimeout(() => {
-          console.log("⏰ [Calling] No call received within 30s");
-          if (!callState.isCallIncoming && !hasOfferRef.current) {
-            setCallStatus("Call timed out");
-            setError("No call received. Please ask the doctor to call again.");
-
-            setTimeout(() => {
-              navigateToDashboard();
-            }, 3000);
-          }
-        }, 30000);
-      }
-    }
-
-    // DOCTOR: Ready to call
-    else if (
-      user?.role === "doctor" &&
-      isIncoming === false &&
-      remoteUserId &&
-      !callStartedRef.current
-    ) {
-      console.log("👨‍⚕️ [Calling] DOCTOR: Ready to call patient");
-    }
-
-    return () => {
-      if (waitingTimeoutRef.current) {
-        clearTimeout(waitingTimeoutRef.current);
-        waitingTimeoutRef.current = null;
-      }
-    };
-  }, [user, isIncoming, remoteUserId, remoteUserName, offer, callState]);
-
-  // Function for doctor to start the call
-  const handleStartDoctorCall = async () => {
-    console.log("👨‍⚕️ [Calling] Doctor starting call...");
-
-    if (!socket || !socket.connected) {
-      console.log("❌ [Calling] Socket not connected");
-      setError(
-        "Not connected to server. Please check your internet connection."
-      );
+    if (!socket?.connected) {
+      setError("Not connected to server. Trying to reconnect...");
+      socket.connect();
       return;
     }
 
     if (!remoteUserId) {
-      console.log("❌ [Calling] No patient ID");
-      setError("Patient information is missing. Please go back and try again.");
+      setError("Patient information is missing.");
       return;
     }
 
-    if (callStartedRef.current) {
-      console.log("⚠️ [Calling] Call already started");
-      return;
-    }
+    if (callStartedRef.current) return;
 
     callStartedRef.current = true;
     setIsStartingCall(true);
@@ -400,109 +406,105 @@ export default function Calling() {
     setCallStatus("Starting call...");
 
     try {
-      console.log("✅ [Calling] Socket is connected, starting call...");
       await startCall(remoteUserId, remoteUserName);
-
-      console.log("✅ [Calling] Call initiated successfully");
-      setError(null);
       setCallStatus("Calling patient...");
 
       waitingTimeoutRef.current = setTimeout(() => {
-        if (!callState.isCallActive && !callState.callAccepted) {
-          console.log("⏰ [Calling] Patient didn't answer in time");
+        if (!callState.isCallActive) {
           setError("Patient didn't answer. Please try again.");
           setCallStatus("Call timed out");
           callStartedRef.current = false;
+          stopRingtone();
         }
       }, 45000);
-    } catch (error) {
-      console.error("❌ [Calling] Error starting call:", error);
-      setError(error.message || "Failed to start call");
+    } catch (err) {
+      setError(
+        "Failed to start call. Please check your connection and try again."
+      );
       setCallStatus("Call failed");
       callStartedRef.current = false;
+      stopRingtone();
     } finally {
       setIsStartingCall(false);
     }
   };
 
-  // Update callInfo
-  useEffect(() => {
-    if (
-      user?.role === "patient" &&
-      (callState.remoteUserName ||
-        remoteUserName ||
-        manualCallStateRef.current.remoteUserName)
-    ) {
-      setCallInfo((prev) => ({
-        ...prev,
-        doctorName:
-          callState.remoteUserName ||
-          manualCallStateRef.current.remoteUserName ||
-          remoteUserName ||
-          "Doctor",
-      }));
-    } else if (user?.role === "doctor" && callState.remoteUserName) {
-      setCallInfo((prev) => ({
-        ...prev,
-        doctorName: user?.fullName || "Doctor",
-      }));
-    }
-  }, [callState.remoteUserName, user, remoteUserName]);
-
-  // SIMPLIFIED ACCEPT FUNCTION
   const handleAccept = async () => {
-    console.log("✅ [Calling] Accept button clicked");
+    // Prevent multiple accept attempts
+    if (isAcceptingCall || isProcessing || callState.isCallActive) return;
 
-    if (isAcceptingCall || callState.isCallActive || hasNavigatedToVideoCall) {
-      console.log("⚠️ [Calling] Already accepting or in call");
-      return;
-    }
-
-    // Check if we can accept (either via WebRTC hook or manual state)
-    const canAccept = callState.isCallIncoming && callState.isCallDataReady;
-    const canAcceptManual =
-      manualCallStateRef.current.isCallIncoming &&
-      manualCallStateRef.current.isCallDataReady;
-
-    if (!canAccept && !canAcceptManual) {
-      console.log("❌ [Calling] No call to accept");
+    if (!callState.isCallIncoming || !callState.isCallDataReady) {
       setError("No call to accept. Please wait for the call to be ready.");
       return;
     }
 
+    // Check network before accepting
+    if (networkStatus === "disconnected") {
+      setError("No internet connection. Cannot accept call.");
+      return;
+    }
+
+    if (networkStatus === "poor") {
+      setError("Poor network connection. Call quality may be affected.");
+      // Continue anyway but warn user
+    }
+
     setIsAcceptingCall(true);
+    setIsProcessing(true);
+    setAcceptAttempted(true);
     setError(null);
     setCallStatus("Accepting call...");
+    stopRingtone();
+
+    // Clear any previous timeout
+    if (acceptTimeoutRef.current) {
+      clearTimeout(acceptTimeoutRef.current);
+    }
+
+    // Set a timeout for accept call
+    acceptTimeoutRef.current = setTimeout(() => {
+      if (!callState.isCallActive && !callState.callAccepted) {
+        setError(
+          "Accepting call is taking longer than expected. Please wait..."
+        );
+      }
+    }, 10000);
 
     try {
-      // Try to use WebRTC acceptCall first
-      if (callState.isCallIncoming && callState.isCallDataReady) {
-        console.log("✅ [Calling] Accepting via WebRTC hook");
-        await acceptCall();
-      } else if (manualCallStateRef.current.isCallIncoming) {
-        console.log("⚠️ [Calling] WebRTC hook not ready, trying manual accept");
-        // If WebRTC hook isn't ready, we need to trigger it manually
-        // This is a fallback - in a real fix, you'd need to fix the WebRTC hook
-        setError("WebRTC connection issue. Please try refreshing the page.");
-        setIsAcceptingCall(false);
-        return;
-      }
-
-      console.log("✅ [Calling] Call accepted successfully");
+      await acceptCall();
       setCallStatus("Call connected");
-      // Don't set showOnlineConsultation here - it will be set by useEffect when callState.isCallActive becomes true
+      // Clear timeout on success
+      if (acceptTimeoutRef.current) {
+        clearTimeout(acceptTimeoutRef.current);
+      }
     } catch (error) {
-      console.error("❌ [Calling] Error accepting call:", error);
-      setError(error.message || "Failed to accept call");
-      setCallStatus("Accept failed");
+      console.error("Accept call error:", error);
+
+      if (networkStatus === "poor" || networkStatus === "disconnected") {
+        setError("Network issue. Trying to reconnect and accept call...");
+        // Auto-retry once after network check
+        setTimeout(() => {
+          if (networkStatus === "connected") {
+            handleAccept(); // Retry
+          } else {
+            setError(
+              "Failed to accept call due to network issues. Please try again."
+            );
+            setIsProcessing(false);
+            setAcceptAttempted(false);
+          }
+        }, 2000);
+      } else {
+        setError("Failed to accept call. Please try again.");
+        setIsProcessing(false);
+        setAcceptAttempted(false);
+      }
     } finally {
       setIsAcceptingCall(false);
     }
   };
 
   const handleDecline = () => {
-    console.log("❌ [Calling] Decline button clicked");
-
     if (waitingTimeoutRef.current) {
       clearTimeout(waitingTimeoutRef.current);
       waitingTimeoutRef.current = null;
@@ -512,11 +514,9 @@ export default function Calling() {
     callStartedRef.current = false;
     initializationDoneRef.current = false;
     hasOfferRef.current = false;
-    manualCallStateRef.current = {
-      isCallIncoming: false,
-      isCallDataReady: false,
-      remoteUserName: null,
-    };
+    stopRingtone();
+    setIsProcessing(false);
+    setAcceptAttempted(false);
 
     setTimeout(() => {
       navigateToDashboard();
@@ -524,183 +524,276 @@ export default function Calling() {
   };
 
   const handleEndCall = () => {
-    console.log("📞 [Calling] End call button clicked");
-
     if (waitingTimeoutRef.current) {
       clearTimeout(waitingTimeoutRef.current);
       waitingTimeoutRef.current = null;
     }
 
     endCall();
-    callStartedRef.current = false;
-    initializationDoneRef.current = false;
-    hasOfferRef.current = false;
-    manualCallStateRef.current = {
-      isCallIncoming: false,
-      isCallDataReady: false,
-      remoteUserName: null,
-    };
     setShowOnlineConsultation(false);
+    stopRingtone();
+    setIsProcessing(false);
+    setAcceptAttempted(false);
   };
 
   const handleRetryCall = () => {
-    console.log("🔄 [Calling] Retrying call...");
     setError(null);
     setCallStatus("Retrying...");
-    setShowOnlineConsultation(false);
-    callStartedRef.current = false;
-    initializationDoneRef.current = false;
-    hasOfferRef.current = false;
-    manualCallStateRef.current = {
-      isCallIncoming: false,
-      isCallDataReady: false,
-      remoteUserName: null,
-    };
+    setRetryCount((prev) => prev + 1);
+    stopRingtone();
+    setIsProcessing(false);
+    setAcceptAttempted(false);
+
+    if (retryCount >= 2) {
+      setError("Maximum retries reached. Please try again later.");
+      return;
+    }
 
     setTimeout(() => {
-      window.location.reload();
-    }, 500);
+      if (user?.role === "doctor") {
+        handleStartDoctorCall();
+      } else {
+        window.location.reload();
+      }
+    }, 1000);
   };
 
   const handleGoBack = () => {
-    console.log("⬅️ [Calling] Going back to dashboard");
-
     if (waitingTimeoutRef.current) {
       clearTimeout(waitingTimeoutRef.current);
     }
-
+    stopRingtone();
     navigateToDashboard();
   };
 
-  // Format call duration
-  const formatDuration = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
+  // Helper functions
+  const getDisplayName = () => {
+    if (callState.remoteUserName) return callState.remoteUserName;
+    if (user?.role === "patient") return callInfo.doctorName;
+    if (remoteUserName) return remoteUserName;
+    return user?.role === "patient" ? "Doctor" : "Patient";
   };
 
-  // Determine which buttons to show - SIMPLIFIED
-  const renderButtons = () => {
-    console.log("🔘 [Calling] Rendering buttons", {
-      error,
-      callState,
-      manualState: manualCallStateRef.current,
-      userRole: user?.role,
-      hasOffer: hasOfferRef.current,
-      showOnlineConsultation,
-    });
+  const getAvatarForParticipant = () => {
+    const name = getDisplayName();
+    return getAvatarUrl(name);
+  };
 
-    // If showing OnlineConsultation, don't show any buttons
-    if (showOnlineConsultation) {
-      return null;
+  const getStatusText = () => {
+    if (showOnlineConsultation)
+      return `Connected (${formatDuration(callDuration)})`;
+    if (callState.isCallActive)
+      return `Connecting... (${formatDuration(callDuration)})`;
+    if (callState.isCallIncoming) return "Incoming Call";
+    if (callState.isCallOutgoing) return "Calling...";
+    if (user?.role === "doctor" && isIncoming === false)
+      return isStartingCall ? "Starting call..." : "Ready to call";
+    if (user?.role === "patient" && isIncoming === true)
+      return hasOfferRef.current
+        ? "Processing call..."
+        : "Waiting for doctor...";
+    return "Ready";
+  };
+
+  const getNetworkIcon = () => {
+    switch (networkStatus) {
+      case "connected":
+        return <Wifi className="w-4 h-4 text-green-500" />;
+      case "poor":
+        return <Wifi className="w-4 h-4 text-yellow-500" />;
+      case "disconnected":
+        return <WifiOff className="w-4 h-4 text-red-500" />;
+      default:
+        return <Wifi className="w-4 h-4 text-gray-500" />;
     }
+  };
 
-    // SHOW ERROR STATE
+  const getNetworkText = () => {
+    switch (networkStatus) {
+      case "connected":
+        return "Connected";
+      case "poor":
+        return "Unstable";
+      case "disconnected":
+        return "Disconnected";
+      default:
+        return "Unknown";
+    }
+  };
+
+  // Enhanced render buttons with network awareness - ALL BUTTONS CENTERED
+  const renderButtons = () => {
+    if (showOnlineConsultation) return null;
+
+    // Error state
     if (
       error &&
       !error.includes("processing") &&
       !error.includes("setting up")
     ) {
       return (
-        <div className="flex flex-col gap-6 mt-10">
+        <div className="flex flex-col items-center justify-center gap-6 mt-10 w-full max-w-md mx-auto">
           <div
-            className={`${
+            className={`px-6 py-4 rounded-xl w-full text-center ${
               error.includes("timeout") ||
               error.includes("cancelled") ||
               error.includes("timed out")
-                ? "text-yellow-600 bg-yellow-50 border-yellow-200"
-                : "text-red-600 bg-red-50 border-red-200"
-            } border rounded-lg p-4 max-w-md`}
+                ? "bg-yellow-50 border border-yellow-200 text-yellow-700"
+                : error.includes("Network") || error.includes("connection")
+                ? "bg-orange-50 border border-orange-200 text-orange-700"
+                : "bg-red-50 border border-red-200 text-red-700"
+            }`}
           >
-            <div className="font-medium mb-1">Call Failed</div>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              {error.includes("timeout") ||
+              error.includes("cancelled") ||
+              error.includes("timed out") ? (
+                <AlertTriangle className="w-5 h-5" />
+              ) : error.includes("Network") || error.includes("connection") ? (
+                <WifiOff className="w-5 h-5" />
+              ) : (
+                <AlertCircle className="w-5 h-5" />
+              )}
+              <div className="font-medium">
+                {error.includes("timeout")
+                  ? "Call Timeout"
+                  : error.includes("Network") || error.includes("connection")
+                  ? "Network Issue"
+                  : "Call Failed"}
+              </div>
+            </div>
             <div className="text-sm">{error}</div>
           </div>
 
           {user?.role === "doctor" ? (
-            <div className="flex gap-6">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full">
               <button
                 onClick={handleRetryCall}
-                className="px-8 py-3 bg-blue-600 text-white text-lg rounded-full shadow-md hover:opacity-90 transition-opacity flex items-center gap-2"
-                disabled={isStartingCall}
+                disabled={isStartingCall || retryCount >= 2}
+                className="px-8 py-3 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[140px]"
               >
                 {isStartingCall ? (
                   <>
-                    <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
                     Retrying...
                   </>
                 ) : (
                   "Retry Call"
                 )}
               </button>
-
               <button
                 onClick={handleGoBack}
-                className="px-8 py-3 bg-gray-600 text-white text-lg rounded-full shadow-md hover:opacity-90 transition-opacity"
+                className="px-8 py-3 bg-gray-600 text-white text-sm font-medium rounded-full hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 min-w-[140px]"
               >
+                <X className="w-4 h-4" />
                 Go Back
               </button>
             </div>
           ) : (
-            <button
-              onClick={handleGoBack}
-              className="px-8 py-3 bg-gray-600 text-white text-lg rounded-full shadow-md hover:opacity-90 transition-opacity"
-            >
-              Return to Dashboard
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full">
+              {(error.includes("Network") || error.includes("connection")) && (
+                <button
+                  onClick={handleRetryCall}
+                  disabled={retryCount >= 2}
+                  className="px-8 py-3 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 min-w-[140px]"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Retry
+                </button>
+              )}
+              <button
+                onClick={handleGoBack}
+                className="px-8 py-3 bg-gray-600 text-white text-sm font-medium rounded-full hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 min-w-[140px]"
+              >
+                <X className="w-4 h-4" />
+                Return to Dashboard
+              </button>
+            </div>
           )}
         </div>
       );
     }
 
-    // PATIENT: Has incoming call (either from WebRTC or manual state)
-    const hasIncomingCall =
-      callState.isCallIncoming || manualCallStateRef.current.isCallIncoming;
-    const isCallReady =
-      (callState.isCallIncoming && callState.isCallDataReady) ||
-      (manualCallStateRef.current.isCallIncoming &&
-        manualCallStateRef.current.isCallDataReady);
-
-    if (user?.role === "patient" && hasIncomingCall && isCallReady) {
-      const remoteName =
-        callState.remoteUserName ||
-        manualCallStateRef.current.remoteUserName ||
-        remoteUserName ||
-        "Doctor";
+    // Patient: Incoming call ready
+    if (
+      user?.role === "patient" &&
+      callState.isCallIncoming &&
+      callState.isCallDataReady
+    ) {
+      // Check if accept was attempted but failed
+      const isAcceptFailed =
+        acceptAttempted && !callState.isCallActive && !isProcessing;
 
       return (
-        <div className="flex flex-col items-center gap-6 mt-10">
-          <div className="text-lg text-green-600 font-medium animate-pulse">
-            📞 Incoming call from {remoteName}
+        <div className="flex flex-col items-center justify-center gap-6 mt-10 w-full max-w-md mx-auto">
+          <div className="text-lg text-green-600 font-medium flex items-center justify-center gap-2">
+            <Phone className="w-5 h-5 animate-pulse" />
+            Incoming call from {getDisplayName()}
           </div>
 
-          {isAcceptingCall || isRequestingMedia ? (
-            <div
-              className="flex items-center gap-3 px-10 py-3 text-white text-lg rounded-full shadow-md"
-              style={{ backgroundColor: "#1DA851" }}
-            >
-              <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
-              {isRequestingMedia
-                ? "Requesting camera/mic..."
-                : "Connecting call..."}
+          {/* Network warning for poor connection */}
+          {networkStatus === "poor" && (
+            <div className="flex items-center justify-center gap-2 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 text-sm w-full">
+              <Info className="w-4 h-4" />
+              Poor network connection. Call quality may be affected.
+            </div>
+          )}
+
+          {networkStatus === "disconnected" && (
+            <div className="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm w-full">
+              <WifiOff className="w-4 h-4" />
+              No internet connection. Cannot accept call.
+            </div>
+          )}
+
+          {isAcceptingCall || isRequestingMedia || isProcessing ? (
+            <div className="px-10 py-3 bg-green-600 text-white text-sm font-medium rounded-full flex items-center justify-center gap-2 w-full max-w-xs mx-auto">
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              {isAcceptingCall
+                ? "Accepting call..."
+                : isRequestingMedia
+                ? "Requesting media..."
+                : "Processing..."}
+            </div>
+          ) : isAcceptFailed ? (
+            <div className="flex flex-col items-center justify-center gap-4 w-full">
+              <div className="text-sm text-red-600 text-center">
+                Call acceptance failed. Please try again.
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full">
+                <button
+                  onClick={handleAccept}
+                  disabled={networkStatus === "disconnected"}
+                  className="px-10 py-3 bg-green-600 text-white text-sm font-medium rounded-full hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 min-w-[140px]"
+                >
+                  <Phone className="w-4 h-4" />
+                  Try Again
+                </button>
+                <button
+                  onClick={handleDecline}
+                  className="px-10 py-3 bg-red-600 text-white text-sm font-medium rounded-full hover:bg-red-700 transition-colors flex items-center justify-center gap-2 min-w-[140px]"
+                >
+                  <PhoneOff className="w-4 h-4" />
+                  Decline
+                </button>
+              </div>
             </div>
           ) : (
-            <div className="flex gap-6">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full">
               <button
                 onClick={handleAccept}
-                className="px-10 py-3 text-white text-lg rounded-full shadow-md hover:opacity-90 transition-opacity animate-pulse"
-                style={{ backgroundColor: "#1DA851" }}
-                disabled={isAcceptingCall}
+                disabled={networkStatus === "disconnected" || isProcessing}
+                className="px-10 py-3 bg-green-600 text-white text-sm font-medium rounded-full hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[140px]"
               >
+                <Phone className="w-4 h-4" />
                 Accept Call
               </button>
-
               <button
                 onClick={handleDecline}
-                className="px-10 py-3 text-white text-lg rounded-full shadow-md hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: "#D84343" }}
+                disabled={isProcessing}
+                className="px-10 py-3 bg-red-600 text-white text-sm font-medium rounded-full hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 min-w-[140px]"
               >
+                <PhoneOff className="w-4 h-4" />
                 Decline
               </button>
             </div>
@@ -709,214 +802,125 @@ export default function Calling() {
       );
     }
 
-    // PATIENT: Has offer but call not ready yet
-    else if (user?.role === "patient" && hasOfferRef.current && !isCallReady) {
-      return (
-        <div className="flex flex-col items-center gap-6 mt-10">
-          <div className="text-lg text-green-600 font-medium">
-            📞 Incoming call from {remoteUserName || "Doctor"}
-          </div>
-
-          <div
-            className="flex items-center gap-3 px-10 py-3 text-white text-lg rounded-full shadow-md mb-4"
-            style={{ backgroundColor: "#FFA500" }}
-          >
-            <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
-            Processing call...
-          </div>
-
-          <div className="text-sm text-yellow-600 text-center max-w-md">
-            The call is being set up. Please wait a moment...
-          </div>
-
-          <button
-            onClick={handleDecline}
-            className="px-10 py-3 text-white text-lg rounded-full shadow-md hover:opacity-90 transition-opacity mt-4"
-            style={{ backgroundColor: "#D84343" }}
-          >
-            Cancel
-          </button>
-        </div>
-      );
-    }
-
-    // PATIENT: Waiting for doctor to call (no offer yet)
-    else if (
+    // Patient: Waiting for call
+    if (
       user?.role === "patient" &&
       isIncoming === true &&
       !hasOfferRef.current
     ) {
       return (
-        <div className="flex flex-col items-center gap-6 mt-10">
-          <div className="text-sm text-gray-600">{callStatus}</div>
-          <div className="flex items-center gap-3 px-10 py-3 text-gray-500 text-lg rounded-full shadow-md">
-            <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></span>
+        <div className="flex flex-col items-center justify-center gap-6 mt-10 w-full max-w-md mx-auto">
+          <div className="text-sm text-gray-600 text-center">{callStatus}</div>
+          <div className="px-10 py-3 text-gray-500 text-sm font-medium rounded-full flex items-center justify-center gap-2 w-full max-w-xs mx-auto">
+            <RefreshCw className="w-4 h-4 animate-spin" />
             Waiting for doctor to call...
           </div>
           <button
             onClick={handleGoBack}
-            className="px-10 py-3 text-white text-lg rounded-full shadow-md hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: "#D84343" }}
+            className="px-10 py-3 bg-gray-600 text-white text-sm font-medium rounded-full hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 min-w-[140px]"
           >
+            <X className="w-4 h-4" />
             Cancel
           </button>
         </div>
       );
     }
 
-    // DOCTOR: Calling patient (outgoing call)
-    else if (user?.role === "doctor" && callState.isCallOutgoing) {
+    // Doctor: Calling patient
+    if (user?.role === "doctor" && callState.isCallOutgoing) {
       return (
-        <div className="flex gap-6 mt-10">
-          <div
-            className="px-10 py-3 text-white text-lg rounded-full shadow-md flex items-center gap-2"
-            style={{ backgroundColor: "#1DA851" }}
-          >
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-10 w-full max-w-md mx-auto">
+          <div className="px-10 py-3 bg-blue-600 text-white text-sm font-medium rounded-full flex items-center justify-center gap-2 w-full max-w-xs sm:w-auto">
             {isStartingCall ? (
               <>
-                <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+                <RefreshCw className="w-4 h-4 animate-spin" />
                 Starting call...
               </>
             ) : (
               <>
-                <span className="animate-pulse">📞</span>
+                <Phone className="w-4 h-4 animate-pulse" />
                 Calling patient...
               </>
             )}
           </div>
-
           <button
             onClick={handleDecline}
-            className="px-10 py-3 text-white text-lg rounded-full shadow-md hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: "#D84343" }}
+            className="px-10 py-3 bg-red-600 text-white text-sm font-medium rounded-full hover:bg-red-700 transition-colors flex items-center justify-center gap-2 w-full max-w-xs sm:w-auto min-w-[140px]"
           >
-            Cancel Call
+            <PhoneOff className="w-4 h-4" />
+            Cancel
           </button>
         </div>
       );
     }
 
-    // DOCTOR: Ready to start call (hasn't started yet)
-    else if (
+    // Doctor: Ready to start call
+    if (
       user?.role === "doctor" &&
       isIncoming === false &&
       !callState.isCallOutgoing
     ) {
       return (
-        <div className="flex gap-6 mt-10">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-10 w-full max-w-md mx-auto">
           <button
             onClick={handleStartDoctorCall}
-            className="px-10 py-3 text-white text-lg rounded-full shadow-md hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: "#1DA851" }}
-            disabled={isStartingCall}
+            disabled={isStartingCall || networkStatus === "disconnected"}
+            className="px-10 py-3 bg-green-600 text-white text-sm font-medium rounded-full hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full max-w-xs sm:w-auto min-w-[140px]"
           >
             {isStartingCall ? (
-              <div className="flex items-center gap-2">
-                <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
                 Starting call...
-              </div>
+              </>
             ) : (
-              "Start Video Call"
+              <>
+                <Phone className="w-4 h-4" />
+                Start Video Call
+              </>
             )}
           </button>
-
           <button
             onClick={handleGoBack}
-            className="px-10 py-3 bg-gray-600 text-white text-lg rounded-full shadow-md hover:opacity-90 transition-opacity"
+            className="px-10 py-3 bg-gray-600 text-white text-sm font-medium rounded-full hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 w-full max-w-xs sm:w-auto min-w-[140px]"
           >
+            <X className="w-4 h-4" />
             Cancel
           </button>
         </div>
       );
     }
 
-    // ACTIVE CALL - Show End Call button with duration
-    else if (callState.isCallActive) {
+    // Active call (before OnlineConsultation)
+    if (callState.isCallActive) {
       return (
-        <div className="flex flex-col items-center gap-4 mt-10">
-          <div className="text-lg font-medium text-gray-700">
+        <div className="flex flex-col items-center justify-center gap-4 mt-10 w-full max-w-md mx-auto">
+          <div className="text-sm font-medium text-gray-700 flex items-center justify-center gap-2">
+            <CheckCircle className="w-4 h-4 text-green-500" />
             Connected - {formatDuration(callDuration)}
           </div>
           <button
             onClick={handleEndCall}
-            className="px-10 py-3 text-white text-lg rounded-full shadow-md hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: "#D84343" }}
+            className="px-10 py-3 bg-red-600 text-white text-sm font-medium rounded-full hover:bg-red-700 transition-colors flex items-center justify-center gap-2 w-full max-w-xs min-w-[140px]"
           >
+            <PhoneOff className="w-4 h-4" />
             End Call
           </button>
         </div>
       );
     }
 
-    // DEFAULT STATE
-    else {
-      return (
-        <div className="mt-10 px-10 py-3 text-gray-500 text-lg rounded-full shadow-md">
-          {callStatus}
-        </div>
-      );
-    }
+    // Default state
+    return (
+      <div className="mt-10 px-10 py-3 text-gray-500 text-sm font-medium rounded-full w-full max-w-xs mx-auto text-center">
+        {callStatus}
+      </div>
+    );
   };
 
-  // Determine display name
-  const getDisplayName = () => {
-    if (callState.remoteUserName) return callState.remoteUserName;
-    if (manualCallStateRef.current.remoteUserName)
-      return manualCallStateRef.current.remoteUserName;
-    if (user?.role === "patient") return callInfo.doctorName;
-    if (remoteUserName) return remoteUserName;
-    return user?.role === "patient" ? "Doctor" : "Patient";
-  };
-
-  // Determine display image
-  const getDisplayImage = () => {
-    if (user?.role === "patient") {
-      return callInfo.doctorImage;
-    } else {
-      return callInfo.patientImage;
-    }
-  };
-
-  // Determine status text for navbar
-  const getStatusText = () => {
-    if (showOnlineConsultation) {
-      return `Connected (${formatDuration(callDuration)})`;
-    }
-
-    if (callState.isCallActive) {
-      return `Connecting... (${formatDuration(callDuration)})`;
-    }
-
-    if (callState.isCallIncoming || manualCallStateRef.current.isCallIncoming) {
-      return "📞 Incoming Call!";
-    }
-
-    if (callState.isCallOutgoing) {
-      return "Calling patient...";
-    }
-
-    if (user?.role === "doctor" && isIncoming === false) {
-      return isStartingCall ? "Starting call..." : "Ready to call";
-    }
-
-    if (user?.role === "patient" && isIncoming === true) {
-      if (hasOfferRef.current) {
-        return "Processing call...";
-      } else {
-        return "Waiting for doctor...";
-      }
-    }
-
-    return "Ready";
-  };
-
-  // Render OnlineConsultation component when call is active
-  const renderOnlineConsultation = () => {
-    if (!showOnlineConsultation) return null;
-
+  // Render OnlineConsultation when call is active
+  if (showOnlineConsultation) {
     return (
       <OnlineConsultation
-        // Pass all the WebRTC props
         localStream={localStream}
         remoteStream={remoteStream}
         callState={callState}
@@ -927,91 +931,166 @@ export default function Calling() {
         toggleCamera={toggleCamera}
         isRequestingMedia={isRequestingMedia}
         startCall={startCall}
-        // Pass user info
         remoteUserId={remoteUserId}
         remoteUserName={getDisplayName()}
         userRole={user?.role}
         callStartedAt={new Date().toISOString()}
-        // Pass socket
         socket={socket}
       />
     );
-  };
-
-  // If showing OnlineConsultation, render only that
-  if (showOnlineConsultation) {
-    return renderOnlineConsultation();
   }
 
-  // Otherwise, render the calling interface
+  // Main calling interface - Responsive design
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Top Navbar */}
-      <header className="w-full bg-white shadow-sm py-4 px-8 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/847/847969.png"
-            alt="logo"
-            className="w-8 h-8"
-          />
-          <h1 className="text-lg font-semibold text-[#187BCD]">
-            Online Consultation
-          </h1>
+      {/* Hidden audio element for ringtone */}
+      <audio ref={audioRef} src="/ringtones/call-ringtone.mp3" loop>
+        <source src="/ringtones/call-ringtone.mp3" type="audio/mpeg" />
+        <source src="/ringtones/call-ringtone.ogg" type="audio/ogg" />
+      </audio>
+
+      {/* Header - Responsive */}
+      <header className="w-full bg-white shadow-sm py-3 px-4 sm:py-4 sm:px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+        <div className="flex items-center gap-3">
+          <div
+            className={`${
+              isMobile ? "w-8 h-8" : "w-10 h-10"
+            } bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center`}
+          >
+            <Phone className={isMobile ? "w-4 h-4" : "w-5 h-5"} />
+          </div>
+          <div>
+            <h1
+              className={`${
+                isMobile ? "text-base" : "text-lg"
+              } font-semibold text-gray-800`}
+            >
+              Online Consultation
+            </h1>
+            <div className="flex items-center gap-2 text-xs text-gray-600">
+              <Shield className="w-3 h-3 text-green-500" />
+              <span>Secure & Encrypted</span>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="text-sm text-gray-600">{getStatusText()}</div>
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                socket?.connected ? "bg-green-500" : "bg-red-500"
-              }`}
-            ></div>
-            <span className="text-xs">
-              {socket?.connected ? "Connected" : "Disconnected"}
-            </span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+          <div className="text-sm text-gray-600 flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            {formatDuration(callDuration)}
           </div>
+          <div className="flex items-center gap-2 text-sm">
+            {getNetworkIcon()}
+            <span>{getNetworkText()}</span>
+          </div>
+
+          {/* Ringtone volume control (visible when ringing) */}
+          {isRinging && (
+            <div className="flex items-center gap-2 mt-1 sm:mt-0">
+              <Bell className="w-4 h-4 text-blue-600 animate-pulse" />
+              <div className="flex items-center gap-1">
+                <Volume2 className="w-3 h-3 text-gray-500" />
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={ringerVolume}
+                  onChange={handleVolumeChange}
+                  className="w-12 sm:w-16 accent-blue-600"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
-      {/* Main Content - Only show when not in OnlineConsultation */}
-      <div className="flex flex-col items-center mt-10">
-        {/* Doctor/Patient Image based on role */}
-        <img
-          src={getDisplayImage()}
-          alt={user?.role === "patient" ? "Doctor" : "Patient"}
-          className="w-28 h-28 rounded-full object-cover shadow-md"
-        />
+      {/* Main Content - Responsive with centered layout */}
+      <div className="flex flex-col items-center justify-center flex-1 px-4 py-4 sm:py-8">
+        {/* Participant Avatar */}
+        <div className="relative mb-4 sm:mb-6">
+          <div
+            className={`${
+              isMobile ? "w-24 h-24" : "w-32 h-32"
+            } rounded-full overflow-hidden border-4 border-white shadow-xl`}
+          >
+            <img
+              src={getAvatarForParticipant()}
+              alt={getDisplayName()}
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-        {/* Name Display */}
-        <h2 className="text-2xl font-bold mt-4">{getDisplayName()}</h2>
-        <p className="text-gray-500 text-sm">
-          {user?.role === "patient" ? callInfo.doctorSpecialty : "Patient"}
+          {/* Ringing animation */}
+          {isRinging && (
+            <div className="absolute inset-0">
+              <div className="absolute inset-0 rounded-full border-4 border-blue-500 animate-ping opacity-20"></div>
+              <div
+                className="absolute inset-0 rounded-full border-4 border-blue-500 animate-ping opacity-20"
+                style={{ animationDelay: "0.5s" }}
+              ></div>
+              <div
+                className="absolute inset-0 rounded-full border-4 border-blue-500 animate-ping opacity-20"
+                style={{ animationDelay: "1s" }}
+              ></div>
+            </div>
+          )}
+        </div>
+
+        {/* Name and Role */}
+        <h2
+          className={`${
+            isMobile ? "text-xl" : "text-2xl"
+          } font-bold text-gray-800 text-center px-2`}
+        >
+          {getDisplayName()}
+        </h2>
+        <p className="text-gray-600 mt-1 text-center px-2">
+          {user?.role === "patient"
+            ? "Cardiologist • 15+ years experience"
+            : "Patient"}
         </p>
 
-        {/* Video Area */}
-        <div className="relative mt-8">
-          {/* Show remote video if available, otherwise show static image */}
-          {remoteStream ? (
-            <div className="w-[340px] h-[340px] rounded-2xl overflow-hidden shadow-lg bg-black">
+        {/* Video Preview Area - Responsive and Centered */}
+        <div className="relative mt-6 sm:mt-8 w-full max-w-md mx-auto">
+          {/* Remote/Placeholder */}
+          <div className="w-full aspect-square rounded-xl sm:rounded-2xl overflow-hidden shadow-lg bg-gradient-to-br from-gray-800 to-gray-900">
+            {remoteStream ? (
               <video
                 ref={remoteVideoRef}
                 autoPlay
                 playsInline
                 className="w-full h-full object-cover"
               />
-            </div>
-          ) : (
-            <img
-              src={getDisplayImage()}
-              alt={user?.role === "patient" ? "You" : "Doctor"}
-              className="w-[340px] h-[340px] rounded-2xl object-cover shadow-lg"
-            />
-          )}
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center p-4">
+                <div
+                  className={`${
+                    isMobile ? "w-16 h-16" : "w-24 h-24"
+                  } rounded-full overflow-hidden mb-3 sm:mb-4`}
+                >
+                  <img
+                    src={getAvatarForParticipant()}
+                    alt={getDisplayName()}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <User
+                  className={`${
+                    isMobile ? "w-8 h-8" : "w-12 h-12"
+                  } text-gray-600`}
+                />
+              </div>
+            )}
+          </div>
 
-          {/* Local Video Preview (small PIP) */}
+          {/* Local Video PIP - Responsive */}
           {localStream && (
-            <div className="absolute top-4 right-4 w-20 h-20 rounded-lg overflow-hidden border-2 border-white shadow-lg">
+            <div
+              className={`absolute top-3 sm:top-4 right-3 sm:right-4 ${
+                isMobile ? "w-16 h-16" : "w-24 h-24"
+              } rounded-lg overflow-hidden border-2 border-white shadow-lg bg-black`}
+            >
               <video
                 ref={localVideoRef}
                 autoPlay
@@ -1019,134 +1098,108 @@ export default function Calling() {
                 muted
                 className="w-full h-full object-cover"
               />
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-1 sm:p-2">
+                <span className="text-white text-xs">You</span>
+              </div>
             </div>
           )}
 
-          {/* Icons Overlay */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4">
+          {/* Media Controls - Centered */}
+          <div className="absolute bottom-3 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 sm:gap-3">
             <button
               onClick={toggleMic}
               disabled={
-                isAcceptingCall ||
-                isRequestingMedia ||
-                callState.isCallActive ||
-                showOnlineConsultation
+                isRequestingMedia || callState.isCallActive || isProcessing
               }
-              className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`${
+                isMobile ? "w-8 h-8" : "w-10 h-10"
+              } rounded-full flex items-center justify-center transition-colors ${
                 micEnabled
-                  ? "bg-black/40 hover:bg-black/60"
-                  : "bg-red-500/80 hover:bg-red-600/80"
-              }`}
+                  ? "bg-black/40 hover:bg-black/60 text-white"
+                  : "bg-red-500 hover:bg-red-600 text-white"
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              <Mic size={18} stroke="white" strokeWidth={2} />
+              {micEnabled ? (
+                <Mic className={isMobile ? "w-4 h-4" : "w-5 h-5"} />
+              ) : (
+                <MicOff className={isMobile ? "w-4 h-4" : "w-5 h-5"} />
+              )}
             </button>
             <button
               onClick={toggleCamera}
               disabled={
-                isAcceptingCall ||
-                isRequestingMedia ||
-                callState.isCallActive ||
-                showOnlineConsultation
+                isRequestingMedia || callState.isCallActive || isProcessing
               }
-              className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`${
+                isMobile ? "w-8 h-8" : "w-10 h-10"
+              } rounded-full flex items-center justify-center transition-colors ${
                 cameraEnabled
-                  ? "bg-black/40 hover:bg-black/60"
-                  : "bg-red-500/80 hover:bg-red-600/80"
-              }`}
+                  ? "bg-black/40 hover:bg-black/60 text-white"
+                  : "bg-red-500 hover:bg-red-600 text-white"
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              <Video size={18} stroke="white" strokeWidth={2} />
+              {cameraEnabled ? (
+                <Video className={isMobile ? "w-4 h-4" : "w-5 h-5"} />
+              ) : (
+                <CameraOff className={isMobile ? "w-4 h-4" : "w-5 h-5"} />
+              )}
             </button>
           </div>
 
-          {/* Call Status Indicator */}
-          {error &&
-          !error.includes("processing") &&
-          !error.includes("setting up") ? (
+          {/* Status Indicator - Responsive */}
+          {error && !error.includes("processing") ? (
             <div
-              className={`absolute top-4 left-4 ${
+              className={`absolute top-3 sm:top-4 left-3 sm:left-4 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm text-white ${
                 error.includes("timeout") ||
                 error.includes("cancelled") ||
                 error.includes("timed out")
-                  ? "bg-yellow-600/80"
-                  : "bg-red-600/80"
-              } text-white px-3 py-1 rounded-lg text-sm`}
+                  ? "bg-yellow-600"
+                  : error.includes("Network") || error.includes("connection")
+                  ? "bg-orange-600"
+                  : "bg-red-600"
+              }`}
             >
-              {error.includes("timeout") ||
-              error.includes("cancelled") ||
-              error.includes("timed out")
-                ? "⚠️ Call Timeout"
-                : "⚠️ Call Failed"}
+              <div className="flex items-center gap-1 sm:gap-2">
+                {error.includes("timeout") ||
+                error.includes("cancelled") ||
+                error.includes("timed out") ? (
+                  <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4" />
+                ) : error.includes("Network") ||
+                  error.includes("connection") ? (
+                  <WifiOff className="w-3 h-3 sm:w-4 sm:h-4" />
+                ) : (
+                  <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                )}
+                <span className="truncate max-w-[120px] sm:max-w-none">
+                  {error.includes("timeout") ||
+                  error.includes("cancelled") ||
+                  error.includes("timed out")
+                    ? "Call Timeout"
+                    : error.includes("Network") || error.includes("connection")
+                    ? "Network Issue"
+                    : "Call Failed"}
+                </span>
+              </div>
             </div>
-          ) : callState.isCallIncoming ||
-            manualCallStateRef.current.isCallIncoming ? (
-            <div className="absolute top-4 left-4 bg-yellow-600/80 text-white px-3 py-1 rounded-lg text-sm animate-pulse">
-              📞 Incoming call!
-            </div>
-          ) : callState.isCallActive ? (
-            <div className="absolute top-4 left-4 bg-green-600/80 text-white px-3 py-1 rounded-lg text-sm">
-              ✅ Connecting ({formatDuration(callDuration)})
+          ) : callState.isCallIncoming ? (
+            <div className="absolute top-3 sm:top-4 left-3 sm:left-4 bg-yellow-600 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm flex items-center gap-1 sm:gap-2 animate-pulse">
+              <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span>Incoming!</span>
             </div>
           ) : callState.isCallOutgoing ? (
-            <div className="absolute top-4 left-4 bg-blue-600/80 text-white px-3 py-1 rounded-lg text-sm animate-pulse">
-              📞 Calling...
-            </div>
-          ) : user?.role === "patient" && isIncoming === true ? (
-            <div className="absolute top-4 left-4 bg-blue-600/80 text-white px-3 py-1 rounded-lg text-sm">
-              ⏳{" "}
-              {hasOfferRef.current
-                ? "Processing call..."
-                : "Waiting for doctor..."}
+            <div className="absolute top-3 sm:top-4 left-3 sm:left-4 bg-blue-600 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm flex items-center gap-1 sm:gap-2 animate-pulse">
+              <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span>Calling...</span>
             </div>
           ) : null}
         </div>
 
-        {/* Render appropriate buttons based on call state */}
-        {renderButtons()}
-
-        {/* Debug Info */}
-        <div className="mt-6 p-4 bg-white rounded-lg shadow-sm border border-gray-200 max-w-md">
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">
-            Debug Info:
-          </h3>
-          <div className="text-xs text-gray-600 space-y-1">
-            <div>
-              User Role: <span className="font-mono">{user?.role}</span>
-            </div>
-            <div>
-              Has Offer:{" "}
-              <span className="font-mono">
-                {hasOfferRef.current.toString()}
-              </span>
-            </div>
-            <div>
-              WebRTC State:{" "}
-              <span className="font-mono">
-                {JSON.stringify({
-                  isCallActive: callState.isCallActive,
-                  isCallIncoming: callState.isCallIncoming,
-                  isCallDataReady: callState.isCallDataReady,
-                })}
-              </span>
-            </div>
-            <div>
-              Manual State:{" "}
-              <span className="font-mono">
-                {JSON.stringify(manualCallStateRef.current)}
-              </span>
-            </div>
-            <div>
-              Remote Name: <span className="font-mono">{getDisplayName()}</span>
-            </div>
-            <div>
-              Call Status: <span className="font-mono">{callStatus}</span>
-            </div>
-            <div>
-              Show OnlineConsultation:{" "}
-              <span className="font-mono">
-                {showOnlineConsultation ? "Yes" : "No"}
-              </span>
-            </div>
+        {/* Status and Action Buttons - Centered */}
+        <div className="mt-6 sm:mt-8 text-center w-full">
+          <div className="text-sm text-gray-600 mb-4 px-2 text-center">
+            {getStatusText()}
           </div>
+          <div className="flex justify-center">{renderButtons()}</div>
         </div>
       </div>
     </div>
