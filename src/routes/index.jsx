@@ -10,7 +10,6 @@ import PublicRoute from "../hoc/PublicRoute";
 import ProtectedRoute from "../hoc/ProtectedRoute";
 import CreateAppiontmentAdmin from "../componenets/dashboard/CreateAppiontmentAdmin";
 
-import OnlineConsultation from "../componenets/dashboard/OnlineConsultation";
 import Calling from "../componenets/dashboard/Calling";
 
 export default function AppRoutes() {
@@ -38,8 +37,11 @@ export default function AppRoutes() {
             <Route path="dashboard" element={<PatientDashboard />} />
           </Route>
         </Route>
-        <Route element={<Calling />} path="Calling" />
-        <Route element={<OnlineConsultation />} path="/video-call" />
+        <Route
+          element={<ProtectedRoute allowedRoles={["doctor", "patient"]} />}
+        >
+          <Route path="/calling" element={<Calling />} />
+        </Route>
 
         {/* Doctor routes */}
         <Route element={<ProtectedRoute allowedRoles={["doctor"]} />}>

@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useVideoCall } from "../../context/VideoCallProvider";
 import { useWebRTC } from "../../hook/useWebRTC";
 import { useSelector } from "react-redux";
+import OnlineConsultation from "./OnlineConsultation"; // Import the OnlineConsultation component
 
 export default function Calling() {
   const navigate = useNavigate();
@@ -11,7 +12,8 @@ export default function Calling() {
   const { socket } = useVideoCall();
   const { user } = useSelector((state) => state.auth);
 
-  const { isIncoming, remoteUserId, remoteUserName, offer } = location.state || {};
+  const { isIncoming, remoteUserId, remoteUserName, offer } =
+    location.state || {};
 
   // Add callInfo state
   const [callInfo, setCallInfo] = useState({
@@ -30,18 +32,20 @@ export default function Calling() {
   const [isAcceptingCall, setIsAcceptingCall] = useState(false);
   const [callStatus, setCallStatus] = useState("Initializing...");
   const [hasNavigatedToVideoCall, setHasNavigatedToVideoCall] = useState(false);
-  
+  const [showOnlineConsultation, setShowOnlineConsultation] = useState(false);
+
   // Refs
   const initializationDoneRef = useRef(false);
   const callStartedRef = useRef(false);
   const hasOfferRef = useRef(false);
-  const manualCallStateRef = useRef({ // MANUAL STATE for when WebRTC hook fails
+  const manualCallStateRef = useRef({
+    // MANUAL STATE for when WebRTC hook fails
     isCallIncoming: false,
     isCallDataReady: false,
-    remoteUserName: null
+    remoteUserName: null,
   });
 
-  // Use WebRTC hook
+  // Use WebRTC hook - MODIFIED: Remove onCallActive callback
   const {
     localStream,
     remoteStream,
@@ -62,7 +66,7 @@ export default function Calling() {
     localUserName: user?.fullName || user?.email,
     onCallEnd: () => {
       console.log("📞 [Calling] Call ended via hook");
-      
+
       // Reset refs
       callStartedRef.current = false;
       initializationDoneRef.current = false;
@@ -70,33 +74,16 @@ export default function Calling() {
       manualCallStateRef.current = {
         isCallIncoming: false,
         isCallDataReady: false,
-        remoteUserName: null
+        remoteUserName: null,
       };
-      
-      if (!hasNavigatedToVideoCall) {
-        setTimeout(() => {
-          navigateToDashboard();
-        }, 1000);
-      }
-    },
-    onCallActive: (remoteUserData) => {
-      console.log("✅ [Calling] Call is active, navigating to video call");
-      setHasNavigatedToVideoCall(true);
-      callStartedRef.current = false;
 
-      navigate("/video-call", {
-        state: {
-          remoteUserId: remoteUserData?.id || remoteUserId,
-          remoteUserName:
-            remoteUserData?.name ||
-            remoteUserName ||
-            (user?.role === "patient" ? "Doctor" : "Patient"),
-          isIncoming: user?.role === "patient",
-          userRole: user?.role,
-          callStartedAt: new Date().toISOString(),
-        },
-      });
+      // Hide online consultation and go back to dashboard
+      setShowOnlineConsultation(false);
+      setTimeout(() => {
+        navigateToDashboard();
+      }, 1000);
     },
+    // REMOVED onCallActive callback - we'll handle it manually
   });
 
   const localVideoRef = useRef(null);
@@ -117,7 +104,10 @@ export default function Calling() {
 
   // Track call duration
   useEffect(() => {
-    if ((callState.isCallActive || manualCallStateRef.current.isCallIncoming) && !hasNavigatedToVideoCall) {
+    if (
+      (callState.isCallActive || manualCallStateRef.current.isCallIncoming) &&
+      !hasNavigatedToVideoCall
+    ) {
       console.log("⏱️ [Calling] Starting call timer");
       setCallDuration(0);
       durationIntervalRef.current = setInterval(() => {
@@ -139,27 +129,40 @@ export default function Calling() {
 
   // Update call status based on callState OR manual state
   useEffect(() => {
-    console.log("🔄 [Calling] Updating call status", { 
-      callState, 
+    console.log("🔄 [Calling] Updating call status", {
+      callState,
       manualState: manualCallStateRef.current,
-      userRole: user?.role 
+      userRole: user?.role,
     });
-    
+
     // Use manual state if WebRTC hook isn't working
     const effectiveCallState = {
       ...callState,
-      ...(manualCallStateRef.current.isCallIncoming ? {
-        isCallIncoming: true,
-        isCallDataReady: manualCallStateRef.current.isCallDataReady,
-        remoteUserName: manualCallStateRef.current.remoteUserName || callState.remoteUserName
-      } : {})
+      ...(manualCallStateRef.current.isCallIncoming
+        ? {
+            isCallIncoming: true,
+            isCallDataReady: manualCallStateRef.current.isCallDataReady,
+            remoteUserName:
+              manualCallStateRef.current.remoteUserName ||
+              callState.remoteUserName,
+          }
+        : {}),
     };
-    
-    if (effectiveCallState.isCallActive) {
-      setCallStatus("Connected - Redirecting...");
-    } else if (effectiveCallState.isCallIncoming && effectiveCallState.isCallDataReady) {
+
+    // NEW: Show OnlineConsultation when call is active
+    if (effectiveCallState.isCallActive && !showOnlineConsultation) {
+      console.log("✅ [Calling] Call is active, showing OnlineConsultation");
+      setShowOnlineConsultation(true);
+      setCallStatus("Connected");
+    } else if (
+      effectiveCallState.isCallIncoming &&
+      effectiveCallState.isCallDataReady
+    ) {
       setCallStatus("📞 Incoming call ready to accept!");
-    } else if (effectiveCallState.isCallIncoming && !effectiveCallState.isCallDataReady) {
+    } else if (
+      effectiveCallState.isCallIncoming &&
+      !effectiveCallState.isCallDataReady
+    ) {
       setCallStatus("Processing call...");
     } else if (effectiveCallState.isCallOutgoing) {
       setCallStatus("Calling...");
@@ -178,7 +181,7 @@ export default function Calling() {
     } else {
       setCallStatus("Ready");
     }
-  }, [callState, user, isIncoming]);
+  }, [callState, user, isIncoming, showOnlineConsultation]);
 
   // Set up video streams
   useEffect(() => {
@@ -209,7 +212,9 @@ export default function Calling() {
     });
 
     if (!socket.connected) {
-      console.log("⚠️ [Calling] Socket not connected, attempting to connect...");
+      console.log(
+        "⚠️ [Calling] Socket not connected, attempting to connect..."
+      );
       socket.connect();
     }
 
@@ -240,7 +245,7 @@ export default function Calling() {
       if (durationIntervalRef.current) {
         clearInterval(durationIntervalRef.current);
       }
-      
+
       initializationDoneRef.current = false;
       callStartedRef.current = false;
       hasOfferRef.current = false;
@@ -264,9 +269,9 @@ export default function Calling() {
         const callData = {
           from: remoteUserId,
           fromName: remoteUserName || "Doctor",
-          offer: offer
+          offer: offer,
         };
-        
+
         const success = prepareForIncomingCall(callData);
         console.log("prepareForIncomingCall result:", success);
       } else {
@@ -278,7 +283,7 @@ export default function Calling() {
       manualCallStateRef.current = {
         isCallIncoming: true,
         isCallDataReady: true,
-        remoteUserName: remoteUserName || "Doctor"
+        remoteUserName: remoteUserName || "Doctor",
       };
 
       // Check after 1 second if WebRTC state updated
@@ -286,21 +291,34 @@ export default function Calling() {
         console.log("⏰ [Calling] Checking if WebRTC state updated...");
         console.log("callState.isCallIncoming:", callState.isCallIncoming);
         console.log("manualCallStateRef.current:", manualCallStateRef.current);
-        
+
         if (!callState.isCallIncoming) {
-          console.log("⚠️ [Calling] WebRTC state not updated, using manual state");
+          console.log(
+            "⚠️ [Calling] WebRTC state not updated, using manual state"
+          );
         } else {
           console.log("✅ [Calling] WebRTC state updated successfully");
         }
       }, 1000);
     }
-  }, [user, offer, remoteUserId, remoteUserName, prepareForIncomingCall, callState]);
+  }, [
+    user,
+    offer,
+    remoteUserId,
+    remoteUserName,
+    prepareForIncomingCall,
+    callState,
+  ]);
 
   // Main initialization effect
   useEffect(() => {
     console.log("📍 [Calling] Main initialization effect");
     console.log("User role:", user?.role);
-    console.log("Location state:", { isIncoming, remoteUserId, remoteUserName });
+    console.log("Location state:", {
+      isIncoming,
+      remoteUserId,
+      remoteUserName,
+    });
 
     if (initializationDoneRef.current) {
       console.log("⏭️ [Calling] Already initialized, skipping");
@@ -317,10 +335,10 @@ export default function Calling() {
     // PATIENT: Waiting for call
     if (user?.role === "patient" && isIncoming === true) {
       console.log("🚨 [Calling] PATIENT: Incoming call flow");
-      
+
       if (!offer) {
         console.log("⏳ [Calling] Patient waiting for doctor to call");
-        
+
         waitingTimeoutRef.current = setTimeout(() => {
           console.log("⏰ [Calling] No call received within 30s");
           if (!callState.isCallIncoming && !hasOfferRef.current) {
@@ -334,9 +352,14 @@ export default function Calling() {
         }, 30000);
       }
     }
-    
+
     // DOCTOR: Ready to call
-    else if (user?.role === "doctor" && isIncoming === false && remoteUserId && !callStartedRef.current) {
+    else if (
+      user?.role === "doctor" &&
+      isIncoming === false &&
+      remoteUserId &&
+      !callStartedRef.current
+    ) {
       console.log("👨‍⚕️ [Calling] DOCTOR: Ready to call patient");
     }
 
@@ -351,10 +374,12 @@ export default function Calling() {
   // Function for doctor to start the call
   const handleStartDoctorCall = async () => {
     console.log("👨‍⚕️ [Calling] Doctor starting call...");
-    
+
     if (!socket || !socket.connected) {
       console.log("❌ [Calling] Socket not connected");
-      setError("Not connected to server. Please check your internet connection.");
+      setError(
+        "Not connected to server. Please check your internet connection."
+      );
       return;
     }
 
@@ -402,10 +427,19 @@ export default function Calling() {
 
   // Update callInfo
   useEffect(() => {
-    if (user?.role === "patient" && (callState.remoteUserName || remoteUserName || manualCallStateRef.current.remoteUserName)) {
+    if (
+      user?.role === "patient" &&
+      (callState.remoteUserName ||
+        remoteUserName ||
+        manualCallStateRef.current.remoteUserName)
+    ) {
       setCallInfo((prev) => ({
         ...prev,
-        doctorName: callState.remoteUserName || manualCallStateRef.current.remoteUserName || remoteUserName || "Doctor",
+        doctorName:
+          callState.remoteUserName ||
+          manualCallStateRef.current.remoteUserName ||
+          remoteUserName ||
+          "Doctor",
       }));
     } else if (user?.role === "doctor" && callState.remoteUserName) {
       setCallInfo((prev) => ({
@@ -418,7 +452,7 @@ export default function Calling() {
   // SIMPLIFIED ACCEPT FUNCTION
   const handleAccept = async () => {
     console.log("✅ [Calling] Accept button clicked");
-    
+
     if (isAcceptingCall || callState.isCallActive || hasNavigatedToVideoCall) {
       console.log("⚠️ [Calling] Already accepting or in call");
       return;
@@ -426,8 +460,10 @@ export default function Calling() {
 
     // Check if we can accept (either via WebRTC hook or manual state)
     const canAccept = callState.isCallIncoming && callState.isCallDataReady;
-    const canAcceptManual = manualCallStateRef.current.isCallIncoming && manualCallStateRef.current.isCallDataReady;
-    
+    const canAcceptManual =
+      manualCallStateRef.current.isCallIncoming &&
+      manualCallStateRef.current.isCallDataReady;
+
     if (!canAccept && !canAcceptManual) {
       console.log("❌ [Calling] No call to accept");
       setError("No call to accept. Please wait for the call to be ready.");
@@ -451,9 +487,10 @@ export default function Calling() {
         setIsAcceptingCall(false);
         return;
       }
-      
+
       console.log("✅ [Calling] Call accepted successfully");
       setCallStatus("Call connected");
+      // Don't set showOnlineConsultation here - it will be set by useEffect when callState.isCallActive becomes true
     } catch (error) {
       console.error("❌ [Calling] Error accepting call:", error);
       setError(error.message || "Failed to accept call");
@@ -478,7 +515,7 @@ export default function Calling() {
     manualCallStateRef.current = {
       isCallIncoming: false,
       isCallDataReady: false,
-      remoteUserName: null
+      remoteUserName: null,
     };
 
     setTimeout(() => {
@@ -501,21 +538,23 @@ export default function Calling() {
     manualCallStateRef.current = {
       isCallIncoming: false,
       isCallDataReady: false,
-      remoteUserName: null
+      remoteUserName: null,
     };
+    setShowOnlineConsultation(false);
   };
 
   const handleRetryCall = () => {
     console.log("🔄 [Calling] Retrying call...");
     setError(null);
     setCallStatus("Retrying...");
+    setShowOnlineConsultation(false);
     callStartedRef.current = false;
     initializationDoneRef.current = false;
     hasOfferRef.current = false;
     manualCallStateRef.current = {
       isCallIncoming: false,
       isCallDataReady: false,
-      remoteUserName: null
+      remoteUserName: null,
     };
 
     setTimeout(() => {
@@ -544,16 +583,26 @@ export default function Calling() {
 
   // Determine which buttons to show - SIMPLIFIED
   const renderButtons = () => {
-    console.log("🔘 [Calling] Rendering buttons", { 
-      error, 
-      callState, 
+    console.log("🔘 [Calling] Rendering buttons", {
+      error,
+      callState,
       manualState: manualCallStateRef.current,
       userRole: user?.role,
-      hasOffer: hasOfferRef.current
+      hasOffer: hasOfferRef.current,
+      showOnlineConsultation,
     });
 
+    // If showing OnlineConsultation, don't show any buttons
+    if (showOnlineConsultation) {
+      return null;
+    }
+
     // SHOW ERROR STATE
-    if (error && !error.includes("processing") && !error.includes("setting up")) {
+    if (
+      error &&
+      !error.includes("processing") &&
+      !error.includes("setting up")
+    ) {
       return (
         <div className="flex flex-col gap-6 mt-10">
           <div
@@ -606,13 +655,20 @@ export default function Calling() {
     }
 
     // PATIENT: Has incoming call (either from WebRTC or manual state)
-    const hasIncomingCall = callState.isCallIncoming || manualCallStateRef.current.isCallIncoming;
-    const isCallReady = (callState.isCallIncoming && callState.isCallDataReady) || 
-                       (manualCallStateRef.current.isCallIncoming && manualCallStateRef.current.isCallDataReady);
+    const hasIncomingCall =
+      callState.isCallIncoming || manualCallStateRef.current.isCallIncoming;
+    const isCallReady =
+      (callState.isCallIncoming && callState.isCallDataReady) ||
+      (manualCallStateRef.current.isCallIncoming &&
+        manualCallStateRef.current.isCallDataReady);
 
     if (user?.role === "patient" && hasIncomingCall && isCallReady) {
-      const remoteName = callState.remoteUserName || manualCallStateRef.current.remoteUserName || remoteUserName || "Doctor";
-      
+      const remoteName =
+        callState.remoteUserName ||
+        manualCallStateRef.current.remoteUserName ||
+        remoteUserName ||
+        "Doctor";
+
       return (
         <div className="flex flex-col items-center gap-6 mt-10">
           <div className="text-lg text-green-600 font-medium animate-pulse">
@@ -660,17 +716,19 @@ export default function Calling() {
           <div className="text-lg text-green-600 font-medium">
             📞 Incoming call from {remoteUserName || "Doctor"}
           </div>
-          
-          <div className="flex items-center gap-3 px-10 py-3 text-white text-lg rounded-full shadow-md mb-4"
-            style={{ backgroundColor: "#FFA500" }}>
+
+          <div
+            className="flex items-center gap-3 px-10 py-3 text-white text-lg rounded-full shadow-md mb-4"
+            style={{ backgroundColor: "#FFA500" }}
+          >
             <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
             Processing call...
           </div>
-          
+
           <div className="text-sm text-yellow-600 text-center max-w-md">
             The call is being set up. Please wait a moment...
           </div>
-          
+
           <button
             onClick={handleDecline}
             className="px-10 py-3 text-white text-lg rounded-full shadow-md hover:opacity-90 transition-opacity mt-4"
@@ -683,7 +741,11 @@ export default function Calling() {
     }
 
     // PATIENT: Waiting for doctor to call (no offer yet)
-    else if (user?.role === "patient" && isIncoming === true && !hasOfferRef.current) {
+    else if (
+      user?.role === "patient" &&
+      isIncoming === true &&
+      !hasOfferRef.current
+    ) {
       return (
         <div className="flex flex-col items-center gap-6 mt-10">
           <div className="text-sm text-gray-600">{callStatus}</div>
@@ -735,7 +797,11 @@ export default function Calling() {
     }
 
     // DOCTOR: Ready to start call (hasn't started yet)
-    else if (user?.role === "doctor" && isIncoming === false && !callState.isCallOutgoing) {
+    else if (
+      user?.role === "doctor" &&
+      isIncoming === false &&
+      !callState.isCallOutgoing
+    ) {
       return (
         <div className="flex gap-6 mt-10">
           <button
@@ -769,7 +835,7 @@ export default function Calling() {
       return (
         <div className="flex flex-col items-center gap-4 mt-10">
           <div className="text-lg font-medium text-gray-700">
-            Connecting... {formatDuration(callDuration)}
+            Connected - {formatDuration(callDuration)}
           </div>
           <button
             onClick={handleEndCall}
@@ -795,7 +861,8 @@ export default function Calling() {
   // Determine display name
   const getDisplayName = () => {
     if (callState.remoteUserName) return callState.remoteUserName;
-    if (manualCallStateRef.current.remoteUserName) return manualCallStateRef.current.remoteUserName;
+    if (manualCallStateRef.current.remoteUserName)
+      return manualCallStateRef.current.remoteUserName;
     if (user?.role === "patient") return callInfo.doctorName;
     if (remoteUserName) return remoteUserName;
     return user?.role === "patient" ? "Doctor" : "Patient";
@@ -812,6 +879,10 @@ export default function Calling() {
 
   // Determine status text for navbar
   const getStatusText = () => {
+    if (showOnlineConsultation) {
+      return `Connected (${formatDuration(callDuration)})`;
+    }
+
     if (callState.isCallActive) {
       return `Connecting... (${formatDuration(callDuration)})`;
     }
@@ -839,6 +910,40 @@ export default function Calling() {
     return "Ready";
   };
 
+  // Render OnlineConsultation component when call is active
+  const renderOnlineConsultation = () => {
+    if (!showOnlineConsultation) return null;
+
+    return (
+      <OnlineConsultation
+        // Pass all the WebRTC props
+        localStream={localStream}
+        remoteStream={remoteStream}
+        callState={callState}
+        micEnabled={micEnabled}
+        cameraEnabled={cameraEnabled}
+        endCall={endCall}
+        toggleMic={toggleMic}
+        toggleCamera={toggleCamera}
+        isRequestingMedia={isRequestingMedia}
+        startCall={startCall}
+        // Pass user info
+        remoteUserId={remoteUserId}
+        remoteUserName={getDisplayName()}
+        userRole={user?.role}
+        callStartedAt={new Date().toISOString()}
+        // Pass socket
+        socket={socket}
+      />
+    );
+  };
+
+  // If showing OnlineConsultation, render only that
+  if (showOnlineConsultation) {
+    return renderOnlineConsultation();
+  }
+
+  // Otherwise, render the calling interface
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top Navbar */}
@@ -869,7 +974,7 @@ export default function Calling() {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content - Only show when not in OnlineConsultation */}
       <div className="flex flex-col items-center mt-10">
         {/* Doctor/Patient Image based on role */}
         <img
@@ -922,7 +1027,10 @@ export default function Calling() {
             <button
               onClick={toggleMic}
               disabled={
-                isAcceptingCall || isRequestingMedia || callState.isCallActive
+                isAcceptingCall ||
+                isRequestingMedia ||
+                callState.isCallActive ||
+                showOnlineConsultation
               }
               className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                 micEnabled
@@ -935,7 +1043,10 @@ export default function Calling() {
             <button
               onClick={toggleCamera}
               disabled={
-                isAcceptingCall || isRequestingMedia || callState.isCallActive
+                isAcceptingCall ||
+                isRequestingMedia ||
+                callState.isCallActive ||
+                showOnlineConsultation
               }
               className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                 cameraEnabled
@@ -948,7 +1059,9 @@ export default function Calling() {
           </div>
 
           {/* Call Status Indicator */}
-          {error && !error.includes("processing") && !error.includes("setting up") ? (
+          {error &&
+          !error.includes("processing") &&
+          !error.includes("setting up") ? (
             <div
               className={`absolute top-4 left-4 ${
                 error.includes("timeout") ||
@@ -964,7 +1077,8 @@ export default function Calling() {
                 ? "⚠️ Call Timeout"
                 : "⚠️ Call Failed"}
             </div>
-          ) : callState.isCallIncoming || manualCallStateRef.current.isCallIncoming ? (
+          ) : callState.isCallIncoming ||
+            manualCallStateRef.current.isCallIncoming ? (
             <div className="absolute top-4 left-4 bg-yellow-600/80 text-white px-3 py-1 rounded-lg text-sm animate-pulse">
               📞 Incoming call!
             </div>
@@ -978,7 +1092,10 @@ export default function Calling() {
             </div>
           ) : user?.role === "patient" && isIncoming === true ? (
             <div className="absolute top-4 left-4 bg-blue-600/80 text-white px-3 py-1 rounded-lg text-sm">
-              ⏳ {hasOfferRef.current ? "Processing call..." : "Waiting for doctor..."}
+              ⏳{" "}
+              {hasOfferRef.current
+                ? "Processing call..."
+                : "Waiting for doctor..."}
             </div>
           ) : null}
         </div>
@@ -996,7 +1113,10 @@ export default function Calling() {
               User Role: <span className="font-mono">{user?.role}</span>
             </div>
             <div>
-              Has Offer: <span className="font-mono">{hasOfferRef.current.toString()}</span>
+              Has Offer:{" "}
+              <span className="font-mono">
+                {hasOfferRef.current.toString()}
+              </span>
             </div>
             <div>
               WebRTC State:{" "}
@@ -1015,13 +1135,16 @@ export default function Calling() {
               </span>
             </div>
             <div>
-              Remote Name:{" "}
-              <span className="font-mono">
-                {getDisplayName()}
-              </span>
+              Remote Name: <span className="font-mono">{getDisplayName()}</span>
             </div>
             <div>
               Call Status: <span className="font-mono">{callStatus}</span>
+            </div>
+            <div>
+              Show OnlineConsultation:{" "}
+              <span className="font-mono">
+                {showOnlineConsultation ? "Yes" : "No"}
+              </span>
             </div>
           </div>
         </div>

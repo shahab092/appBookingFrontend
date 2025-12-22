@@ -17,30 +17,12 @@ import {
   Shield,
   AlertCircle,
 } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useWebRTC } from "../../hook/useWebRTC";
 import { useSelector } from "react-redux";
-import { useVideoCall } from "../../context/VideoCallProvider";
 
-export default function OnlineConsultation() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { socket } = useVideoCall();
-  const { user } = useSelector((state) => state.auth);
-
-  const { remoteUserId, remoteUserName, userRole, callStartedAt } =
-    location.state || {};
-
-  const [activeTab, setActiveTab] = useState("chat");
-  const [message, setMessage] = useState("");
-  const [remainingTime, setRemainingTime] = useState(30 * 60); // 30 minutes
-  const [isMobile, setIsMobile] = useState(false);
-  const [callDuration, setCallDuration] = useState(0);
-  const [hasCallEnded, setHasCallEnded] = useState(false);
-  const [isReconnecting, setIsReconnecting] = useState(false);
-
-  // Use WebRTC hook - IMPORTANT: Pass the remote user info from location state
+export default function OnlineConsultation(props) {
+  // Destructure props instead of using useLocation
   const {
+    // WebRTC props
     localStream,
     remoteStream,
     callState,
@@ -50,24 +32,27 @@ export default function OnlineConsultation() {
     toggleMic,
     toggleCamera,
     isRequestingMedia,
-    startCall, // Add this for reconnection
-  } = useWebRTC({
-    socket: socket,
-    localUserId: user?.id,
-    localUserName: user?.fullName || user?.email,
-    onCallEnd: () => {
-      console.log("📞 [OnlineConsultation] Call ended via hook");
-      setHasCallEnded(true);
+    startCall,
 
-      // Navigate back after a delay
-      setTimeout(() => {
-        navigate(
-          user?.role === "doctor" ? "/doctor/dashboard" : "/patient/dashboard"
-        );
-      }, 1000);
-    },
-    // Don't set onCallActive as we're already in video call page
-  });
+    // Call info props
+    remoteUserId,
+    remoteUserName,
+    userRole,
+    callStartedAt,
+
+    // Socket
+    socket,
+  } = props;
+
+  const { user } = useSelector((state) => state.auth);
+
+  const [activeTab, setActiveTab] = useState("chat");
+  const [message, setMessage] = useState("");
+  const [remainingTime, setRemainingTime] = useState(30 * 60); // 30 minutes
+  const [isMobile, setIsMobile] = useState(false);
+  const [callDuration, setCallDuration] = useState(0);
+  const [hasCallEnded, setHasCallEnded] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
@@ -109,19 +94,19 @@ export default function OnlineConsultation() {
     if (localStream && localVideoRef.current) {
       console.log("🎥 Setting local video");
       localVideoRef.current.srcObject = localStream;
-      
+
       // Ensure tracks are enabled based toggles
       const audioTracks = localStream.getAudioTracks();
       const videoTracks = localStream.getVideoTracks();
-      
+
       if (audioTracks.length > 0) {
-        audioTracks.forEach(track => {
+        audioTracks.forEach((track) => {
           track.enabled = micEnabled;
         });
       }
-      
+
       if (videoTracks.length > 0) {
-        videoTracks.forEach(track => {
+        videoTracks.forEach((track) => {
           track.enabled = cameraEnabled;
         });
       }
@@ -138,7 +123,7 @@ export default function OnlineConsultation() {
   useEffect(() => {
     console.log("📍 [OnlineConsultation] Initializing call...");
     console.log("Remote user:", remoteUserId, remoteUserName);
-    console.log("User role:", user?.role);
+    console.log("User role:", userRole || user?.role);
     console.log("Socket connected:", socket?.connected);
 
     if (callSetupRef.current) {
@@ -152,9 +137,6 @@ export default function OnlineConsultation() {
         if (!socket?.connected) {
           console.error("Socket connection timeout");
           setHasCallEnded(true);
-          navigate(
-            user?.role === "doctor" ? "/doctor/dashboard" : "/patient/dashboard"
-          );
         }
       }, 5000);
       return () => clearTimeout(timeout);
@@ -163,28 +145,25 @@ export default function OnlineConsultation() {
     if (!remoteUserId) {
       console.log("❌ No remote user ID");
       setHasCallEnded(true);
-      navigate(
-        user?.role === "doctor" ? "/doctor/dashboard" : "/patient/dashboard"
-      );
       return;
     }
 
     // Set flag to prevent multiple setups
     callSetupRef.current = true;
 
-    // Check if call is already active (should be from previous page)
+    // Check if call is already active (should be from parent component)
     console.log("✅ Call setup complete - waiting for WebRTC connection...");
 
     // Monitor connection status
     callCheckRef.current = setInterval(() => {
       if (!callState.isCallActive && !hasCallEnded && !isReconnecting) {
         console.log("⚠️ Call not active, attempting reconnection...");
-        
+
         // Only retry a few times
         if (retryCountRef.current < 3) {
           retryCountRef.current++;
           setIsReconnecting(true);
-          
+
           // Try to re-establish connection
           setTimeout(() => {
             if (startCall && remoteUserId && remoteUserName) {
@@ -214,7 +193,16 @@ export default function OnlineConsultation() {
         clearInterval(callCheckRef.current);
       }
     };
-  }, [socket, remoteUserId, remoteUserName, user?.role, navigate, endCall, startCall, callState.isCallActive, hasCallEnded]);
+  }, [
+    socket,
+    remoteUserId,
+    remoteUserName,
+    userRole,
+    endCall,
+    startCall,
+    callState.isCallActive,
+    hasCallEnded,
+  ]);
 
   // Handle responsive design
   useEffect(() => {
@@ -292,11 +280,11 @@ export default function OnlineConsultation() {
   const getDisplayName = () => {
     if (callState.remoteUserName) return callState.remoteUserName;
     if (remoteUserName) return remoteUserName;
-    return user?.role === "patient" ? "Dr. John Carter" : "Patient";
+    return userRole === "patient" ? "Dr. John Carter" : "Patient";
   };
 
   const getDisplayImage = () => {
-    if (user?.role === "patient") {
+    if (userRole === "patient") {
       return "https://images.unsplash.com/photo-1537368910025-700350fe46c7";
     } else {
       return "https://images.unsplash.com/photo-1544005313-94ddf0286df2";
@@ -415,7 +403,7 @@ export default function OnlineConsultation() {
               <div>
                 <p className="font-semibold">{getDisplayName()}</p>
                 <p className="text-xs text-gray-300">
-                  {user?.role === "patient"
+                  {userRole === "patient"
                     ? "Cardiologist • 15+ years experience"
                     : "Patient"}
                 </p>
@@ -632,7 +620,7 @@ export default function OnlineConsultation() {
                 <div className="flex gap-3">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
                     <span className="text-white text-xs font-bold">
-                      {user?.role === "patient" ? "DC" : "PT"}
+                      {userRole === "patient" ? "DC" : "PT"}
                     </span>
                   </div>
                   <div>
@@ -640,8 +628,8 @@ export default function OnlineConsultation() {
                       Hello, how are you feeling today?
                     </div>
                     <span className="text-xs text-gray-500 mt-1 block">
-                      {user?.role === "patient" ? "Dr. Carter" : "Patient"} •
-                      2:30 PM
+                      {userRole === "patient" ? "Dr. Carter" : "Patient"} • 2:30
+                      PM
                     </span>
                   </div>
                 </div>
@@ -663,7 +651,7 @@ export default function OnlineConsultation() {
                     </p>
                   </div>
                   <p className="text-sm text-gray-600 mb-3">
-                    {user?.role === "patient" ? "Dr. Carter has" : "You have"}{" "}
+                    {userRole === "patient" ? "Dr. Carter has" : "You have"}{" "}
                     sent a new prescription for your cough.
                   </p>
                   <button className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-medium px-4 py-3 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-2">
@@ -688,7 +676,7 @@ export default function OnlineConsultation() {
                 <div className="flex gap-3">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
                     <span className="text-white text-xs font-bold">
-                      {user?.role === "patient" ? "DC" : "PT"}
+                      {userRole === "patient" ? "DC" : "PT"}
                     </span>
                   </div>
                   <div className="bg-gray-100 px-4 py-3 rounded-2xl rounded-tl-none">
@@ -843,7 +831,7 @@ export default function OnlineConsultation() {
         <h3 className="text-sm font-semibold text-gray-700 mb-2">Call Info:</h3>
         <div className="text-xs text-gray-600 space-y-1">
           <div>
-            User Role: <span className="font-mono">{user?.role}</span>
+            User Role: <span className="font-mono">{userRole}</span>
           </div>
           <div>
             Remote Name: <span className="font-mono">{getDisplayName()}</span>
