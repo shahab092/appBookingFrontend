@@ -222,7 +222,7 @@ const PatientDashboard = () => {
 
   const handleCancelAppointment = async (appointmentId) => {
     try {
-      const res = await api.patch(`/appointments/${appointmentId}/status`, {
+      const res = await api.patch(`appointments/${appointmentId}/status`, {
         status: "cancelled",
       });
 

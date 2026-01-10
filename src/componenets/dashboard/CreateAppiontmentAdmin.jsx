@@ -8,8 +8,8 @@ import {
   FiHome,
   FiCheckCircle,
   FiSearch,
-//   Filter,
-  FiRefreshCw
+  //   Filter,
+  FiRefreshCw,
 } from "react-icons/fi";
 import { Modal } from "antd";
 import { useToast } from "../../context/ToastContext";
@@ -20,13 +20,33 @@ import { departmentOptions } from "../../constant/data";
 
 /* ---------------- Constants ---------------- */
 const timeSlots = [
-  "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-  "14:00", "15:00", "15:30", "16:00", "16:30", "17:00"
+  "09:00",
+  "09:30",
+  "10:00",
+  "10:30",
+  "11:00",
+  "11:30",
+  "14:00",
+  "15:00",
+  "15:30",
+  "16:00",
+  "16:30",
+  "17:00",
 ];
 
 const monthNames = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 const CreateAppointmentAdmin = () => {
@@ -43,11 +63,11 @@ const CreateAppointmentAdmin = () => {
   const { showToast } = useToast();
 
   const methods = useForm({
-    defaultValues: { 
-      department: "", 
+    defaultValues: {
+      department: "",
       doctor: "",
       patient: "",
-      reason: ""
+      reason: "",
     },
   });
 
@@ -86,18 +106,18 @@ const CreateAppointmentAdmin = () => {
   const handlePrevMonth = () => {
     if (currentMonth === 1) {
       setCurrentMonth(12);
-      setCurrentYear(y => y - 1);
+      setCurrentYear((y) => y - 1);
     } else {
-      setCurrentMonth(m => m - 1);
+      setCurrentMonth((m) => m - 1);
     }
   };
 
   const handleNextMonth = () => {
     if (currentMonth === 12) {
       setCurrentMonth(1);
-      setCurrentYear(y => y + 1);
+      setCurrentYear((y) => y + 1);
     } else {
-      setCurrentMonth(m => m + 1);
+      setCurrentMonth((m) => m + 1);
     }
   };
 
@@ -120,45 +140,53 @@ const CreateAppointmentAdmin = () => {
       return;
     }
 
-    const selectedDoctorInfo = doctors.find(d => d._id === data.doctor);
-    const selectedPatientInfo = patients.find(p => p._id === data.patient);
+    const selectedDoctorInfo = doctors.find((d) => d._id === data.doctor);
+    const selectedPatientInfo = patients.find((p) => p._id === data.patient);
 
     const payload = {
       doctorId: data.doctor,
-      doctorName: selectedDoctorInfo ? 
-        `${selectedDoctorInfo.firstName} ${selectedDoctorInfo.lastName}` : "",
+      doctorName: selectedDoctorInfo
+        ? `${selectedDoctorInfo.firstName} ${selectedDoctorInfo.lastName}`
+        : "",
       department: data.department,
       patientId: data.patient,
-      patientName: selectedPatientInfo ? 
-        `${selectedPatientInfo.firstName} ${selectedPatientInfo.lastName}` : "",
+      patientName: selectedPatientInfo
+        ? `${selectedPatientInfo.firstName} ${selectedPatientInfo.lastName}`
+        : "",
       date: `${monthNames[currentMonth - 1]} ${selectedDate}, ${currentYear}`,
       timeSlot: selectedTime,
       appointmentType,
       reason: data.reason || "General Consultation",
       status: "booked",
-      bookedBy: "admin"
+      bookedBy: "admin",
     };
 
     try {
       setLoading(true);
-      const res = await api.post("/appointment/book", payload);
-      
+      const res = await api.post("/appointments/book", payload);
+
       setLastAppointment({
         ...payload,
         id: res.data?.data?._id || Date.now().toString(),
-        appointmentTypeLabel: appointmentType === "online" ? "Online Consultation" : "In-clinic Visit"
+        appointmentTypeLabel:
+          appointmentType === "online"
+            ? "Online Consultation"
+            : "In-clinic Visit",
       });
-      
+
       showToast("Appointment booked successfully!", "success");
       setSuccessModalVisible(true);
       reset();
-      
+
       // Reset to defaults
       setAppointmentType("online");
       setSelectedDate(new Date().getDate());
       setSelectedTime(timeSlots[0]);
     } catch (error) {
-      showToast(error.response?.data?.message || "Failed to book appointment", "error");
+      showToast(
+        error.response?.data?.message || "Failed to book appointment",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -177,7 +205,7 @@ const CreateAppointmentAdmin = () => {
               Schedule appointments for patients with doctors
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
@@ -204,7 +232,9 @@ const CreateAppointmentAdmin = () => {
               <FiCalendar className="w-6 h-6" />
               <div>
                 <h2 className="text-xl font-bold">Schedule New Appointment</h2>
-                <p className="text-sm opacity-90">Fill in all required details to book an appointment</p>
+                <p className="text-sm opacity-90">
+                  Fill in all required details to book an appointment
+                </p>
               </div>
             </div>
           </div>
@@ -227,14 +257,14 @@ const CreateAppointmentAdmin = () => {
                             type: "online",
                             icon: <FiVideo className="w-5 h-5" />,
                             label: "Online Consultation",
-                            description: "Virtual video call"
+                            description: "Virtual video call",
                           },
                           {
                             type: "inclinic",
                             icon: <FiHome className="w-5 h-5" />,
                             label: "In-clinic Visit",
-                            description: "Physical visit to hospital"
-                          }
+                            description: "Physical visit to hospital",
+                          },
                         ].map((item) => (
                           <div
                             key={item.type}
@@ -246,16 +276,20 @@ const CreateAppointmentAdmin = () => {
                             }`}
                           >
                             <div className="flex items-center gap-3 mb-2">
-                              <div className={`p-2 rounded-lg ${
-                                appointmentType === item.type 
-                                  ? "bg-blue-100 text-blue-600" 
-                                  : "bg-gray-100 text-gray-600"
-                              }`}>
+                              <div
+                                className={`p-2 rounded-lg ${
+                                  appointmentType === item.type
+                                    ? "bg-blue-100 text-blue-600"
+                                    : "bg-gray-100 text-gray-600"
+                                }`}
+                              >
                                 {item.icon}
                               </div>
                               <div>
                                 <div className="font-medium">{item.label}</div>
-                                <div className="text-xs text-gray-500">{item.description}</div>
+                                <div className="text-xs text-gray-500">
+                                  {item.description}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -272,10 +306,10 @@ const CreateAppointmentAdmin = () => {
                       <CustomSelect
                         name="patient"
                         label=""
-                        options={patients.map(p => ({
+                        options={patients.map((p) => ({
                           label: `${p.firstName} ${p.lastName}`,
                           value: p._id,
-                          subLabel: p.email || "No email"
+                          subLabel: p.email || "No email",
                         }))}
                         rules={{ required: "Patient selection is required" }}
                       />
@@ -293,10 +327,12 @@ const CreateAppointmentAdmin = () => {
                       <CustomSelect
                         name="doctor"
                         label="Doctor"
-                        options={doctors.map(d => ({
+                        options={doctors.map((d) => ({
                           label: `${d.firstName} ${d.lastName}`,
                           value: d._id,
-                          subLabel: d.doctorProfile?.specialization || "No specialization"
+                          subLabel:
+                            d.doctorProfile?.specialization ||
+                            "No specialization",
                         }))}
                         rules={{ required: "Doctor selection is required" }}
                       />
@@ -325,7 +361,9 @@ const CreateAppointmentAdmin = () => {
                           <h3 className="font-bold text-lg text-gray-900">
                             {monthNames[currentMonth - 1]} {currentYear}
                           </h3>
-                          <p className="text-sm text-gray-500">Select appointment date</p>
+                          <p className="text-sm text-gray-500">
+                            Select appointment date
+                          </p>
                         </div>
                         <div className="flex gap-2">
                           <button
@@ -346,16 +384,21 @@ const CreateAppointmentAdmin = () => {
                       </div>
 
                       <div className="grid grid-cols-7 gap-2 mb-3">
-                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
-                          <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
-                            {day}
-                          </div>
-                        ))}
-                        
+                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                          (day) => (
+                            <div
+                              key={day}
+                              className="text-center text-sm font-medium text-gray-500 py-2"
+                            >
+                              {day}
+                            </div>
+                          )
+                        )}
+
                         {Array.from({ length: firstDay }).map((_, i) => (
                           <div key={`empty-${i}`} className="h-10" />
                         ))}
-                        
+
                         {Array.from({ length: daysInMonth }).map((_, i) => (
                           <button
                             key={i}
@@ -376,7 +419,8 @@ const CreateAppointmentAdmin = () => {
                         <FiCalendar className="w-4 h-4" />
                         <span>Selected Date: </span>
                         <span className="font-medium">
-                          {monthNames[currentMonth - 1]} {selectedDate}, {currentYear}
+                          {monthNames[currentMonth - 1]} {selectedDate},{" "}
+                          {currentYear}
                         </span>
                       </div>
                     </div>
@@ -385,9 +429,11 @@ const CreateAppointmentAdmin = () => {
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-5">
                       <div className="flex items-center gap-2 mb-4">
                         <FiClock className="w-5 h-5 text-blue-600" />
-                        <h3 className="font-bold text-lg text-gray-900">Available Time Slots</h3>
+                        <h3 className="font-bold text-lg text-gray-900">
+                          Available Time Slots
+                        </h3>
                       </div>
-                      
+
                       <div className="grid grid-cols-3 gap-3">
                         {timeSlots.map((slot) => (
                           <button
@@ -408,29 +454,38 @@ const CreateAppointmentAdmin = () => {
                       <div className="flex items-center gap-2 text-sm text-gray-600 pt-4 border-t mt-4">
                         <FiClock className="w-4 h-4" />
                         <span>Selected Time: </span>
-                        <span className="font-medium">{formatTo12Hour(selectedTime)}</span>
+                        <span className="font-medium">
+                          {formatTo12Hour(selectedTime)}
+                        </span>
                       </div>
                     </div>
 
                     {/* Summary Card */}
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-                      <h3 className="font-bold text-lg text-blue-900 mb-3">Appointment Summary</h3>
+                      <h3 className="font-bold text-lg text-blue-900 mb-3">
+                        Appointment Summary
+                      </h3>
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Type:</span>
                           <span className="font-medium">
-                            {appointmentType === "online" ? "Online Consultation" : "In-clinic Visit"}
+                            {appointmentType === "online"
+                              ? "Online Consultation"
+                              : "In-clinic Visit"}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Date:</span>
                           <span className="font-medium">
-                            {monthNames[currentMonth - 1]} {selectedDate}, {currentYear}
+                            {monthNames[currentMonth - 1]} {selectedDate},{" "}
+                            {currentYear}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Time:</span>
-                          <span className="font-medium">{formatTo12Hour(selectedTime)}</span>
+                          <span className="font-medium">
+                            {formatTo12Hour(selectedTime)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -489,20 +544,30 @@ const CreateAppointmentAdmin = () => {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <FiCheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Appointment Booked Successfully!</h3>
-          <p className="text-gray-600 mb-6">The appointment has been scheduled and confirmed.</p>
-          
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            Appointment Booked Successfully!
+          </h3>
+          <p className="text-gray-600 mb-6">
+            The appointment has been scheduled and confirmed.
+          </p>
+
           {lastAppointment && (
             <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-              <h4 className="font-medium text-gray-900 mb-3">Appointment Details:</h4>
+              <h4 className="font-medium text-gray-900 mb-3">
+                Appointment Details:
+              </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Patient:</span>
-                  <span className="font-medium">{lastAppointment.patientName}</span>
+                  <span className="font-medium">
+                    {lastAppointment.patientName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Doctor:</span>
-                  <span className="font-medium">{lastAppointment.doctorName}</span>
+                  <span className="font-medium">
+                    {lastAppointment.doctorName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Date:</span>
@@ -510,11 +575,15 @@ const CreateAppointmentAdmin = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Time:</span>
-                  <span className="font-medium">{formatTo12Hour(lastAppointment.timeSlot)}</span>
+                  <span className="font-medium">
+                    {formatTo12Hour(lastAppointment.timeSlot)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Type:</span>
-                  <span className="font-medium">{lastAppointment.appointmentTypeLabel}</span>
+                  <span className="font-medium">
+                    {lastAppointment.appointmentTypeLabel}
+                  </span>
                 </div>
               </div>
             </div>

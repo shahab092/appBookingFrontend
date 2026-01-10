@@ -11,6 +11,7 @@ import "./App.css";
 import Index from "./routes";
 import { VideoCallProvider } from "./context/VideoCallProvider";
 import { ToastProvider } from "./context/ToastContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import { useSelector } from "react-redux";
 
 function App() {
@@ -23,7 +24,9 @@ function App() {
       <GoogleOAuthProvider clientId="855702064548-6jje93hln82jjcd4s1uqftcqhb5qa64d.apps.googleusercontent.com">
         <ToastProvider>
           <VideoCallProvider userId={user?.id}>
-            <Index />
+            <NotificationProvider>
+              <Index />
+            </NotificationProvider>
           </VideoCallProvider>
         </ToastProvider>
       </GoogleOAuthProvider>

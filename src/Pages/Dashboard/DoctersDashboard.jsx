@@ -29,7 +29,7 @@ export default function DoctorDashboard() {
   const { user } = useSelector((state) => state.auth);
   const [appointments, setAppointments] = useState([]);
   const navigate = useNavigate();
-  
+
   // Add refs for better state management
   const socketRegisteredRef = useRef(false);
   const isMountedRef = useRef(true);
@@ -98,7 +98,7 @@ export default function DoctorDashboard() {
       console.log("🧹 DoctorDashboard: Cleaning up socket listeners");
       isMountedRef.current = false;
       navigationInProgressRef.current = false;
-      
+
       if (socket) {
         socket.off("connect", handleConnect);
         socket.off("disconnect", handleDisconnect);
@@ -111,7 +111,7 @@ export default function DoctorDashboard() {
 
   const fetchAppointments = async () => {
     try {
-      const res = await api.get(`appointment/doctor/${user.id}`);
+      const res = await api.get(`appointments/doctor/${user.id}`);
       console.log("📅 Doctor appointments fetched:", res.data.data);
       setAppointments(res.data.data || []);
     } catch (error) {
@@ -149,11 +149,13 @@ export default function DoctorDashboard() {
     }
 
     if (!socket || !socket.connected) {
-      alert("Network connection issue. Please check your internet connection and refresh the page.");
+      alert(
+        "Network connection issue. Please check your internet connection and refresh the page."
+      );
       console.error("Socket not connected:", {
         socket: socket,
         connected: socket?.connected,
-        id: socket?.id
+        id: socket?.id,
       });
       navigationInProgressRef.current = false;
       return;
@@ -205,9 +207,15 @@ export default function DoctorDashboard() {
 
   // Show connection status
   const getConnectionStatus = () => {
-    if (!socket) return { text: "Disconnected", color: "text-red-600", bg: "bg-red-100" };
-    if (socket.connected) return { text: "Connected", color: "text-green-600", bg: "bg-green-100" };
-    return { text: "Connecting...", color: "text-yellow-600", bg: "bg-yellow-100" };
+    if (!socket)
+      return { text: "Disconnected", color: "text-red-600", bg: "bg-red-100" };
+    if (socket.connected)
+      return { text: "Connected", color: "text-green-600", bg: "bg-green-100" };
+    return {
+      text: "Connecting...",
+      color: "text-yellow-600",
+      bg: "bg-yellow-100",
+    };
   };
 
   const status = getConnectionStatus();
@@ -321,7 +329,9 @@ export default function DoctorDashboard() {
                 onStartVideo={() => startVideoConsultation(appointment)}
                 onCancel={() => cancelAppointment(appointment)}
                 onEdit={() => editAppointment(appointment)}
-                isCalling={isCalling && selectedAppointment?._id === appointment._id}
+                isCalling={
+                  isCalling && selectedAppointment?._id === appointment._id
+                }
               />
             ))}
           </div>
@@ -339,7 +349,7 @@ export default function DoctorDashboard() {
                     <span className="text-sm font-medium text-gray-900 ml-2">
                       6 appointments
                     </span>
-                </div>
+                  </div>
                 </div>
                 <div className="hidden sm:flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-emerald-500"></div>

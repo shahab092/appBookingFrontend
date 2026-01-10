@@ -74,7 +74,8 @@ export default function AppointmentModal({
 
   const fetchDoctors = async () => {
     try {
-      const res = await api.get("/doctor");
+      const res = await api.get("doctor");
+      console.log(res.data, "res.data");
       setDoctors(res.data?.data || []);
     } catch {
       showToast("Failed to fetch doctors", "error");
@@ -129,7 +130,7 @@ export default function AppointmentModal({
 
     try {
       setLoading(true);
-      const res = await api.post("/appointments/book", payload);
+      const res = await api.post("appointments/book", payload);
       showToast("Appointment booked successfully!", "success");
       onOk?.(res.data?.data || payload);
 
