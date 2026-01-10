@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Modal, Row, Col, message } from "antd";
+import { Modal, Row, Col } from "antd";
+import { useToast } from "../../context/ToastContext";
 import {
   FaStethoscope,
   FaTimes,
@@ -28,6 +29,7 @@ export default function DoctorRegistrationModal({
 
   const { handleSubmit, reset } = methods;
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   const onSubmit = async (data) => {
     const payload = {
@@ -57,7 +59,7 @@ export default function DoctorRegistrationModal({
     try {
       setLoading(true);
       const res = await api.post("/doctor/register", payload);
-      message.success("Registration submitted successfully");
+      showToast("Registration submitted successfully! We will review it shortly.", "success");
 
       // Reset form after successful submission
       reset();
@@ -65,7 +67,7 @@ export default function DoctorRegistrationModal({
       // Call optional callback with API response
       onOk?.(res.data);
     } catch (err) {
-      message.error(err.response?.data?.message || "Registration failed");
+      showToast(err.response?.data?.message || "Registration failed", "error");
     } finally {
       setLoading(false);
     }

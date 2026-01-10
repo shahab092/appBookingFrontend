@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Row, Col, message } from "antd";
+import { Modal, Row, Col } from "antd";
 import {
   CalendarOutlined,
   CloseOutlined,
@@ -12,6 +12,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import CustomSelect from "../common/CustomSelect";
 import { departmentOptions } from "../../constant/data";
 import { useSelector } from "react-redux";
+import { useToast } from "../../context/ToastContext";
 
 /* ---------------- Constants ---------------- */
 const timeSlots = [
@@ -48,6 +49,7 @@ export default function AppointmentModal({
   onCancel,
 }) {
   const { user } = useSelector((state) => state.auth);
+  const { showToast } = useToast();
 
   const [appointmentType, setAppointmentType] = useState("online");
   const [doctors, setDoctors] = useState([]);
@@ -75,7 +77,7 @@ export default function AppointmentModal({
       const res = await api.get("/doctor");
       setDoctors(res.data?.data || []);
     } catch {
-      message.error("Failed to fetch doctors");
+      showToast("Failed to fetch doctors", "error");
     }
   };
 
@@ -112,7 +114,7 @@ export default function AppointmentModal({
   /* ---------------- Submit ---------------- */
   const onSubmit = async (data) => {
     if (!appointmentType || !data.department || !data.doctor) {
-      message.error("Please fill all required fields");
+      showToast("Please fill all required fields", "warning");
       return;
     }
 
@@ -121,20 +123,20 @@ export default function AppointmentModal({
       department: data.department,
       patientId: user.id,
       date: `${monthNames[currentMonth - 1]} ${selectedDate}, ${currentYear}`,
-      timeSlot: selectedTime, // ✅ 24-hour format sent
+      timeSlot: selectedTime,
       appointmentType,
     };
 
     try {
       setLoading(true);
-      const res = await api.post("/appointment/book", payload);
-      message.success("Appointment booked");
+      const res = await api.post("/appointments/book", payload);
+      showToast("Appointment booked successfully!", "success");
       onOk?.(res.data?.data || payload);
 
       reset();
       onCancel();
     } catch (error) {
-      message.error(error.response?.data?.message || "Booking failed");
+      showToast(error.response?.data?.message || "Booking failed", "error");
     } finally {
       setLoading(false);
     }

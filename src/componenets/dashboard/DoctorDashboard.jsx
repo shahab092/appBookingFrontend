@@ -79,7 +79,7 @@ const DoctorDashboard = () => {
       {/* Quick Actions */}
       <div className="lg:col-span-1 space-y-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="font-semibold mb-4">Quick Actions</h3>
+          <h3 className="font-semibold mb-4 text-gray-900">Quick Actions</h3>
           <div className="space-y-3">
             <button className="w-full bg-[#2F74AA] text-white py-2 px-4 rounded-lg font-medium hover:bg-[#256a9a] transition-colors">
               New Prescription

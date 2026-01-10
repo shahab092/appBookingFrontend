@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Check, X, User, Calendar, Clock, MoreHorizontal } from "lucide-react";
-import { Modal, message } from "antd";
+import { Modal } from "antd";
 import api from "../../libs/api";
+import { useToast } from "../../context/ToastContext";
 
 export default function AdminDashboard() {
   const [doctors, setDoctors] = useState([]);
@@ -11,6 +12,7 @@ export default function AdminDashboard() {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [actionType, setActionType] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const { showToast } = useToast();
 
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [viewDoctor, setViewDoctor] = useState(null);
@@ -20,7 +22,7 @@ export default function AdminDashboard() {
       const res = await api.get("/doctor?status=pending");
       setDoctors(res.data.data);
     } catch {
-      message.error("Failed to fetch doctors");
+      showToast("Failed to fetch doctors", "error");
     } finally {
       setLoading(false);
     }
@@ -48,10 +50,10 @@ export default function AdminDashboard() {
         status: actionType,
       });
       setDoctors((prev) => prev.filter((d) => d._id !== selectedDoctor._id));
-      message.success(`Doctor ${actionType} successfully`);
+      showToast(`Doctor ${actionType} successfully`, "success");
       setModalVisible(false);
     } catch {
-      message.error("Failed to update doctor status");
+      showToast("Failed to update doctor status", "error");
     } finally {
       setActionLoading(false);
     }

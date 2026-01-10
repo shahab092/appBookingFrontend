@@ -13,6 +13,7 @@ import AppointmentModal from "./AppointmentModal";
 import RecentActivity from "./RecentActivity";
 import { useSelector } from "react-redux";
 import api from "../../libs/api";
+import { useToast } from "../../context/ToastContext";
 import AppointmentCard from "./AppointmentCard";
 import { useVideoCall } from "../../context/VideoCallProvider";
 
@@ -145,8 +146,9 @@ const PatientDashboard = () => {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`appointment/patient/${user.id}`);
+      const res = await api.get(`appointments/patient/${user.id}`);
       setAppointments(res.data.data || []);
+      console.log(res, "resp");
     } catch (error) {
       console.error("Error fetching appointments:", error);
     } finally {
@@ -187,8 +189,8 @@ const PatientDashboard = () => {
       switch (status?.toLowerCase()) {
         case "booked":
           return "green";
-        case "pending":
-          return "yellow";
+        // case "pending":
+        //   return "yellow";
         case "cancelled":
           return "red";
         case "completed":
@@ -214,6 +216,26 @@ const PatientDashboard = () => {
       type: appointmentType,
       typeIcon: appointmentIcon,
     };
+  };
+
+  const { showToast } = useToast();
+
+  const handleCancelAppointment = async (appointmentId) => {
+    try {
+      const res = await api.patch(`/appointments/${appointmentId}/status`, {
+        status: "cancelled",
+      });
+
+      if (res.status === 200) {
+        showToast("Appointment cancelled successfully", "success");
+        fetchAppointments();
+      }
+    } catch (error) {
+      showToast(
+        error.response?.data?.message || "Failed to cancel appointment",
+        "error"
+      );
+    }
   };
 
   return (
@@ -255,6 +277,7 @@ const PatientDashboard = () => {
               </p>
             ) : appointments.length > 0 ? (
               appointments.map((appt) => {
+                console.log(appt, "sfddsdfsdf");
                 const formattedAppt = formatAppointmentData(appt);
                 return (
                   <AppointmentCard
@@ -267,6 +290,9 @@ const PatientDashboard = () => {
                     type={formattedAppt.type}
                     typeIcon={formattedAppt.typeIcon}
                     handleOpenModal={handleOpenModal}
+                    handleCancel={() =>
+                      handleCancelAppointment(formattedAppt.id)
+                    }
                   />
                 );
               })

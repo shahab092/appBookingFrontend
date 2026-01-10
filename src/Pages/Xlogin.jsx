@@ -10,7 +10,7 @@ import { jwtDecode } from "jwt-decode";
 
 import CustomTextField from "../componenets/common/CustomTextField";
 import { loginSchema } from "../validation/validation";
-import { message } from "antd/lib";
+import { useToast } from "../context/ToastContext";
 
 const Xlogin = () => {
   const methods = useForm({
@@ -25,6 +25,7 @@ const Xlogin = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // Email/password login
   const onSubmit = async (data) => {
@@ -52,9 +53,9 @@ const Xlogin = () => {
 
       if (decoded.role === "admin") navigate("/admin/dashboard");
       else navigate("/patient/dashboard");
-      message.success("Login successful!");
+      showToast("Login successful! Welcome back.", "success");
     } catch (error) {
-      message.error("Invalid email or password");
+      showToast("Invalid email or password. Please try again.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -73,9 +74,9 @@ const Xlogin = () => {
         })
       );
       navigate("/patient/dashboard");
-      message.success("Google login successful!");
+      showToast("Google login successful!", "success");
     } catch (err) {
-      message.error("Google login failed!");
+      showToast("Google login failed!", "error");
     } finally {
       setIsLoading(false);
     }

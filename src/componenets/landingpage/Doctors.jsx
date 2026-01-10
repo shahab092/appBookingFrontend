@@ -129,7 +129,7 @@ const Doctors = () => {
                             : "text-gray-300"
                         } ${index === 4 && doctor.rating % 1 > 0 ? "text-yellow-400" : ""}`}
                         size={12}
-                        className="sm:w-3.5 sm:h-3.5 md:w-4 md:h-4"
+                        // className="sm:w-3.5 sm:h-3.5 md:w-4 md:h-4"
                       />
                     ))}
                     <span className="text-gray-600 ml-1 sm:ml-2 font-semibold text-xs sm:text-sm">{doctor.rating}</span>

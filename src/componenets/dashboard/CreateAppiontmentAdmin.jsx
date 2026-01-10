@@ -11,7 +11,8 @@ import {
 //   Filter,
   FiRefreshCw
 } from "react-icons/fi";
-import { Modal, message } from "antd";
+import { Modal } from "antd";
+import { useToast } from "../../context/ToastContext";
 import api from "../../libs/api";
 import { useForm, FormProvider } from "react-hook-form";
 import CustomSelect from "../common/CustomSelect";
@@ -39,6 +40,7 @@ const CreateAppointmentAdmin = () => {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [lastAppointment, setLastAppointment] = useState(null);
+  const { showToast } = useToast();
 
   const methods = useForm({
     defaultValues: { 
@@ -114,7 +116,7 @@ const CreateAppointmentAdmin = () => {
   /* ---------------- Submit Appointment ---------------- */
   const onSubmit = async (data) => {
     if (!appointmentType || !data.department || !data.doctor || !data.patient) {
-      message.error("Please fill all required fields");
+      showToast("Please fill all required fields", "warning");
       return;
     }
 
@@ -147,7 +149,7 @@ const CreateAppointmentAdmin = () => {
         appointmentTypeLabel: appointmentType === "online" ? "Online Consultation" : "In-clinic Visit"
       });
       
-      message.success("Appointment booked successfully!");
+      showToast("Appointment booked successfully!", "success");
       setSuccessModalVisible(true);
       reset();
       
@@ -156,7 +158,7 @@ const CreateAppointmentAdmin = () => {
       setSelectedDate(new Date().getDate());
       setSelectedTime(timeSlots[0]);
     } catch (error) {
-      message.error(error.response?.data?.message || "Failed to book appointment");
+      showToast(error.response?.data?.message || "Failed to book appointment", "error");
     } finally {
       setLoading(false);
     }

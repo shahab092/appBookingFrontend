@@ -20,13 +20,14 @@ const AppointmentCard = ({
   showActions = true,
   cancelled = false,
   handleOpenModal,
+  handleCancel
 }) => {
   const statusStyles = {
-    green: "bg-green-100 text-green-800 border border-green-300",
-    yellow: "bg-yellow-100 text-yellow-800 border border-yellow-300",
-    red: "bg-red-100 text-red-800 border border-red-300",
-    blue: "bg-blue-100 text-blue-800 border border-blue-300",
-    gray: "bg-gray-100 text-gray-800 border border-gray-300",
+    green: "bg-green-100 text-green-800 border border-green-200",
+    yellow: "bg-yellow-100 text-yellow-800 border border-yellow-200",
+    red: "bg-red-100 text-red-800 border border-red-200",
+    blue: "bg-blue-100 text-blue-800 border border-blue-200",
+    gray: "bg-gray-100 text-gray-700 border border-gray-300",
   };
 
   // Determine appointment type icon
@@ -49,8 +50,8 @@ const AppointmentCard = ({
   // Get appointment type badge style
   const getAppointmentTypeStyle = () => {
     return type === "online" 
-      ? "bg-blue-100 text-blue-700 border border-blue-200" 
-      : "bg-cyan-100 text-cyan-700 border border-cyan-200";
+      ? "bg-blue-100 text-blue-800 border border-blue-200" 
+      : "bg-blue-50 text-[#2F74AA] border border-[#2F74AA]";
   };
 
   return (
@@ -58,8 +59,8 @@ const AppointmentCard = ({
       <div
         className={`border-l-4 rounded-lg p-4 transition-all duration-300 ${
           type === "online"
-            ? "border-blue-500 bg-gradient-to-r from-blue-50 to-white"
-            : "border-cyan-500 bg-gradient-to-r from-cyan-50 to-white"
+            ? "border-blue-400 bg-gradient-to-r from-blue-50 to-white"
+            : "border-[#2F74AA] bg-gradient-to-r from-blue-100 to-white"
         }`}
       >
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
@@ -76,7 +77,7 @@ const AppointmentCard = ({
                     ? "bg-red-500"
                     : statusColor === "blue"
                     ? "bg-blue-500"
-                    : "bg-gray-500"
+                    : "bg-gray-400"
                 }`}
               />
               <div className="flex-1">
@@ -121,13 +122,13 @@ const AppointmentCard = ({
             <div className="flex flex-col sm:flex-row gap-2 mt-3 sm:mt-0 flex-shrink-0">
               <button
                 onClick={handleOpenModal}
-                className="w-full sm:w-auto px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 border-2 border-gray-200 hover:bg-blue-50 hover:border-blue-400 transition-colors"
+                className="w-full sm:w-auto px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 border-2 border-gray-200 hover:bg-blue-50 hover:border-[#2F74AA] transition-colors text-gray-700"
               >
                 <FiCalendar className="text-lg" />
                 Reschedule
               </button>
 
-              <button className="w-full sm:w-auto px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 text-red-500 border-2 border-gray-200 hover:bg-red-50 transition-colors">
+              <button onClick={handleCancel} className="w-full sm:w-auto px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 text-red-600 border-2 border-gray-200 hover:bg-red-50 transition-colors">
                 <CloseOutlined />
                 Cancel
               </button>

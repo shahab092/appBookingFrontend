@@ -10,6 +10,7 @@ import "./App.css";
 // import Calling from './componenets/dashboard/Calling'
 import Index from "./routes";
 import { VideoCallProvider } from "./context/VideoCallProvider";
+import { ToastProvider } from "./context/ToastContext";
 import { useSelector } from "react-redux";
 
 function App() {
@@ -20,9 +21,11 @@ function App() {
       {/* <Landing /> */}
       {/* <Dashboard /> */}
       <GoogleOAuthProvider clientId="855702064548-6jje93hln82jjcd4s1uqftcqhb5qa64d.apps.googleusercontent.com">
-        <VideoCallProvider userId={user?.id}>
-          <Index />
-        </VideoCallProvider>
+        <ToastProvider>
+          <VideoCallProvider userId={user?.id}>
+            <Index />
+          </VideoCallProvider>
+        </ToastProvider>
       </GoogleOAuthProvider>
       {/* <Xlogin /> */}
       {/* <ConsultationModal /> */}

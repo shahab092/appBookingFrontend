@@ -13,7 +13,8 @@ import {
   FiFilter,
   FiRefreshCw,
 } from "react-icons/fi";
-import { Modal, message } from "antd";
+import { Modal } from "antd";
+import { useToast } from "../../context/ToastContext";
 import api from "../../libs/api";
 import { specializationOptions } from "../../constant/data";
 
@@ -25,6 +26,7 @@ const Users = () => {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [specializationFilter, setSpecializationFilter] = useState("all");
+  const { showToast } = useToast();
 
   const statusOptions = [
     { label: "Approved", value: "approved" },
@@ -83,11 +85,11 @@ const Users = () => {
   const handleCreateDoctor = async (data) => {
     try {
       await api.post("/doctor", data);
-      message.success("Doctor created successfully");
+      showToast("Doctor created successfully", "success");
       setModalVisible(false);
       fetchDoctors();
     } catch {
-      message.error("Failed to create doctor");
+      showToast("Failed to create doctor", "error");
     }
   };
 
