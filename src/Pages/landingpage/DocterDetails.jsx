@@ -1,70 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
+import { Breadcrumb } from "antd";
 import TopBar from "../../componenets/landingpage/TopBar";
 import Footer from "../../componenets/landingpage/Footer";
-import { FaStar, FaMapMarkerAlt, FaClock, FaPhone, FaArrowLeft } from "react-icons/fa";
+import { FaStar, FaMapMarkerAlt, FaClock, FaPhone } from "react-icons/fa";
 
 export default function DocterDetails() {
     const navigate = useNavigate();
-    const [showFloatingBack, setShowFloatingBack] = useState(false);
 
-    // Show floating back button after scrolling down
-    useEffect(() => {
-        const handleScroll = () => {
-            setShowFloatingBack(window.scrollY > 300);
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    // Handle keyboard shortcut (Escape key)
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (e.key === 'Escape') {
-                navigate(-1);
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [navigate]);
+    const breadcrumbItems = [
+        {
+            title: "Home",
+            onClick: () => navigate("/"),
+        },
+        {
+            title: "Find Doctors",
+            onClick: () => navigate("/doctorSearch"),
+        },
+        {
+            title: "Dr. Sarah Thompson",
+        },
+    ];
 
     return (
         <div className="bg-gradient-to-b from-blue-50/50 to-white dark:from-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-300 flex flex-col">
             {/* Navigation */}
             <TopBar />
 
-            {/* Sticky Back Button */}
-            <div className="sticky top-0 z-40 bg-gradient-to-r from-primary/98 to-blue-600 dark:from-primary dark:to-blue-800 py-3 sm:py-4 px-3 sm:px-4 md:px-6 shadow-lg backdrop-blur-sm border-b border-white/10 relative overflow-hidden transition-all duration-300">
-                <div className="absolute top-0 left-0 w-full h-full">
-                    <div className="absolute top-[-30%] left-[-15%] w-[35%] h-[35%] bg-white/15 rounded-full blur-3xl animate-pulse"></div>
-                    <div className="absolute bottom-[-30%] right-[-15%] w-[30%] h-[30%] bg-emerald-400/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-                </div>
-                <div className="max-w-7xl mx-auto w-full relative z-10">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 sm:gap-3 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-white/25 hover:bg-white/35 active:bg-white/45 dark:bg-white/15 dark:hover:bg-white/25 dark:active:bg-white/35 text-white rounded-lg sm:rounded-xl lg:rounded-2xl backdrop-blur-lg transition-all duration-200 transform hover:scale-105 active:scale-95 group font-semibold text-xs sm:text-sm md:text-base shadow-lg hover:shadow-xl border border-white/20 hover:border-white/40"
-                        title="Go Back (Press ESC)"
-                    >
-                        <FaArrowLeft size={16} className="sm:w-5 sm:h-5 md:w-5 md:h-5 group-hover:-translate-x-1.5 transition-transform duration-300" />
-                        <span className="hidden sm:inline">Go Back</span>
-                        <span className="sm:hidden">Back</span>
-                        <span className="hidden md:inline text-white/70 text-xs ml-auto">(ESC)</span>
-                    </button>
+            {/* Breadcrumb Navigation */}
+            <div className="sticky top-0 z-40 bg-white dark:bg-slate-800 py-3 sm:py-4 px-3 sm:px-4 md:px-6 shadow-sm border-b border-gray-200 dark:border-slate-700">
+                <div className="max-w-7xl mx-auto w-full">
+                    <Breadcrumb items={breadcrumbItems} className="text-typegray" />
                 </div>
             </div>
-
-            {/* Floating Back Button - Shows on scroll */}
-            {showFloatingBack && (
-                <button
-                    onClick={() => navigate(-1)}
-                    className="fixed bottom-8 right-6 z-50 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-primary to-blue-600 hover:from-primary/90 hover:to-blue-700 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 active:scale-95 flex items-center justify-center group backdrop-blur-md border-2 border-white/30 hover:border-white/50 animate-in fade-in slide-in-from-bottom-5"
-                    title="Go Back (Press ESC)"
-                >
-                    <FaArrowLeft size={22} className="sm:w-6 sm:h-6 group-hover:-translate-x-1 transition-transform duration-300" />
-                </button>
-            )}
 
             <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
                 {/* Profile Card - Enhanced */}
