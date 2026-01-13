@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Xlogin from "../Pages/Xlogin";
 import Landing from "../Pages/landingpage/Landing";
+import DocterDetails from "../Pages/landingpage/DocterDetails";
 import DashboardLayout from "../componenets/dashboard/DashboardLayout";
 import AdminDashboard from "../componenets/dashboard/AdminDashboard";
 import PatientDashboard from "../componenets/dashboard/PatientDashboard";
@@ -11,6 +12,7 @@ import ProtectedRoute from "../hoc/ProtectedRoute";
 import CreateAppiontmentAdmin from "../componenets/dashboard/CreateAppiontmentAdmin";
 
 import Calling from "../componenets/dashboard/Calling";
+import DoctorSearch from "../Pages/DoctorSearch/DoctorSearch";
 
 export default function AppRoutes() {
   return (
@@ -19,7 +21,9 @@ export default function AppRoutes() {
         {/* Public routes */}
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Landing />} />
+          <Route path="/doctor-profile" element={<DocterDetails />} />
           <Route path="/login" element={<Xlogin />} />
+          <Route path="/doctorSearch" element={<DoctorSearch />} />
         </Route>
 
         {/* Admin routes */}
