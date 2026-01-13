@@ -104,18 +104,18 @@ const TopBar = () => {
       {/* Main Navigation Bar */}
 
       <nav className="bg-white shadow-xl z-50 border-b border-gray-100">
-        <div className="px-4">
-          <div className="flex justify-between items-center py-3">
+        <div className="px-3 sm:px-4">
+          <div className="flex justify-between items-center py-2 sm:py-3">
             {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-br from-[#2e76ad] to-[#3a8ccc] text-white p-3 rounded-2xl shadow-lg">
-                <FaHeartbeat className="text-2xl" />
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="bg-primary text-white p-2 sm:p-3 rounded-lg sm:rounded-2xl shadow-lg flex-shrink-0">
+                <FaHeartbeat className="text-lg sm:text-2xl" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-[#2e76ad] to-[#3a8ccc] bg-clip-text text-transparent">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-primary truncate">
                   MediCare
                 </h1>
-                <p className="text-xs text-gray-500 font-medium">
+                <p className="text-xs text-gray-500 font-medium hidden sm:block">
                   Trusted Healthcare
                 </p>
               </div>
@@ -135,10 +135,11 @@ const TopBar = () => {
                   key={item.id}
                   href={`#${item.id}`}
                   onClick={() => setActiveLink(item.id)}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${activeLink === item.id
-                    ? "bg-[#2e76ad] text-white shadow-lg transform scale-105"
-                    : "text-gray-700 hover:bg-blue-50 hover:text-[#2e76ad] hover:shadow-md"
-                    }`}
+                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                    activeLink === item.id
+                      ? "bg-primary text-white shadow-lg transform scale-105"
+                      : "text-neutral-dark hover:bg-primary/5 hover:text-primary hover:shadow-md"
+                  }`}
                 >
                   {item.name}
                 </a>
@@ -151,7 +152,7 @@ const TopBar = () => {
                 onClick={handleUserClick}
                 className="flex items-center space-x-3 px-4 py-2 rounded-xl hover:bg-blue-50 transition-all duration-200"
               >
-                <div className="w-12 h-12 bg-gradient-to-br from-[#2e76ad] to-[#3a8ccc] rounded-full flex items-center justify-center text-white font-bold text-lg">
+                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-lg">
                   {user.name.charAt(0)}
                 </div>
                 <div className="hidden xl:flex flex-col items-start">
@@ -164,30 +165,30 @@ const TopBar = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="flex items-center space-x-4 lg:hidden">
+            <div className="flex items-center space-x-2 sm:space-x-3 lg:hidden">
               {/* User Avatar for Mobile */}
               <button
                 onClick={handleUserClick}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-1 sm:space-x-2"
               >
-                <div className="w-10 h-10 bg-gradient-to-br from-[#2e76ad] to-[#3a8ccc] rounded-full flex items-center justify-center text-white font-bold">
+                <div className="w-8 sm:w-10 h-8 sm:h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
                   {user.name.charAt(0)}
                 </div>
               </button>
 
               <button
-                className="bg-gray-100 hover:bg-[#2e76ad] text-gray-700 hover:text-white p-3 rounded-xl transition-all duration-200"
+                className="bg-neutral-light hover:bg-primary text-neutral-dark hover:text-white p-2 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-200 flex-shrink-0"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
-                {isMenuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+                {isMenuOpen ? <FaTimes size={18} className="sm:w-5 sm:h-5" /> : <FaBars size={18} className="sm:w-5 sm:h-5" />}
               </button>
             </div>
           </div>
 
           {/* Mobile Navigation */}
           {isMenuOpen && (
-            <div className="lg:hidden bg-white border-t border-gray-200 py-4">
-              <div className="flex flex-col space-y-2">
+            <div className="lg:hidden bg-white border-t border-gray-200 py-3 sm:py-4">
+              <div className="flex flex-col space-y-1 sm:space-y-2">
                 {[
                   { name: "Find Doctors", id: "findDoctors" },
                   { name: "Hospitals", id: "hospitals" },
@@ -202,24 +203,25 @@ const TopBar = () => {
                       setActiveLink(item.id);
                       setIsMenuOpen(false);
                     }}
-                    className={`px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${activeLink === item.id
-                      ? "bg-[#2e76ad] text-white shadow-lg"
-                      : "text-gray-700 hover:bg-blue-50 hover:text-[#2e76ad]"
-                      }`}
+                    className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base transition-all duration-200 ${
+                      activeLink === item.id
+                        ? "bg-primary text-white shadow-lg"
+                        : "text-neutral-dark hover:bg-primary/5 hover:text-primary"
+                    }`}
                   >
                     {item.name}
                   </a>
                 ))}
 
                 {/* User Section in Mobile Menu */}
-                <div className="pt-4 mt-2 border-t border-gray-200">
-                  <div className="flex items-center space-x-3 px-4 py-3 bg-blue-50 rounded-xl">
-                    <div className="w-12 h-12 bg-gradient-to-br from-[#2e76ad] to-[#3a8ccc] rounded-full flex items-center justify-center text-white font-bold text-lg">
+                <div className="pt-3 sm:pt-4 mt-2 border-t border-gray-200">
+                  <div className="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-blue-50 rounded-lg sm:rounded-xl">
+                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-lg flex-shrink-0">
                       {user.name.charAt(0)}
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">{user.name}</p>
-                      <p className="text-sm text-gray-600">{user.email}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{user.name}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 truncate">{user.email}</p>
                     </div>
                   </div>
 
@@ -228,7 +230,7 @@ const TopBar = () => {
                       navigate("/profile");
                       setIsMenuOpen(false);
                     }}
-                    className="w-full mt-3 bg-blue-50 text-[#2e76ad] hover:bg-blue-100 px-4 py-3 rounded-xl font-medium transition-all duration-200 text-center"
+                    className="w-full mt-2 sm:mt-3 bg-primary/5 text-primary hover:bg-primary/10 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base transition-all duration-200 text-center"
                   >
                     View Profile
                   </button>
@@ -236,7 +238,7 @@ const TopBar = () => {
                   {user.isLoggedIn && (
                     <button
                       onClick={handleLogout}
-                      className="w-full mt-2 bg-red-50 text-red-600 hover:bg-red-100 px-4 py-3 rounded-xl font-medium transition-all duration-200 text-center"
+                      className="w-full mt-2 bg-red-50 text-red-600 hover:bg-red-100 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base transition-all duration-200 text-center"
                     >
                       Logout
                     </button>

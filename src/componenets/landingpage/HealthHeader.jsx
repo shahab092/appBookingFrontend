@@ -16,7 +16,7 @@ import {
   Eye,
   Bone,
   Brain,
-  Droplets
+  Droplets,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MOCK_DOCTORS } from "../../constant/data";
@@ -24,76 +24,55 @@ import { MOCK_DOCTORS } from "../../constant/data";
 // Main Hero Component with Background Image
 const HealthHero = () => {
   return (
-    <div className="relative min-h-[calc(100vh-74px)] flex items-center justify-center overflow-hidden">
+    <div className="relative min-h-screen sm:min-h-[calc(100vh-74px)] flex items-center justify-center overflow-hidden pt-8 sm:pt-0">
       {/* Background with Centered Image */}
-      <div className="absolute inset-0 z-0 bg-[#2d8fc6] flex items-center justify-center">
+      <div className="absolute inset-0 z-0 bg-primary flex items-center justify-center">
         <img
           src="/assets/img/WhatsApp Image 2026-01-12 at 1.17.25 PM.jpeg"
           alt="Healthcare background"
-          className="w-full h-full object-cover  mix-blend-overlay"
+          className="w-full h-full object-cover mix-blend-overlay"
         />
         {/* Subtle Blur Overlay */}
-        <div className="absolute inset-0 bg-[#2d8fc6]/40 backdrop-blur-[2px]"></div>
+        <div className="absolute inset-0 bg-primary/40 backdrop-blur-[2px]"></div>
       </div>
       {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#2d8fc6]/80 via-[#2d8fc6]/60 to-emerald-500/30"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/60 to-success/30"></div>
 
       {/* Main Content */}
-      <div className="relative z-10 container mx-auto text-center">
+      <div className="relative z-10 container mx-auto px-3 sm:px-4 text-center">
         {/* Main Heading */}
-        <h1 className="text-4xl md:text-7xl font-bold text-white mb-4 leading-tight">
-          Your Health is
-          Our Expert Priority
-          {/* <span className="block text-emerald-100 mt-2">
-          </span> */}
+        <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-3 sm:mb-4 md:mb-6 leading-tight">
+          Your Health is Our Expert Priority
         </h1>
 
-        {/* Subtitle */}
-        {/* <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-12 font-light">
-          Find the best doctors, hospitals, and healthcare services across
-          Pakistan with our comprehensive medical platform.
-        </p> */}
-
         {/* Search Component */}
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto mb-6 sm:mb-8 md:mb-12">
           <SearchComponent />
         </div>
 
         {/* Categories section */}
-        <div className="mt-12 max-w-5xl mx-auto">
-          <div className="flex flex-wrap justify-center gap-4">
+        <div className="mt-6 sm:mt-8 md:mt-12 max-w-5xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4">
             <CategoryPill
-              icon={<FaStethoscope size={18} />}
+              icon={<FaStethoscope size={16} className="sm:w-[18px] sm:h-[18px]" />}
               label="General Physician"
               active={true}
             />
-            <CategoryPill
-              icon={<Bone size={20} />}
-              label="Dentist"
-            />
-            <CategoryPill
-              icon={<Baby size={20} />}
-              label="Pediatrician"
-            />
-            <CategoryPill
-              icon={<Heart size={20} />}
-              label="Cardiologist"
-            />
-            <CategoryPill
-              icon={<Smile size={20} />}
-              label="Dermatologist"
-            />
+            <CategoryPill icon={<Bone size={18} className="sm:w-5 sm:h-5" />} label="Dentist" />
+            <CategoryPill icon={<Baby size={18} className="sm:w-5 sm:h-5" />} label="Pediatrician" />
+            <CategoryPill icon={<Heart size={18} className="sm:w-5 sm:h-5" />} label="Cardiologist" />
+            <CategoryPill icon={<Smile size={18} className="sm:w-5 sm:h-5" />} label="Dermatologist" />
           </div>
         </div>
       </div>
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+      {/* Scroll Indicator - Hide on very small screens */}
+      <div className="hidden sm:block absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
         <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
           <div className="w-1 h-3 bg-white/70 rounded-full mt-2"></div>
         </div>
       </div>
-    </div >
+    </div>
   );
 };
 
@@ -102,19 +81,16 @@ const CategoryPill = ({ icon, label, active = false }) => {
   return (
     <button
       className={`
-      flex items-center space-x-3 px-6 py-4 rounded-full transition-all duration-300
-      ${active
-          ? "bg-white text-[#2d8fc6] shadow-lg scale-105"
+      flex items-center space-x-2 sm:space-x-3 px-3 sm:px-5 md:px-6 py-2 sm:py-3 md:py-4 rounded-full transition-all duration-300 text-xs sm:text-sm md:text-base
+      ${
+        active
+          ? "bg-white text-primary shadow-lg scale-105"
           : "bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md"
-        }
+      }
     `}
     >
-      <span className={active ? "text-[#2d8fc6]" : "text-white"}>
-        {icon}
-      </span>
-      <span className="font-semibold text-sm whitespace-nowrap">
-        {label}
-      </span>
+      <span className={active ? "text-primary" : "text-white"}>{icon}</span>
+      <span className="font-semibold whitespace-nowrap">{label}</span>
     </button>
   );
 };
@@ -254,16 +230,16 @@ const SearchComponent = () => {
 
   return (
     <div className="w-full relative" ref={dropdownRef}>
-      {/* Search Form in Single Row */}
+      {/* Search Form */}
       <form onSubmit={handleSearch} className="w-full">
-        <div className="flex flex-col md:flex-row items-stretch bg-white/10 backdrop-blur-xl rounded-xl shadow-2xl p-3 md:p-4 border border-white/20">
+        <div className="flex flex-col sm:flex-row items-stretch gap-2 sm:gap-1 bg-white/10 backdrop-blur-xl rounded-lg sm:rounded-xl shadow-2xl p-2 sm:p-3 md:p-4 border border-white/20">
           {/* Location Selector */}
-          <div className="w-full md:w-1/4 mb-2 md:mb-0 md:mr-1">
+          <div className="w-full sm:w-1/4 order-2 sm:order-1">
             <div className="relative h-full">
               <select
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
-                className="w-full h-full p-3 pl-11 pr-8 bg-white border border-gray-200 rounded-l-lg rounded-r-none focus:border-[#2d8fc6] focus:ring-2 focus:ring-[#2d8fc6]/30 focus:outline-none appearance-none text-gray-800 font-medium text-sm hover:border-gray-300 transition-colors"
+                className="w-full h-full p-2.5 sm:p-3 pl-9 sm:pl-11 pr-7 sm:pr-8 bg-white border border-gray-200 rounded-lg sm:rounded-l-lg sm:rounded-r-none focus:border-primary focus:ring-2 focus:ring-primary/30 focus:outline-none appearance-none text-gray-800 font-medium text-xs sm:text-sm hover:border-gray-300 transition-colors"
                 title="Select City"
               >
                 <option value="">All Pakistan</option>
@@ -304,18 +280,18 @@ const SearchComponent = () => {
                 </optgroup>
               </select>
               <FaMapMarkerAlt
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#2d8fc6]"
-                size={16}
+                className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-primary"
+                size={14}
               />
               <FaChevronDown
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
-                size={12}
+                className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+                size={10}
               />
             </div>
           </div>
 
           {/* Search Input */}
-          <div className="w-full md:w-2/4 mb-2 md:mb-0 md:mx-1 relative">
+          <div className="w-full sm:w-2/4 order-1 sm:order-2 relative">
             <div className="relative h-full">
               <input
                 type="text"
@@ -325,41 +301,41 @@ const SearchComponent = () => {
                   searchQuery.trim().length > 1 && setShowSuggestions(true)
                 }
                 onBlur={handleBlur}
-                placeholder="Search for doctors, specialists..."
-                className="w-full h-full p-3 pl-11 pr-4 bg-white border border-gray-200 border-l-0 border-r-0 rounded-none focus:border-[#2d8fc6] focus:ring-0 focus:outline-none text-gray-800 font-medium hover:border-gray-300 transition-colors"
+                placeholder="Search doctors, specialists..."
+                className="w-full h-full p-2.5 sm:p-3 pl-9 sm:pl-11 pr-3 sm:pr-4 bg-white border border-gray-200 sm:border-l-0 sm:border-r-0 rounded-lg sm:rounded-none focus:border-primary focus:ring-0 focus:outline-none text-gray-800 font-medium text-xs sm:text-sm hover:border-gray-300 transition-colors"
                 autoComplete="off"
               />
               <FaSearch
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#2d8fc6]"
-                size={16}
+                className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-primary"
+                size={14}
               />
             </div>
 
             {/* Suggestions Dropdown */}
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-2xl border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-2xl border border-gray-100 z-50 overflow-hidden max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
                 {suggestions.map((doctor) => (
                   <button
                     key={doctor.id}
                     type="button"
                     onMouseDown={() => handleSuggestionClick(doctor)}
-                    className="w-full flex items-center p-3 hover:bg-gray-50 transition-colors text-left group border-b border-gray-50 last:border-0"
+                    className="w-full flex items-center p-2 sm:p-3 hover:bg-gray-50 transition-colors text-left group border-b border-gray-50 last:border-0"
                   >
-                    <div className="w-10 h-10 rounded-full overflow-hidden mr-3 border border-gray-100 shrink-0 group-hover:border-[#2d8fc6] transition-colors">
+                    <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full overflow-hidden mr-2 sm:mr-3 border border-gray-100 shrink-0 group-hover:border-primary transition-colors">
                       <img
                         src={doctor.image}
                         alt={doctor.name}
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-gray-800 group-hover:text-[#2d8fc6] transition-colors flex items-center">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs sm:text-sm font-bold text-gray-800 group-hover:text-primary transition-colors flex items-center truncate">
                         {doctor.name}
                         {doctor.isVerified && (
-                          <FaUserMd className="ml-1 text-[#2d8fc6]" size={12} />
+                          <FaUserMd className="ml-1 text-primary flex-shrink-0" size={10} />
                         )}
                       </h4>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 truncate">
                         {doctor.specialty} • {doctor.experience} Exp
                       </p>
                     </div>
@@ -370,13 +346,13 @@ const SearchComponent = () => {
           </div>
 
           {/* Search Button */}
-          <div className="w-full md:w-1/4">
+          <div className="w-full sm:w-1/4 order-3">
             <button
               type="submit"
-              className="w-full h-full bg-[#2d8fc6] hover:bg-[#2478b3] text-white rounded-r-lg rounded-l-none font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center space-x-2 p-3"
+              className="w-full h-full bg-primary hover:bg-primary/90 text-white rounded-lg sm:rounded-r-lg sm:rounded-l-none font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center space-x-1 sm:space-x-2 p-2.5 sm:p-3 text-xs sm:text-sm md:text-base"
             >
-              <FaSearch size={18} />
-              <span>Search</span>
+              <FaSearch size={14} className="sm:w-[18px] sm:h-[18px]" />
+              <span className="hidden sm:inline">Search</span>
             </button>
           </div>
         </div>

@@ -1,7 +1,13 @@
 import { Video, CheckCircle, MapPin, ShieldCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const DoctorCard = ({ doctor }) => {
+  const navigate = useNavigate();
   if (!doctor) return null;
+
+  const handleProfileClick = () => {
+    navigate("/doctor-profile", { state: { doctor } });
+  };
 
   return (
     <div className="w-full max-w-6xl bg-white/80 backdrop-blur border border-gray-200 rounded-2xl p-5 flex flex-col md:flex-row gap-5 shadow-lg hover:shadow-xl transition-all duration-300 mb-6">
@@ -10,10 +16,11 @@ const DoctorCard = ({ doctor }) => {
         <img
           src={doctor.image || "https://via.placeholder.com/140"}
           alt={doctor.name}
-          className="w-32 h-32 rounded-2xl object-cover border-2 border-blue-500"
+          className="w-32 h-32 rounded-2xl object-cover border-2 border-primary cursor-pointer"
+          onClick={handleProfileClick}
         />
         {doctor.isVerified && (
-          <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs px-3 py-1 rounded-full flex items-center gap-1 shadow">
+          <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-success text-white text-xs px-3 py-1 rounded-full flex items-center gap-1 shadow">
             <ShieldCheck size={12} /> Verified
           </span>
         )}
@@ -22,23 +29,24 @@ const DoctorCard = ({ doctor }) => {
       {/* Middle: Info */}
       <div className="flex-1">
         {/* Name */}
-        <h2 className="text-xl font-bold text-gray-800">{doctor.name}</h2>
+        <h2
+          className="font-bold text-neutral-dark cursor-pointer hover:text-primary transition-colors"
+          onClick={handleProfileClick}
+        >
+          {doctor.name}
+        </h2>
 
-        <p className="text-blue-700 font-medium">{doctor.specialty}</p>
-        <p className="text-gray-500 text-sm">{doctor.qualifications}</p>
+        <p className="text-primary font-medium">{doctor.specialty}</p>
+        <p className="text-neutral-dark/60 text-sm">{doctor.qualifications}</p>
 
         {/* Stats */}
         <div className="flex flex-wrap gap-6 mt-3 text-sm">
-          <Stat
-            value={doctor.reviews}
-            label="Reviews"
-            color="text-orange-500"
-          />
+          <Stat value={doctor.reviews} label="Reviews" color="text-warning" />
           <Stat value={doctor.experience} label="Years Exp" />
           <Stat
             value={doctor.satisfaction}
             label="Satisfaction"
-            color="text-green-600"
+            color="text-success"
           />
         </div>
 
@@ -47,7 +55,7 @@ const DoctorCard = ({ doctor }) => {
           {doctor.tags?.map((tag) => (
             <span
               key={tag}
-              className="px-3 py-1 text-xs font-medium bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 rounded-full border border-blue-200"
+              className="px-3 py-1 text-xs font-medium bg-primary/5 text-primary rounded-full border border-primary/20"
             >
               {tag}
             </span>
@@ -77,13 +85,19 @@ const DoctorCard = ({ doctor }) => {
       </div>
 
       {/* Right: CTA */}
-      <div className="flex flex-col justify-between min-w-[200px]">
+      <div className="flex flex-col justify-between min-w-[220px]">
         <div className="space-y-3">
-          <button className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:scale-[1.02] transition text-white px-6 py-3 rounded-xl font-semibold shadow-md flex items-center justify-center gap-2">
-            <Video size={18} /> Video Call
+          <button
+            className="w-full bg-primary hover:scale-[1.02] transition text-white px-4 py-3 rounded-xl font-semibold shadow-md flex items-center justify-center gap-2 text-sm"
+            onClick={handleProfileClick}
+          >
+            <Video size={18} /> Book Online Appointment
           </button>
-          <button className="w-full bg-gradient-to-r from-blue-700 to-blue-800 hover:scale-[1.02] transition text-white px-6 py-3 rounded-xl font-semibold shadow-md">
-            👤 View Profile
+          <button
+            className="w-full bg-white border-2 border-primary text-primary hover:bg-primary/5 transition px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm"
+            onClick={handleProfileClick}
+          >
+            <MapPin size={18} /> In-Clinic Appointment
           </button>
         </div>
       </div>
