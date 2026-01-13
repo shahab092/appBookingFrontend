@@ -42,7 +42,7 @@ const DoctorSearch = () => {
   return (
     <div className="min-h-screen bg-gray-50/50">
       {/* Hero Search Section - Full Width */}
-      <div className="bg-[#2d8fc6] py-10 px-4 mb-8 relative overflow-hidden">
+      <div className="bg-primary py-10 px-4 mb-8 relative overflow-hidden">
         {/* Background Decorations */}
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/10 rounded-full blur-3xl"></div>
@@ -62,9 +62,7 @@ const DoctorSearch = () => {
                 className="group-hover:-translate-x-1 transition-transform"
               />
             </button>
-            <h1 className="text-2xl md:text-3xl font-bold text-white leading-tight">
-              Search Results
-            </h1>
+            <h1 className="text-white">Search Results</h1>
           </div>
 
           {/* Search Bar - Full Width within Container */}
@@ -83,17 +81,19 @@ const DoctorSearch = () => {
         {/* Results Info and Filter Pills */}
         <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4 px-2">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-gray-800">
               Found {filteredDoctors.length} Specialists
             </h2>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 text-sm font-medium">
               Top rated doctors available for you
             </p>
           </div>
 
           <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
-            <span className="text-sm text-gray-400 pl-2">Sort by:</span>
-            <select className="text-sm font-bold bg-transparent outline-none cursor-pointer text-[#2d8fc6] pr-2">
+            <span className="text-sm text-gray-400 pl-2 font-medium">
+              Sort by:
+            </span>
+            <select className="text-sm font-bold bg-transparent outline-none cursor-pointer text-primary pr-2">
               <option>Recommended</option>
               <option>Highest Rating</option>
               <option>Most Experience</option>
@@ -113,10 +113,8 @@ const DoctorSearch = () => {
               <div className="text-gray-300 mb-4 flex justify-center">
                 <Search size={64} className="opacity-20" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
-                No Doctors Found
-              </h3>
-              <p className="text-gray-500">
+              <h3 className="text-gray-800 mb-2">No Doctors Found</h3>
+              <p className="text-gray-500 font-medium">
                 Try adjusting your search or filters to find what you're looking
                 for.
               </p>

@@ -55,7 +55,7 @@ export default function Landing() {
         <Doctors />
         <BookingSection />
         <Testimonials />
-        <CTA />
+        {/* <CTA /> */}
         <Footer />
       </main>
     </div>
