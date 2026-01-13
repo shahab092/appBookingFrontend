@@ -12,6 +12,9 @@
   --color-neutral-medium: #E9ECEF;
   --color-neutral-dark: #495057;
 
+  /* Typography */
+  --color-typegray: #6B7280;
+
   /* Status Colors */
   --color-offline: #9E9E9E;
   --color-emergency: #E63946;
@@ -26,6 +29,7 @@
   --color-neutral-light: var(--color-neutral-light);
   --color-neutral-medium: var(--color-neutral-medium);
   --color-neutral-dark: var(--color-neutral-dark);
+  --color-typegray: var(--color-typegray);
   --color-offline: var(--color-offline);
   --color-emergency: var(--color-emergency);
   --color-info: var(--color-info);

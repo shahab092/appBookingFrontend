@@ -13,7 +13,8 @@ module.exports = {
         "background-light": "#f3f4f6",
         "background-dark": "#0f172a",
         secondary: "#4ca68c",
-        accent: "#004d71"
+        accent: "#004d71",
+        typegray: "#6B7280"
       },
       fontFamily: {
         display: ["Inter", "sans-serif"],

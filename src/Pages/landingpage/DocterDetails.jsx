@@ -66,7 +66,7 @@ export default function DocterDetails() {
                 </button>
             )}
 
-            <main className="flex-1 max-w-6xl mx-auto w-full px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
+            <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
                 {/* Profile Card - Enhanced */}
                 <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg hover:shadow-2xl dark:shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden mb-6 sm:mb-8 md:mb-12 transition-all duration-300">
                     <div className="p-4 sm:p-6 md:p-8 lg:p-10">
@@ -82,19 +82,19 @@ export default function DocterDetails() {
                                 <div className="absolute bottom-2 right-2 bg-gradient-to-r from-green-400 to-green-500 w-6 h-6 rounded-full border-4 border-white dark:border-slate-800 animate-pulse"></div>
                             </div>
                             <div className="flex-1 space-y-3 sm:space-y-4 min-w-0">
-                                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">Dr. Sarah Thompson</h1>
+                                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                    <h1 className="text-gray-900 dark:text-white">Dr. Sarah Thompson</h1>
                                     <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700 shadow-sm">
                                         <span className="text-2xl sm:text-lg mr-1">✓</span> PMDC Verified
                                     </span>
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-lg sm:text-xl font-bold text-primary bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">Senior Dermatologist</p>
-                                    <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">MBBS, FCPS (Dermatology), Specialization in Cosmetic Surgery</p>
+                                    <p className="text-typegray">MBBS, FCPS (Dermatology), Specialization in Cosmetic Surgery</p>
                                 </div>
                                 <div className="grid grid-cols-3 gap-3 sm:gap-4 py-5 sm:py-6 border-y border-slate-100 dark:border-slate-700">
                                     <div className="text-center md:text-left">
-                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Rating</p>
+                                        <p className="text-xs font-bold text-typegray uppercase tracking-widest mb-2">Rating</p>
                                         <div className="flex flex-col md:flex-row md:items-center gap-1">
                                             <span className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">4.9</span>
                                             <div className="flex text-yellow-400 gap-0.5">
@@ -105,11 +105,11 @@ export default function DocterDetails() {
                                         </div>
                                     </div>
                                     <div className="text-center md:text-left border-x border-slate-100 dark:border-slate-700 px-3 sm:px-4">
-                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Experience</p>
+                                        <p className="text-xs font-bold text-typegray uppercase tracking-widest mb-2">Experience</p>
                                         <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">12+ Yrs</p>
                                     </div>
                                     <div className="text-center md:text-left">
-                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Success Rate</p>
+                                        <p className="text-xs font-bold text-typegray uppercase tracking-widest mb-2">Success Rate</p>
                                         <p className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent">98%</p>
                                     </div>
                                 </div>
@@ -137,11 +137,11 @@ export default function DocterDetails() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-7 md:gap-8">
                     <div className="lg:col-span-2 space-y-6 sm:space-y-7 md:space-y-8">
                         <section className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300">
-                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                            <h2 className="mb-4 flex items-center gap-2 text-gray-800 dark:text-white">
                                 <span className="material-symbols-outlined text-primary">person_search</span>
                                 About Dr. Sarah Thompson
                             </h2>
-                            <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-400">
+                            <div className="prose dark:prose-invert max-w-none text-typegray">
                                 <p>
                                     Dr. Sarah Thompson is a highly skilled Dermatologist with over 12 years of experience in clinical and cosmetic dermatology. She specializes in advanced skin treatments, hair restoration procedures, and non-invasive cosmetic surgeries. Her patient-centric approach ensures tailored treatment plans that address both medical concerns and aesthetic goals.
                                 </p>
@@ -149,7 +149,7 @@ export default function DocterDetails() {
                         </section>
 
                         <section className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300">
-                            <h2 className="text-lg sm:text-xl font-bold mb-5 sm:mb-6 flex items-center gap-2 text-slate-900 dark:text-white">
+                            <h2 className="mb-5 sm:mb-6 flex items-center gap-2 text-gray-800 dark:text-white">
                                 <span className="text-xl sm:text-2xl">📍</span>
                                 Clinic Locations
                             </h2>
@@ -198,10 +198,10 @@ export default function DocterDetails() {
                                                 >
                                                     <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-white"></div>
                                                 </div>
-                                                <div className="flex-1 space-y-1 min-w-0">
-                                                    <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">{clinic.name}</h3>
-                                                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 line-clamp-1">{clinic.address}</p>
-                                                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                                                 <div className="flex-1 space-y-1 min-w-0">
+                                                    <h4 className="text-gray-900 dark:text-white">{clinic.name}</h4>
+                                                    <p className="text-typegray line-clamp-1">{clinic.address}</p>
+                                                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-2 text-typegray">
                                                         <div className="flex items-center gap-1 sm:gap-1.5">
                                                             <FaClock size={12} className="flex-shrink-0" /> <span className="line-clamp-1">{clinic.timing}</span>
                                                         </div>
@@ -243,22 +243,22 @@ export default function DocterDetails() {
                         </section>
 
                         <section className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300">
-                            <h2 className="text-lg sm:text-xl font-bold mb-6 sm:mb-8 flex items-center gap-2 text-slate-900 dark:text-white">
+                            <h2 className="mb-6 sm:mb-8 flex items-center gap-2 text-gray-800 dark:text-white">
                                 <span className="text-xl sm:text-2xl">⭐</span>
                                 Patient Reviews
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-10 pb-10 border-b border-slate-100 dark:border-slate-700">
-                                <div className="md:col-span-4 flex flex-col items-center justify-center text-center">
-                                    <div className="text-5xl font-black text-slate-900 dark:text-white mb-2">4.9</div>
-                                    <div className="flex text-yellow-400 mb-2">
-                                        <span className="material-symbols-outlined text-2xl">star</span>
-                                        <span className="material-symbols-outlined text-2xl">star</span>
-                                        <span className="material-symbols-outlined text-2xl">star</span>
-                                        <span className="material-symbols-outlined text-2xl">star</span>
-                                        <span className="material-symbols-outlined text-2xl">star</span>
-                                    </div>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400">Based on 124 reviews</p>
-                                </div>
+                                     <div className="md:col-span-4 flex flex-col items-center justify-center text-center">
+                                     <div className="text-5xl font-black text-gray-900 dark:text-white mb-2">4.9</div>
+                                     <div className="flex text-yellow-400 mb-2">
+                                         <span className="material-symbols-outlined text-2xl">star</span>
+                                         <span className="material-symbols-outlined text-2xl">star</span>
+                                         <span className="material-symbols-outlined text-2xl">star</span>
+                                         <span className="material-symbols-outlined text-2xl">star</span>
+                                         <span className="material-symbols-outlined text-2xl">star</span>
+                                     </div>
+                                     <p className="text-typegray">Based on 124 reviews</p>
+                                 </div>
                                 <div className="md:col-span-8 space-y-3">
                                     {[
                                         { label: "5 stars", value: "90%" },
@@ -268,11 +268,11 @@ export default function DocterDetails() {
                                         { label: "1 stars", value: "0%" },
                                     ].map((rating) => (
                                         <div className="flex items-center gap-4" key={rating.label}>
-                                            <span className="text-xs font-medium text-slate-500 w-12">{rating.label}</span>
+                                            <span className="text-xs font-medium text-typegray w-12">{rating.label}</span>
                                             <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                                                 <div className="h-full bg-primary rounded-full" style={{ width: rating.value }}></div>
                                             </div>
-                                            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 w-8 text-right">{rating.value}</span>
+                                            <span className="text-xs font-bold text-typegray w-8 text-right">{rating.value}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -304,21 +304,21 @@ export default function DocterDetails() {
                                 ].map((review, idx) => (
                                     <div key={idx} className="p-6 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-700">
                                         <div className="flex justify-between items-start mb-4">
-                                            <div className="flex items-center gap-3">
-                                                {review.initials ? (
-                                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                                                        {review.initials}
-                                                    </div>
-                                                ) : (
-                                                    <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold">
-                                                        <span className="material-symbols-outlined">person</span>
-                                                    </div>
-                                                )}
-                                                <div>
-                                                    <h4 className="font-bold text-slate-900 dark:text-white">{review.name}</h4>
-                                                    <p className="text-xs text-slate-500">{review.time}</p>
-                                                </div>
-                                            </div>
+                                        <div className="flex items-center gap-3">
+                                                 {review.initials ? (
+                                                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                                         {review.initials}
+                                                     </div>
+                                                 ) : (
+                                                     <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold">
+                                                         <span className="material-symbols-outlined">person</span>
+                                                     </div>
+                                                 )}
+                                                 <div>
+                                                     <h4 className="text-gray-900 dark:text-white">{review.name}</h4>
+                                                     <p className="text-typegray">{review.time}</p>
+                                                 </div>
+                                             </div>
                                             <div className="flex text-yellow-400">
                                                 {Array.from({ length: Math.floor(review.rating) }).map((_, i) => (
                                                     <span key={i} className="material-symbols-outlined text-sm">star</span>
@@ -326,7 +326,7 @@ export default function DocterDetails() {
                                                 {review.rating % 1 !== 0 && <span className="material-symbols-outlined text-sm">star_half</span>}
                                             </div>
                                         </div>
-                                        <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{review.comment}</p>
+                                         <p className="text-typegray leading-relaxed">{review.comment}</p>
                                     </div>
                                 ))}
                             </div>
@@ -344,7 +344,7 @@ export default function DocterDetails() {
                     </div>
 
                     <div className="space-y-5 sm:space-y-6">
-                        <h2 className="text-lg sm:text-xl font-bold px-2 flex items-center gap-2 text-slate-900 dark:text-white">
+                         <h2 className="px-2 flex items-center gap-2 text-gray-800 dark:text-white">
                             <span className="text-xl sm:text-2xl">📅</span>
                             Select Booking Option
                         </h2>
@@ -357,16 +357,16 @@ export default function DocterDetails() {
                                     <div className={`p-2.5 sm:p-3 w-fit rounded-lg sm:rounded-xl bg-green-100 dark:bg-green-900/20 text-green-600`}>
                                         <span className="text-xl sm:text-2xl">📹</span>
                                     </div>
-                                    <div>
-                                        <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">Online Consultation</h3>
-                                        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2">Connect via secure video call</p>
+                                     <div>
+                                        <h4 className="text-gray-900 dark:text-white">Online Consultation</h4>
+                                        <p className="text-typegray mb-2">Connect via secure video call</p>
                                         <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm font-semibold">
                                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                             Available Today
                                         </div>
                                     </div>
                                     <div className="flex items-baseline gap-1 border-t border-green-200 dark:border-slate-700 pt-3 sm:pt-4">
-                                        <span className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">Fee:</span>
+                                        <span className="text-xs sm:text-sm font-medium text-typegray">Fee:</span>
                                         <span className="text-lg sm:text-xl font-bold text-green-600">Rs. 1,500</span>
                                     </div>
                                 </div>
@@ -378,8 +378,8 @@ export default function DocterDetails() {
                                         <span className="text-xl sm:text-2xl">🏥</span>
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">In-Clinic Visit</h3>
-                                        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-3 sm:mb-4">Choose your preferred clinic location:</p>
+                                        <h4 className="text-gray-900 dark:text-white">In-Clinic Visit</h4>
+                                        <p className="text-typegray mb-3 sm:mb-4">Choose your preferred clinic location:</p>
                                         <div className="relative mb-3">
                                             <select
                                                 className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
@@ -391,13 +391,13 @@ export default function DocterDetails() {
                                             </select>
                                             <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-sm">expand_more</span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
+                                        <div className="flex items-center gap-2 text-typegray text-xs sm:text-sm font-medium">
                                             <span className="w-2 h-2 rounded-full bg-slate-400"></span>
                                             Available Tomorrow
                                         </div>
                                     </div>
                                     <div className="flex items-baseline gap-1 border-t border-slate-100 dark:border-slate-700 pt-3 sm:pt-4">
-                                        <span className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400">Avg Fee:</span>
+                                        <span className="text-xs sm:text-sm font-medium text-typegray">Avg Fee:</span>
                                         <span className="text-lg sm:text-xl font-bold text-primary">Rs. 2,000+</span>
                                     </div>
                                 </div>
@@ -410,12 +410,12 @@ export default function DocterDetails() {
                                 <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
                                     Rs. 1,500
                                 </span>
-                                <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">VAT Included</span>
+                                <span className="text-xs sm:text-sm text-typegray">VAT Included</span>
                             </div>
                             <button className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-700 text-white py-3 sm:py-4 rounded-lg sm:rounded-2xl font-bold text-sm sm:text-base transition-all shadow-lg shadow-primary/30 hover:shadow-xl transform hover:scale-105 duration-200">
                                 Proceed to Booking
                             </button>
-                            <p className="text-center mt-3 sm:mt-4 text-xs text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1">
+                            <p className="text-center mt-3 sm:mt-4 text-xs text-typegray flex items-center justify-center gap-1">
                                 <span>🔒</span>
                                 Secure Payment Powered by HealthConnect
                             </p>

@@ -39,29 +39,43 @@ const HealthHero = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/60 to-success/30"></div>
 
       {/* Main Content */}
-      <div className="relative z-10 container mx-auto px-3 sm:px-4 text-center">
+      <div className="relative container mx-auto px-3 sm:px-4 text-center">
         {/* Main Heading */}
         <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-3 sm:mb-4 md:mb-6 leading-tight">
           Your Health is Our Expert Priority
         </h1>
 
         {/* Search Component */}
-        <div className="max-w-4xl mx-auto mb-6 sm:mb-8 md:mb-12">
+        <div className="max-w-4xl mx-auto mb-6 sm:mb-8 md:mb-12 relative z-50">
           <SearchComponent />
         </div>
 
         {/* Categories section */}
-        <div className="mt-6 sm:mt-8 md:mt-12 max-w-5xl mx-auto">
+        <div className="mt-6 sm:mt-8 md:mt-12 max-w-5xl mx-auto relative z-0">
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4">
             <CategoryPill
-              icon={<FaStethoscope size={16} className="sm:w-[18px] sm:h-[18px]" />}
+              icon={
+                <FaStethoscope size={16} className="sm:w-[18px] sm:h-[18px]" />
+              }
               label="General Physician"
               active={true}
             />
-            <CategoryPill icon={<Bone size={18} className="sm:w-5 sm:h-5" />} label="Dentist" />
-            <CategoryPill icon={<Baby size={18} className="sm:w-5 sm:h-5" />} label="Pediatrician" />
-            <CategoryPill icon={<Heart size={18} className="sm:w-5 sm:h-5" />} label="Cardiologist" />
-            <CategoryPill icon={<Smile size={18} className="sm:w-5 sm:h-5" />} label="Dermatologist" />
+            <CategoryPill
+              icon={<Bone size={18} className="sm:w-5 sm:h-5" />}
+              label="Dentist"
+            />
+            <CategoryPill
+              icon={<Baby size={18} className="sm:w-5 sm:h-5" />}
+              label="Pediatrician"
+            />
+            <CategoryPill
+              icon={<Heart size={18} className="sm:w-5 sm:h-5" />}
+              label="Cardiologist"
+            />
+            <CategoryPill
+              icon={<Smile size={18} className="sm:w-5 sm:h-5" />}
+              label="Dermatologist"
+            />
           </div>
         </div>
       </div>
@@ -231,7 +245,7 @@ const SearchComponent = () => {
   return (
     <div className="w-full relative" ref={dropdownRef}>
       {/* Search Form */}
-      <form onSubmit={handleSearch} className="w-full">
+      <form onSubmit={handleSearch} className="w-full relative z-50">
         <div className="flex flex-col sm:flex-row items-stretch gap-2 sm:gap-1 bg-white/10 backdrop-blur-xl rounded-lg sm:rounded-xl shadow-2xl p-2 sm:p-3 md:p-4 border border-white/20">
           {/* Location Selector */}
           <div className="w-full sm:w-1/4 order-2 sm:order-1">
@@ -311,36 +325,49 @@ const SearchComponent = () => {
               />
             </div>
 
-            {/* Suggestions Dropdown */}
-            {showSuggestions && suggestions.length > 0 && (
+            {/* Suggestions Dropdown - Using z-index to appear above category chips */}
+            {showSuggestions && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-2xl border border-gray-100 z-50 overflow-hidden max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
-                {suggestions.map((doctor) => (
-                  <button
-                    key={doctor.id}
-                    type="button"
-                    onMouseDown={() => handleSuggestionClick(doctor)}
-                    className="w-full flex items-center p-2 sm:p-3 hover:bg-gray-50 transition-colors text-left group border-b border-gray-50 last:border-0"
-                  >
-                    <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full overflow-hidden mr-2 sm:mr-3 border border-gray-100 shrink-0 group-hover:border-primary transition-colors">
-                      <img
-                        src={doctor.image}
-                        alt={doctor.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-xs sm:text-sm font-bold text-gray-800 group-hover:text-primary transition-colors flex items-center truncate">
-                        {doctor.name}
-                        {doctor.isVerified && (
-                          <FaUserMd className="ml-1 text-primary flex-shrink-0" size={10} />
-                        )}
-                      </h4>
-                      <p className="text-xs text-gray-500 truncate">
-                        {doctor.specialty} • {doctor.experience} Exp
-                      </p>
-                    </div>
-                  </button>
-                ))}
+                {suggestions.length > 0 ? (
+                  suggestions.map((doctor) => (
+                    <button
+                      key={doctor.id}
+                      type="button"
+                      onMouseDown={() => handleSuggestionClick(doctor)}
+                      className="w-full flex items-center p-2 sm:p-3 hover:bg-gray-50 transition-colors text-left group border-b border-gray-50 last:border-0"
+                    >
+                      <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full overflow-hidden mr-2 sm:mr-3 border border-gray-100 shrink-0 group-hover:border-primary transition-colors">
+                        <img
+                          src={doctor.image}
+                          alt={doctor.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs sm:text-sm font-bold text-gray-800 group-hover:text-primary transition-colors flex items-center truncate">
+                          {doctor.name}
+                          {doctor.isVerified && (
+                            <FaUserMd
+                              className="ml-1 text-primary flex-shrink-0"
+                              size={10}
+                            />
+                          )}
+                        </h4>
+                        <p className="text-xs text-gray-500 truncate">
+                          {doctor.specialty} • {doctor.experience} Exp
+                        </p>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="p-6 text-center">
+                    <div className="text-gray-400 mb-2 text-3xl">🔍</div>
+                    <h4 className="text-sm font-bold text-gray-800 mb-1">No Doctors Found</h4>
+                    <p className="text-xs text-gray-500">
+                      Try searching with different keywords or doctor specialty.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

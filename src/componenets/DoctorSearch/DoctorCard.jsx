@@ -29,15 +29,15 @@ const DoctorCard = ({ doctor }) => {
       {/* Middle: Info */}
       <div className="flex-1">
         {/* Name */}
-        <h2
-          className="font-bold text-neutral-dark cursor-pointer hover:text-primary transition-colors"
+        <h3
+          className="text-neutral-dark cursor-pointer hover:text-primary transition-colors"
           onClick={handleProfileClick}
         >
           {doctor.name}
-        </h2>
+        </h3>
 
         <p className="text-primary font-medium">{doctor.specialty}</p>
-        <p className="text-neutral-dark/60 text-sm">{doctor.qualifications}</p>
+        <p className="text-typegray">{doctor.qualifications}</p>
 
         {/* Stats */}
         <div className="flex flex-wrap gap-6 mt-3 text-sm">
@@ -110,7 +110,7 @@ const DoctorCard = ({ doctor }) => {
 const Stat = ({ value, label, color = "text-gray-800" }) => (
   <div>
     <p className={`text-lg font-bold ${color}`}>{value}</p>
-    <p className="text-xs text-gray-500">{label}</p>
+    <p className="text-xs text-typegray">{label}</p>
   </div>
 );
 
@@ -137,7 +137,7 @@ const BookingCard = ({ title, subtitle, price, fast, icon, highlight }) => {
           <p className="text-sm font-semibold text-gray-800 leading-tight">
             {title}
           </p>
-          <p className="text-xs text-gray-500">{subtitle}</p>
+          <p className="text-xs text-typegray">{subtitle}</p>
         </div>
       </div>
 

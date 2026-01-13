@@ -62,7 +62,7 @@ const DoctorSearch = () => {
                 className="group-hover:-translate-x-1 transition-transform"
               />
             </button>
-            <h1 className="text-white">Search Results</h1>
+            <h1 className="text-white font-bold">Search Results</h1>
           </div>
 
           {/* Search Bar - Full Width within Container */}
@@ -84,13 +84,13 @@ const DoctorSearch = () => {
             <h2 className="text-gray-800">
               Found {filteredDoctors.length} Specialists
             </h2>
-            <p className="text-gray-500 text-sm font-medium">
+            <p className="text-typegray font-medium">
               Top rated doctors available for you
             </p>
           </div>
 
           <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
-            <span className="text-sm text-gray-400 pl-2 font-medium">
+            <span className="text-sm text-typegray pl-2 font-medium">
               Sort by:
             </span>
             <select className="text-sm font-bold bg-transparent outline-none cursor-pointer text-primary pr-2">
@@ -114,7 +114,7 @@ const DoctorSearch = () => {
                 <Search size={64} className="opacity-20" />
               </div>
               <h3 className="text-gray-800 mb-2">No Doctors Found</h3>
-              <p className="text-gray-500 font-medium">
+              <p className="text-typegray">
                 Try adjusting your search or filters to find what you're looking
                 for.
               </p>
