@@ -21,7 +21,7 @@ export default function AppRoutes() {
         {/* Public routes */}
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Landing />} />
-          <Route path="/doctor-profile" element={<DocterDetails />} />
+        <Route path="/doctorDetail" element={<DocterDetails />} />
           <Route path="/login" element={<Xlogin />} />
           <Route path="/doctorSearch" element={<DoctorSearch />} />
         </Route>

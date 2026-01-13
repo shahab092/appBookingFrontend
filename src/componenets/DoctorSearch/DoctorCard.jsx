@@ -6,7 +6,7 @@ const DoctorCard = ({ doctor }) => {
   if (!doctor) return null;
 
   const handleProfileClick = () => {
-    navigate("/doctor-profile", { state: { doctor } });
+    navigate("/doctorDetail", { state: { doctor } });
   };
 
   return (
