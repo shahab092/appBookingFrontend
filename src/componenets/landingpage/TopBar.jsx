@@ -104,7 +104,7 @@ const TopBar = () => {
       {/* Main Navigation Bar */}
 
       <nav className="bg-white shadow-xl z-50 border-b border-gray-100">
-        <div className="container mx-auto px-4">
+        <div className="px-4">
           <div className="flex justify-between items-center py-3">
             {/* Logo */}
             <div className="flex items-center space-x-3">
@@ -136,8 +136,8 @@ const TopBar = () => {
                   href={`#${item.id}`}
                   onClick={() => setActiveLink(item.id)}
                   className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${activeLink === item.id
-                      ? "bg-[#2e76ad] text-white shadow-lg transform scale-105"
-                      : "text-gray-700 hover:bg-blue-50 hover:text-[#2e76ad] hover:shadow-md"
+                    ? "bg-[#2e76ad] text-white shadow-lg transform scale-105"
+                    : "text-gray-700 hover:bg-blue-50 hover:text-[#2e76ad] hover:shadow-md"
                     }`}
                 >
                   {item.name}
@@ -203,8 +203,8 @@ const TopBar = () => {
                       setIsMenuOpen(false);
                     }}
                     className={`px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${activeLink === item.id
-                        ? "bg-[#2e76ad] text-white shadow-lg"
-                        : "text-gray-700 hover:bg-blue-50 hover:text-[#2e76ad]"
+                      ? "bg-[#2e76ad] text-white shadow-lg"
+                      : "text-gray-700 hover:bg-blue-50 hover:text-[#2e76ad]"
                       }`}
                   >
                     {item.name}

@@ -30,7 +30,7 @@ const HealthHero = () => {
         <img
           src="/assets/img/WhatsApp Image 2026-01-12 at 1.17.25 PM.jpeg"
           alt="Healthcare background"
-          className="w-full h-full object-cover opacity-50 mix-blend-overlay"
+          className="w-full h-full object-cover  mix-blend-overlay"
         />
         {/* Subtle Blur Overlay */}
         <div className="absolute inset-0 bg-[#2d8fc6]/40 backdrop-blur-[2px]"></div>
@@ -39,20 +39,20 @@ const HealthHero = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-[#2d8fc6]/80 via-[#2d8fc6]/60 to-emerald-500/30"></div>
 
       {/* Main Content */}
-      <div className="relative z-10 container mx-auto px-4 text-center">
+      <div className="relative z-10 container mx-auto text-center">
         {/* Main Heading */}
-        <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 leading-tight">
+        <h1 className="text-4xl md:text-7xl font-bold text-white mb-4 leading-tight">
           Your Health is
-          <span className="block text-emerald-100 mt-2">
-            Our Expert Priority
-          </span>
+          Our Expert Priority
+          {/* <span className="block text-emerald-100 mt-2">
+          </span> */}
         </h1>
 
         {/* Subtitle */}
-        <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-12 font-light">
+        {/* <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-12 font-light">
           Find the best doctors, hospitals, and healthcare services across
           Pakistan with our comprehensive medical platform.
-        </p>
+        </p> */}
 
         {/* Search Component */}
         <div className="max-w-4xl mx-auto">
