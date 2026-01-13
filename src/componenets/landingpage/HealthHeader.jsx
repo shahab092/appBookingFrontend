@@ -4,7 +4,20 @@ import {
   FaMapMarkerAlt,
   FaChevronDown,
   FaUserMd,
+  FaStethoscope,
 } from "react-icons/fa";
+import {
+  Stethoscope,
+  Baby,
+  Heart,
+  Activity,
+  Smile,
+  Syringe,
+  Eye,
+  Bone,
+  Brain,
+  Droplets
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MOCK_DOCTORS } from "../../constant/data";
 
@@ -46,19 +59,30 @@ const HealthHero = () => {
           <SearchComponent />
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 max-w-4xl mx-auto">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-white mb-2">500+</div>
-            <div className="text-emerald-100">Expert Doctors</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-white mb-2">100+</div>
-            <div className="text-emerald-100">Hospitals</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-white mb-2">24/7</div>
-            <div className="text-emerald-100">Emergency Support</div>
+        {/* Categories section */}
+        <div className="mt-12 max-w-5xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-4">
+            <CategoryPill
+              icon={<FaStethoscope size={18} />}
+              label="General Physician"
+              active={true}
+            />
+            <CategoryPill
+              icon={<Bone size={20} />}
+              label="Dentist"
+            />
+            <CategoryPill
+              icon={<Baby size={20} />}
+              label="Pediatrician"
+            />
+            <CategoryPill
+              icon={<Heart size={20} />}
+              label="Cardiologist"
+            />
+            <CategoryPill
+              icon={<Smile size={20} />}
+              label="Dermatologist"
+            />
           </div>
         </div>
       </div>
@@ -70,6 +94,28 @@ const HealthHero = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// Category Pill Component
+const CategoryPill = ({ icon, label, active = false }) => {
+  return (
+    <button
+      className={`
+      flex items-center space-x-3 px-6 py-4 rounded-full transition-all duration-300
+      ${active
+          ? "bg-white text-[#2d8fc6] shadow-lg scale-105"
+          : "bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md"
+        }
+    `}
+    >
+      <span className={active ? "text-[#2d8fc6]" : "text-white"}>
+        {icon}
+      </span>
+      <span className="font-semibold text-sm whitespace-nowrap">
+        {label}
+      </span>
+    </button>
   );
 };
 
