@@ -24,19 +24,19 @@ import { MOCK_DOCTORS } from "../../constant/data";
 // Main Hero Component with Background Image
 const HealthHero = () => {
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image with Blur */}
-      <div className="absolute inset-0 z-0">
+    <div className="relative min-h-[calc(100vh-74px)] flex items-center justify-center overflow-hidden">
+      {/* Background with Centered Image */}
+      <div className="absolute inset-0 z-0 bg-[#2d8fc6] flex items-center justify-center">
         <img
-          src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+          src="/assets/img/WhatsApp Image 2026-01-12 at 1.17.25 PM.jpeg"
           alt="Healthcare background"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover opacity-50 mix-blend-overlay"
         />
-        {/* Blue Overlay with Blur - Using exact color #2d8fc6 */}
-        <div className="absolute inset-0 bg-[#2d8fc6]/70 "></div>
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#2d8fc6]/80 via-[#2d8fc6]/60 to-emerald-500/30"></div>
+        {/* Subtle Blur Overlay */}
+        <div className="absolute inset-0 bg-[#2d8fc6]/40 backdrop-blur-[2px]"></div>
       </div>
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#2d8fc6]/80 via-[#2d8fc6]/60 to-emerald-500/30"></div>
 
       {/* Main Content */}
       <div className="relative z-10 container mx-auto px-4 text-center">
@@ -93,7 +93,7 @@ const HealthHero = () => {
           <div className="w-1 h-3 bg-white/70 rounded-full mt-2"></div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

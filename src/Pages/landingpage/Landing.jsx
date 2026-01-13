@@ -48,22 +48,16 @@ export default function Landing() {
   }, []);
 
   return (
-    <div className="overflow-x-hidden">
-      {/* <Header /> */}
+    <div className="h-screen flex flex-col overflow-hidden">
       <TopBar />
-
-      <main className="relative">
-        {/* <Hero /> */}
+      <main className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative">
         <HealthHeader />
-
-        {/* <About /> */}
-        {/* <Services /> */}
         <Doctors />
         <BookingSection />
         <Testimonials />
         <CTA />
+        <Footer />
       </main>
-      <Footer />
     </div>
   );
 }
