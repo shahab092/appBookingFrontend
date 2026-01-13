@@ -7,35 +7,7 @@ export default function DocterDetails() {
     return (
         <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-300">
             {/* Navigation */}
-            <nav className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16 items-center">
-                        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-                            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white">
-                                <span className="material-symbols-outlined">medical_services</span>
-                            </div>
-                            <span className="text-xl font-bold tracking-tight text-primary">HealthConnect</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <button
-                                className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                            >
-                                <span className="material-symbols-outlined block dark:hidden">dark_mode</span>
-                                <span className="material-symbols-outlined hidden dark:block text-yellow-400">light_mode</span>
-                            </button>
-                            <button
-                                onClick={() => navigate("/login")}
-                                className="hidden md:block px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary transition-colors"
-                            >
-                                Login
-                            </button>
-                            <button className="bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-opacity-90 transition-all shadow-md shadow-primary/20">
-                                Book Appointment
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+
 
             <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
                 {/* Profile Card */}
@@ -407,23 +379,7 @@ export default function DocterDetails() {
                 </div>
             </main>
 
-            <footer className="mt-20 border-t border-slate-200 dark:border-slate-800 py-12 bg-white dark:bg-slate-900">
-                <div className="max-w-6xl mx-auto px-4 text-center">
-                    <div className="flex items-center justify-center gap-2 mb-6">
-                        <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center text-primary">
-                            <span className="material-symbols-outlined text-sm">medical_services</span>
-                        </div>
-                        <span className="text-lg font-bold tracking-tight text-slate-400">HealthConnect</span>
-                    </div>
-                    <p className="text-slate-500 text-sm mb-6">Providing accessible healthcare solutions across the globe since 2018.</p>
-                    <div className="flex justify-center gap-8 text-sm font-medium text-slate-400">
-                        <button className="hover:text-primary transition-colors">Privacy Policy</button>
-                        <button className="hover:text-primary transition-colors">Terms of Service</button>
-                        <button className="hover:text-primary transition-colors">Help Center</button>
-                    </div>
-                    <p className="mt-8 text-xs text-slate-400/60">© 2024 HealthConnect Platform. All rights reserved.</p>
-                </div>
-            </footer>
+
         </div>
     );
 }
