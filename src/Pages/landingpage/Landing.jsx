@@ -9,6 +9,7 @@ import CTA from "../../componenets/landingpage/CTA";
 import Footer from "../../componenets/landingpage/Footer";
 import TopBar from "../../componenets/landingpage/TopBar";
 import BookingSection from "../../componenets/landingpage/BookingSection";
+import HealthHeader from "../../componenets/landingpage/HealthHeader";
 
 export default function Landing() {
   // Enable smooth scrolling for anchor links
@@ -50,10 +51,13 @@ export default function Landing() {
     <div className="overflow-x-hidden">
       {/* <Header /> */}
       <TopBar />
+
       <main className="relative">
-        <Hero />
-        <About />
-        <Services />
+        {/* <Hero /> */}
+        <HealthHeader />
+
+        {/* <About /> */}
+        {/* <Services /> */}
         <Doctors />
         <BookingSection />
         <Testimonials />

@@ -11,6 +11,7 @@ import ProtectedRoute from "../hoc/ProtectedRoute";
 import CreateAppiontmentAdmin from "../componenets/dashboard/CreateAppiontmentAdmin";
 
 import Calling from "../componenets/dashboard/Calling";
+import DoctorSearch from "../Pages/DoctorSearch/DoctorSearch";
 
 export default function AppRoutes() {
   return (
@@ -20,6 +21,7 @@ export default function AppRoutes() {
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Xlogin />} />
+          <Route path="/doctorSearch" element={<DoctorSearch />} />
         </Route>
 
         {/* Admin routes */}
