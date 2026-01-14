@@ -21,32 +21,101 @@ import {
 import { useNavigate } from "react-router-dom";
 import { MOCK_DOCTORS } from "../../constant/data";
 
-// Main Hero Component with Background Image
-const HealthHero = () => {
+// Premium Background Images
+const HERO_IMAGES = [
+  "/assets/img/img_one.png",
+  "/assets/img/WhatsApp Image 2026-01-12 at 1.17.25 PM.jpeg",
+];
+
+// OptionButton Component
+const OptionButton = ({ icon, label, gradient }) => {
   return (
-    <div className="relative min-h-screen sm:min-h-[calc(100vh-74px)] flex items-center justify-center overflow-hidden pt-8 sm:pt-0">
-      {/* Background with Centered Image */}
-      <div className="absolute inset-0 z-0 bg-primary flex items-center justify-center">
-        <img
-          src="/assets/img/WhatsApp Image 2026-01-12 at 1.17.25 PM.jpeg"
-          alt="Healthcare background"
-          className="w-full h-full object-cover mix-blend-overlay"
-        />
-        {/* Subtle Blur Overlay */}
-        <div className="absolute inset-0 bg-primary/40 backdrop-blur-[2px]"></div>
+    <button className={`
+      group relative flex flex-col items-center justify-center 
+      w-20 h-20 xs:w-22 xs:h-22 sm:w-24 sm:h-24 md:w-28 md:h-28 
+      rounded-2xl overflow-hidden transition-all duration-300 
+      hover:scale-105 hover:shadow-2xl active:scale-95
+      backdrop-blur-md border border-white/20
+    `}>
+      {/* Gradient Background */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-90 group-hover:opacity-100 transition-opacity`}></div>
+
+      {/* Inner Shadow Effect */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
+
+      {/* Icon */}
+      <div className="relative mb-1 sm:mb-2 text-2xl xs:text-2xl sm:text-3xl md:text-4xl">
+        {icon}
       </div>
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/80 via-primary/60 to-success/30"></div>
+
+      {/* Label */}
+      <span className="relative text-[10px] xs:text-xs sm:text-sm font-bold text-white text-center px-1 leading-tight">
+        {label}
+      </span>
+
+      {/* Hover Glow Effect */}
+      <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-white/30 transition-all duration-300"></div>
+    </button>
+  );
+};
+
+// Main Hero Component with Background Slideshow
+const HealthHero = () => {
+  const [currentIdx, setCurrentIdx] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIdx((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 5000); // 5s interval for better energy
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="relative min-h-screen sm:min-h-[calc(100vh-74px)] flex items-center justify-center overflow-hidden pt-8 sm:pt-0 bg-neutral-950">
+      {/* Dynamic Background Slideshow */}
+      <div className="absolute inset-0 z-0 bg-neutral-900">
+        {/* Persistent Base Image to prevent black flash */}
+        <div className="absolute inset-0 opacity-20">
+          <img src={HERO_IMAGES[0]} alt="background-base" className="w-full h-full object-cover" />
+        </div>
+
+        {HERO_IMAGES.map((img, idx) => (
+          <div
+            key={idx}
+            className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${idx === currentIdx ? "opacity-80 z-10" : "opacity-0 z-0"
+              }`}
+          >
+            <img
+              src={img}
+              alt={`Healthcare background ${idx + 1}`}
+              className={`w-full h-full object-cover transition-transform duration-[6000ms] ease-out ${idx === currentIdx ? "scale-110" : "scale-100"
+                }`}
+            />
+          </div>
+        ))}
+
+        {/* Cinematic Overlays - Lightened for better image clarity */}
+        <div className="absolute inset-0 bg-black/25"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-transparent to-zinc-900/40"></div>
+
+        {/* Animated Accent Blobs for Depth */}
+        <div className="absolute top-1/4 -left-20 w-80 h-80 bg-primary/20 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] animate-pulse delay-700"></div>
+      </div>
 
       {/* Main Content */}
-      <div className="relative container mx-auto px-3 sm:px-4 text-center">
-        {/* Main Heading */}
-        <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-3 sm:mb-4 md:mb-6 leading-tight">
-          Your Health is Our Expert Priority
+      <div className="relative container mx-auto px-3 sm:px-4 text-center z-10">
+        {/* Main Heading with Gradient Highlight */}
+        <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-3 sm:mb-4 md:mb-6 leading-tight tracking-tight">
+          Your Health is Our <br className="hidden sm:block" />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-emerald-400 animate-gradient-x">
+            Expert Priority
+          </span>
         </h1>
 
-        {/* Search Component */}
-        <div className="max-w-4xl mx-auto mb-6 sm:mb-8 md:mb-12 relative z-50">
+        {/* Search Component with Subtle Glow */}
+        <div className="max-w-4xl mx-auto mb-6 sm:mb-8 md:mb-12 relative z-50 group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-emerald-500/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
           <SearchComponent />
         </div>
 
@@ -78,14 +147,51 @@ const HealthHero = () => {
             />
           </div>
         </div>
-      </div>
 
-      {/* Scroll Indicator - Hide on very small screens */}
-      <div className="hidden sm:block absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-          <div className="w-1 h-3 bg-white/70 rounded-full mt-2"></div>
+        {/* Bottom Options Section */}
+        <div className="mt-8 sm:mt-12 md:mt-16 relative z-20">
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6">
+            <OptionButton
+              icon="💻"
+              label="ONLINE CONSULTATION"
+              gradient="from-blue-500 to-cyan-400"
+            />
+            <OptionButton
+              icon="🏥"
+              label="IN-CLINIC CARE"
+              gradient="from-emerald-500 to-green-400"
+            />
+            <OptionButton
+              icon="👨‍⚕️"
+              label="GENERAL DOCTOR"
+              gradient="from-violet-500 to-purple-400"
+            />
+            <OptionButton
+              icon="⚡"
+              label="INSTANT SERVICE"
+              gradient="from-orange-500 to-amber-400"
+            />
+          </div>
         </div>
       </div>
+
+      {/* Styled Scroll Indicator */}
+      <div className="hidden sm:block absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
+        <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center backdrop-blur-sm">
+          <div className="w-1.5 h-3 bg-gradient-to-b from-blue-400 to-emerald-400 rounded-full mt-2"></div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient-x {
+          background-size: 200% 200%;
+          animation: gradient-x 5s ease infinite;
+        }
+      `}</style>
     </div>
   );
 };
@@ -96,11 +202,10 @@ const CategoryPill = ({ icon, label, active = false }) => {
     <button
       className={`
       flex items-center space-x-2 sm:space-x-3 px-3 sm:px-5 md:px-6 py-2 sm:py-3 md:py-4 rounded-full transition-all duration-300 text-xs sm:text-sm md:text-base
-      ${
-        active
+      ${active
           ? "bg-white text-primary shadow-lg scale-105"
           : "bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md"
-      }
+        }
     `}
     >
       <span className={active ? "text-primary" : "text-white"}>{icon}</span>
