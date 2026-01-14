@@ -149,28 +149,45 @@ const HealthHero = () => {
         </div>
 
         {/* Bottom Options Section */}
-        <div className="mt-8 sm:mt-12 md:mt-16 relative z-20">
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6">
-            <OptionButton
-              icon="💻"
-              label="ONLINE CONSULTATION"
-              gradient="from-blue-500 to-cyan-400"
-            />
-            <OptionButton
-              icon="🏥"
-              label="IN-CLINIC CARE"
-              gradient="from-emerald-500 to-green-400"
-            />
-            <OptionButton
-              icon="👨‍⚕️"
-              label="GENERAL DOCTOR"
-              gradient="from-violet-500 to-purple-400"
-            />
-            <OptionButton
-              icon="⚡"
-              label="INSTANT SERVICE"
-              gradient="from-orange-500 to-amber-400"
-            />
+        {/* Bottom Services Section - Exactly as in screenshot */}
+        // Bottom Services Section - Exactly as in screenshot
+        <div className="mt-12 md:mt-16 relative z-20">
+          <div className="flex flex-wrap justify-center gap-6 md:gap-8 lg:gap-10">
+            {/* Online Consultation - Dark card with blue icon background */}
+            <div className="flex flex-col items-center justify-center w-36 h-36 md:w-40 md:h-40 lg:w-44 lg:h-44 rounded-xl bg-gray-900/90 hover:bg-gray-800/90 transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 cursor-pointer border border-gray-700/50 backdrop-blur-sm">
+              {/* Blue circle for icon */}
+              <div className="flex items-center justify-center w-16 h-16 md:w-20 md:h-20 mb-3 md:mb-4 rounded-full bg-blue-600">
+                <span className="text-2xl md:text-3xl">💻</span>
+              </div>
+              <span className="text-base md:text-lg lg:text-xl font-bold text-white text-center px-2 leading-snug">Online<br />Consultation</span>
+            </div>
+
+            {/* In-Clinic Care - Dark card with green icon background */}
+            <div className="flex flex-col items-center justify-center w-36 h-36 md:w-40 md:h-40 lg:w-44 lg:h-44 rounded-xl bg-gray-900/90 hover:bg-gray-800/90 transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 cursor-pointer border border-gray-700/50 backdrop-blur-sm">
+              {/* Green circle for icon */}
+              <div className="flex items-center justify-center w-16 h-16 md:w-20 md:h-20 mb-3 md:mb-4 rounded-full bg-green-600">
+                <span className="text-2xl md:text-3xl">🏥</span>
+              </div>
+              <span className="text-base md:text-lg lg:text-xl font-bold text-white text-center px-2 leading-snug">In-Clinic<br />Care</span>
+            </div>
+
+            {/* General Doctor - Dark card with purple icon background */}
+            <div className="flex flex-col items-center justify-center w-36 h-36 md:w-40 md:h-40 lg:w-44 lg:h-44 rounded-xl bg-gray-900/90 hover:bg-gray-800/90 transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 cursor-pointer border border-gray-700/50 backdrop-blur-sm">
+              {/* Purple circle for icon */}
+              <div className="flex items-center justify-center w-16 h-16 md:w-20 md:h-20 mb-3 md:mb-4 rounded-full bg-purple-600">
+                <span className="text-2xl md:text-3xl">👨‍⚕️</span>
+              </div>
+              <span className="text-base md:text-lg lg:text-xl font-bold text-white text-center px-2 leading-snug">General<br />Doctor</span>
+            </div>
+
+            {/* Instant Appointment - Dark card with orange icon background */}
+            <div className="flex flex-col items-center justify-center w-36 h-36 md:w-40 md:h-40 lg:w-44 lg:h-44 rounded-xl bg-gray-900/90 hover:bg-gray-800/90 transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 cursor-pointer border border-gray-700/50 backdrop-blur-sm">
+              {/* Orange circle for icon */}
+              <div className="flex items-center justify-center w-16 h-16 md:w-20 md:h-20 mb-3 md:mb-4 rounded-full bg-orange-600">
+                <span className="text-2xl md:text-3xl">⚡</span>
+              </div>
+              <span className="text-base md:text-lg lg:text-xl font-bold text-white text-center px-2 leading-snug">Instant<br />Appointment</span>
+            </div>
           </div>
         </div>
       </div>
