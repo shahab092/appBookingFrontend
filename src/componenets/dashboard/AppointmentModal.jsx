@@ -47,11 +47,12 @@ export default function AppointmentModal({
   title = "Schedule an Appointment",
   onOk,
   onCancel,
+  initialType = "online", // Default to online
 }) {
   const { user } = useSelector((state) => state.auth);
   const { showToast } = useToast();
 
-  const [appointmentType, setAppointmentType] = useState("online");
+  const [appointmentType, setAppointmentType] = useState(initialType);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -68,9 +69,13 @@ export default function AppointmentModal({
   const selectedDepartment = watch("department");
 
   /* ---------------- Fetch Doctors ---------------- */
+  /* ---------------- Fetch Doctors & Sync Type ---------------- */
   useEffect(() => {
-    if (visible) fetchDoctors();
-  }, [visible]);
+    if (visible) {
+      fetchDoctors();
+      setAppointmentType(initialType);
+    }
+  }, [visible, initialType]);
 
   const fetchDoctors = async () => {
     try {

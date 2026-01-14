@@ -1,12 +1,31 @@
 import { Video, CheckCircle, MapPin, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import LoginModal from "../common/LoginModal";
+import AppointmentModal from "../dashboard/AppointmentModal";
 
 const DoctorCard = ({ doctor }) => {
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+  const [selectedType, setSelectedType] = useState("online");
+
   if (!doctor) return null;
 
   const handleProfileClick = () => {
     navigate("/doctorDetail", { state: { doctor } });
+  };
+
+  const handleBookClick = (type, e) => {
+    e.stopPropagation();
+    if (!user) {
+      setShowLoginModal(true);
+    } else {
+      setSelectedType(type);
+      setShowAppointmentModal(true);
+    }
   };
 
   return (
@@ -89,18 +108,27 @@ const DoctorCard = ({ doctor }) => {
         <div className="space-y-3">
           <button
             className="w-full bg-primary hover:scale-[1.02] transition text-white px-4 py-3 rounded-xl font-semibold shadow-md flex items-center justify-center gap-2 text-sm"
-            onClick={handleProfileClick}
+            onClick={(e) => handleBookClick("online", e)}
           >
             <Video size={18} /> Book Online Appointment
           </button>
           <button
             className="w-full bg-white border-2 border-primary text-primary hover:bg-primary/5 transition px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm"
-            onClick={handleProfileClick}
+            onClick={(e) => handleBookClick("inclinic", e)}
           >
             <MapPin size={18} /> In-Clinic Appointment
           </button>
         </div>
       </div>
+      <LoginModal
+        visible={showLoginModal}
+        onCancel={() => setShowLoginModal(false)}
+      />
+      <AppointmentModal
+        visible={showAppointmentModal}
+        onCancel={() => setShowAppointmentModal(false)}
+        initialType={selectedType}
+      />
     </div>
   );
 };

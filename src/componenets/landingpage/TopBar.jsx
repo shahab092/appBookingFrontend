@@ -180,7 +180,11 @@ const TopBar = () => {
                 className="bg-neutral-light hover:bg-primary text-neutral-dark hover:text-white p-2 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-200 flex-shrink-0"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
-                {isMenuOpen ? <FaTimes size={18} className="sm:w-5 sm:h-5" /> : <FaBars size={18} className="sm:w-5 sm:h-5" />}
+                {isMenuOpen ? (
+                  <FaTimes size={18} className="sm:w-5 sm:h-5" />
+                ) : (
+                  <FaBars size={18} className="sm:w-5 sm:h-5" />
+                )}
               </button>
             </div>
           </div>
@@ -220,8 +224,12 @@ const TopBar = () => {
                       {user.name.charAt(0)}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{user.name}</p>
-                      <p className="text-xs sm:text-sm text-gray-600 truncate">{user.email}</p>
+                      <p className="font-medium text-gray-900 text-sm sm:text-base truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-xs sm:text-sm text-gray-600 truncate">
+                        {user.email}
+                      </p>
                     </div>
                   </div>
 

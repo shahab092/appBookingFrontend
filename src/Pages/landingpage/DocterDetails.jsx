@@ -1,12 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Breadcrumb } from "antd";
+import { useSelector } from "react-redux";
 import TopBar from "../../componenets/landingpage/TopBar";
 import Footer from "../../componenets/landingpage/Footer";
+import LoginModal from "../../componenets/common/LoginModal";
+import AppointmentModal from "../../componenets/dashboard/AppointmentModal";
 import { FaStar, FaMapMarkerAlt, FaClock, FaPhone } from "react-icons/fa";
+import { Video, MapPin } from "lucide-react";
 
 export default function DocterDetails() {
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+  const [bookingType, setBookingType] = useState("online");
+
+  const handleProceed = (type) => {
+    if (type && typeof type === "string") setBookingType(type);
+    if (!user) {
+      setShowLoginModal(true);
+    } else {
+      setShowAppointmentModal(true);
+    }
+  };
 
   const breadcrumbItems = [
     {
@@ -117,13 +134,17 @@ export default function DocterDetails() {
                 </div>
               </div>
               <div className="w-full md:w-auto md:flex-shrink-0 space-y-2 sm:space-y-3">
-                <button className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-5 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-500/30 hover:shadow-xl transform hover:scale-105 duration-200">
-                  <span>📹</span>
-                  Video Call
+                <button
+                  className="w-full bg-primary hover:scale-[1.02] transition text-white px-4 py-3 rounded-xl font-semibold shadow-md flex items-center justify-center gap-2 text-sm"
+                  onClick={() => handleProceed("online")}
+                >
+                  <Video size={18} /> Book Online Appointment
                 </button>
-                <button className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-700 text-white px-5 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary/30 hover:shadow-xl transform hover:scale-105 duration-200">
-                  <span>📅</span>
-                  Book Appointment
+                <button
+                  className="w-full bg-white border-2 border-primary text-primary hover:bg-primary/5 transition px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm"
+                  onClick={() => handleProceed("inclinic")}
+                >
+                  <MapPin size={18} /> In-Clinic Appointment
                 </button>
               </div>
             </div>
@@ -413,11 +434,18 @@ export default function DocterDetails() {
             </h2>
             <div className="space-y-3 sm:space-y-4">
               <div
-                className={`group cursor-pointer bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-800 p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 transition-all relative border-green-500 shadow-lg hover:shadow-xl transform hover:scale-105 duration-200`}
+                onClick={() => setBookingType("online")}
+                className={`group cursor-pointer p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 transition-all relative shadow-lg hover:shadow-xl transform hover:scale-105 duration-200 ${
+                  bookingType === "online"
+                    ? "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-800 border-green-500"
+                    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-green-300"
+                }`}
               >
-                <div className="absolute top-3 sm:top-4 right-3 sm:right-4 text-green-500 text-lg sm:text-xl">
-                  ✓
-                </div>
+                {bookingType === "online" && (
+                  <div className="absolute top-3 sm:top-4 right-3 sm:right-4 text-green-500 text-lg sm:text-xl">
+                    ✓
+                  </div>
+                )}
                 <div className="flex flex-col gap-3 sm:gap-4">
                   <div
                     className={`p-2.5 sm:p-3 w-fit rounded-lg sm:rounded-xl bg-green-100 dark:bg-green-900/20 text-green-600`}
@@ -448,8 +476,18 @@ export default function DocterDetails() {
               </div>
 
               <div
-                className={`group cursor-pointer bg-white dark:bg-slate-800 p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 transition-all relative border-slate-200 dark:border-slate-700 hover:border-primary/50 hover:shadow-lg duration-200`}
+                onClick={() => setBookingType("inclinic")}
+                className={`group cursor-pointer p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 transition-all relative shadow-lg hover:shadow-xl transform hover:scale-105 duration-200 ${
+                  bookingType === "inclinic"
+                    ? "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800 border-primary"
+                    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-blue-300"
+                }`}
               >
+                {bookingType === "inclinic" && (
+                  <div className="absolute top-3 sm:top-4 right-3 sm:right-4 text-primary text-lg sm:text-xl">
+                    ✓
+                  </div>
+                )}
                 <div className="flex flex-col gap-3 sm:gap-4">
                   <div
                     className={`p-2.5 sm:p-3 w-fit rounded-lg sm:rounded-xl bg-blue-50 dark:bg-blue-900/20 text-primary`}
@@ -465,6 +503,7 @@ export default function DocterDetails() {
                     </p>
                     <div className="relative mb-3">
                       <select
+                        onClick={(e) => e.stopPropagation()}
                         className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
                         defaultValue="1"
                       >
@@ -499,13 +538,16 @@ export default function DocterDetails() {
               </p>
               <div className="flex justify-between items-center mb-4 sm:mb-6">
                 <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
-                  Rs. 1,500
+                  {bookingType === "online" ? "Rs. 1,500" : "Rs. 2,000"}
                 </span>
                 <span className="text-xs sm:text-sm text-typegray">
                   VAT Included
                 </span>
               </div>
-              <button className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-700 text-white py-3 sm:py-4 rounded-lg sm:rounded-2xl font-bold text-sm sm:text-base transition-all shadow-lg shadow-primary/30 hover:shadow-xl transform hover:scale-105 duration-200">
+              <button
+                onClick={handleProceed}
+                className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-700 text-white py-3 sm:py-4 rounded-lg sm:rounded-2xl font-bold text-sm sm:text-base transition-all shadow-lg shadow-primary/30 hover:shadow-xl transform hover:scale-105 duration-200"
+              >
                 Proceed to Booking
               </button>
               <p className="text-center mt-3 sm:mt-4 text-xs text-typegray flex items-center justify-center gap-1">
@@ -519,6 +561,17 @@ export default function DocterDetails() {
 
       {/* Footer */}
       <Footer />
+
+      <LoginModal
+        visible={showLoginModal}
+        onCancel={() => setShowLoginModal(false)}
+      />
+
+      <AppointmentModal
+        visible={showAppointmentModal}
+        onCancel={() => setShowAppointmentModal(false)}
+        initialType={bookingType}
+      />
     </div>
   );
 }

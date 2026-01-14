@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MOCK_DOCTORS } from "../../constant/data";
+import ServiceCards from "./ServiceCards";
 
 // Premium Background Images
 const HERO_IMAGES = [
@@ -30,15 +31,19 @@ const HERO_IMAGES = [
 // OptionButton Component
 const OptionButton = ({ icon, label, gradient }) => {
   return (
-    <button className={`
+    <button
+      className={`
       group relative flex flex-col items-center justify-center 
       w-20 h-20 xs:w-22 xs:h-22 sm:w-24 sm:h-24 md:w-28 md:h-28 
       rounded-2xl overflow-hidden transition-all duration-300 
       hover:scale-105 hover:shadow-2xl active:scale-95
       backdrop-blur-md border border-white/20
-    `}>
+    `}
+    >
       {/* Gradient Background */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-90 group-hover:opacity-100 transition-opacity`}></div>
+      <div
+        className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-90 group-hover:opacity-100 transition-opacity`}
+      ></div>
 
       {/* Inner Shadow Effect */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
@@ -71,25 +76,31 @@ const HealthHero = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen sm:min-h-[calc(100vh-74px)] flex items-center justify-center overflow-hidden pt-8 sm:pt-0 bg-neutral-950">
+    <div className="relative min-h-screen sm:min-h-[calc(100vh-74px)] flex items-center justify-center flex-col pt-8 sm:pt-0 bg-neutral-950 mb-48">
       {/* Dynamic Background Slideshow */}
-      <div className="absolute inset-0 z-0 bg-neutral-900">
+      <div className="absolute inset-0 z-0 bg-neutral-900 overflow-hidden">
         {/* Persistent Base Image to prevent black flash */}
         <div className="absolute inset-0 opacity-20">
-          <img src={HERO_IMAGES[0]} alt="background-base" className="w-full h-full object-cover" />
+          <img
+            src={HERO_IMAGES[0]}
+            alt="background-base"
+            className="w-full h-full object-cover"
+          />
         </div>
 
         {HERO_IMAGES.map((img, idx) => (
           <div
             key={idx}
-            className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${idx === currentIdx ? "opacity-80 z-10" : "opacity-0 z-0"
-              }`}
+            className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
+              idx === currentIdx ? "opacity-80 z-10" : "opacity-0 z-0"
+            }`}
           >
             <img
               src={img}
               alt={`Healthcare background ${idx + 1}`}
-              className={`w-full h-full object-cover transition-transform duration-[6000ms] ease-out ${idx === currentIdx ? "scale-110" : "scale-100"
-                }`}
+              className={`w-full h-full object-cover transition-transform duration-[6000ms] ease-out ${
+                idx === currentIdx ? "scale-110" : "scale-100"
+              }`}
             />
           </div>
         ))}
@@ -112,14 +123,14 @@ const HealthHero = () => {
             Expert Priority
           </span>
         </h1>
-
         {/* Search Component with Subtle Glow */}
         <div className="max-w-4xl mx-auto mb-6 sm:mb-8 md:mb-12 relative z-50 group">
           <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-emerald-500/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
           <SearchComponent />
         </div>
-
         {/* Categories section */}
+
+        {/* <h3>Search doctor my department</h3> */}
         <div className="mt-6 sm:mt-8 md:mt-12 max-w-5xl mx-auto relative z-0">
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4">
             <CategoryPill
@@ -147,57 +158,16 @@ const HealthHero = () => {
             />
           </div>
         </div>
-
         {/* Bottom Options Section */}
         {/* Bottom Services Section - Exactly as in screenshot */}
-        // Bottom Services Section - Exactly as in screenshot
-        <div className="mt-12 md:mt-16 relative z-20">
-          <div className="flex flex-wrap justify-center gap-6 md:gap-8 lg:gap-10">
-            {/* Online Consultation - Dark card with blue icon background */}
-            <div className="flex flex-col items-center justify-center w-36 h-36 md:w-40 md:h-40 lg:w-44 lg:h-44 rounded-xl bg-gray-900/90 hover:bg-gray-800/90 transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 cursor-pointer border border-gray-700/50 backdrop-blur-sm">
-              {/* Blue circle for icon */}
-              <div className="flex items-center justify-center w-16 h-16 md:w-20 md:h-20 mb-3 md:mb-4 rounded-full bg-blue-600">
-                <span className="text-2xl md:text-3xl">💻</span>
-              </div>
-              <span className="text-base md:text-lg lg:text-xl font-bold text-white text-center px-2 leading-snug">Online<br />Consultation</span>
-            </div>
-
-            {/* In-Clinic Care - Dark card with green icon background */}
-            <div className="flex flex-col items-center justify-center w-36 h-36 md:w-40 md:h-40 lg:w-44 lg:h-44 rounded-xl bg-gray-900/90 hover:bg-gray-800/90 transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 cursor-pointer border border-gray-700/50 backdrop-blur-sm">
-              {/* Green circle for icon */}
-              <div className="flex items-center justify-center w-16 h-16 md:w-20 md:h-20 mb-3 md:mb-4 rounded-full bg-green-600">
-                <span className="text-2xl md:text-3xl">🏥</span>
-              </div>
-              <span className="text-base md:text-lg lg:text-xl font-bold text-white text-center px-2 leading-snug">In-Clinic<br />Care</span>
-            </div>
-
-            {/* General Doctor - Dark card with purple icon background */}
-            <div className="flex flex-col items-center justify-center w-36 h-36 md:w-40 md:h-40 lg:w-44 lg:h-44 rounded-xl bg-gray-900/90 hover:bg-gray-800/90 transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 cursor-pointer border border-gray-700/50 backdrop-blur-sm">
-              {/* Purple circle for icon */}
-              <div className="flex items-center justify-center w-16 h-16 md:w-20 md:h-20 mb-3 md:mb-4 rounded-full bg-purple-600">
-                <span className="text-2xl md:text-3xl">👨‍⚕️</span>
-              </div>
-              <span className="text-base md:text-lg lg:text-xl font-bold text-white text-center px-2 leading-snug">General<br />Doctor</span>
-            </div>
-
-            {/* Instant Appointment - Dark card with orange icon background */}
-            <div className="flex flex-col items-center justify-center w-36 h-36 md:w-40 md:h-40 lg:w-44 lg:h-44 rounded-xl bg-gray-900/90 hover:bg-gray-800/90 transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 cursor-pointer border border-gray-700/50 backdrop-blur-sm">
-              {/* Orange circle for icon */}
-              <div className="flex items-center justify-center w-16 h-16 md:w-20 md:h-20 mb-3 md:mb-4 rounded-full bg-orange-600">
-                <span className="text-2xl md:text-3xl">⚡</span>
-              </div>
-              <span className="text-base md:text-lg lg:text-xl font-bold text-white text-center px-2 leading-snug">Instant<br />Appointment</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Styled Scroll Indicator */}
-      <div className="hidden sm:block absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
+      {/* <div className="hidden sm:block absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
         <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center backdrop-blur-sm">
           <div className="w-1.5 h-3 bg-gradient-to-b from-blue-400 to-emerald-400 rounded-full mt-2"></div>
         </div>
-      </div>
+      </div> */}
 
       <style>{`
         @keyframes gradient-x {
@@ -209,6 +179,9 @@ const HealthHero = () => {
           animation: gradient-x 5s ease infinite;
         }
       `}</style>
+      <div className="mt-8  sm:absolute left-0 right-0 -bottom-24 sm:-bottom-50 md:-bottom-32 lg:-bottom-25 z-50">
+        <ServiceCards />
+      </div>
     </div>
   );
 };
@@ -219,10 +192,11 @@ const CategoryPill = ({ icon, label, active = false }) => {
     <button
       className={`
       flex items-center space-x-2 sm:space-x-3 px-3 sm:px-5 md:px-6 py-2 sm:py-3 md:py-4 rounded-full transition-all duration-300 text-xs sm:text-sm md:text-base
-      ${active
+      ${
+        active
           ? "bg-white text-primary shadow-lg scale-105"
           : "bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md"
-        }
+      }
     `}
     >
       <span className={active ? "text-primary" : "text-white"}>{icon}</span>
@@ -484,7 +458,9 @@ const SearchComponent = () => {
                 ) : (
                   <div className="p-6 text-center">
                     <div className="text-gray-400 mb-2 text-3xl">🔍</div>
-                    <h4 className="text-sm font-bold text-gray-800 mb-1">No Doctors Found</h4>
+                    <h4 className="text-sm font-bold text-gray-800 mb-1">
+                      No Doctors Found
+                    </h4>
                     <p className="text-xs text-gray-500">
                       Try searching with different keywords or doctor specialty.
                     </p>
