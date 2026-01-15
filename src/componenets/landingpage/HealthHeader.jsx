@@ -179,7 +179,7 @@ const HealthHero = () => {
           animation: gradient-x 5s ease infinite;
         }
       `}</style>
-      <div className="mt-8  sm:absolute left-0 right-0 -bottom-24 sm:-bottom-50 md:-bottom-32 lg:-bottom-25 z-50">
+      <div className="mt-8  sm:absolute left-0 right-0 -bottom-24 sm:-bottom-50 md:-bottom-32 lg:-bottom-18 z-50">
         <ServiceCards />
       </div>
     </div>
