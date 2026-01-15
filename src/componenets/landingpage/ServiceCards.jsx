@@ -52,7 +52,7 @@ export default function ServiceCards() {
               <div
                 key={index}
                 onClick={() => handleCardClick(item.type)}
-                className="text-gray-900  flex flex-col items-center text-center transition hover:scale-[1.03] hover:shadow-2xl cursor-pointer p-4 rounded-2xl shadow-xl relative z-50 bg-white/10 hover:bg-white/20  border border-white/20 backdrop-blur-md"
+                className="text-gray-900  flex flex-col items-center text-center transition hover:scale-[1.03] hover:shadow-2xl cursor-pointer p-4 rounded-2xl shadow-xl relative z-50 bg-white/80 hover:bg-white/20  border border-white/20 backdrop-blur-md"
               >
                 {/* Icon Circle */}
                 <div
@@ -62,7 +62,7 @@ export default function ServiceCards() {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-gray-900 font-semibold text-xs md:text-sm lg:text-base">
+                <h3 className="text-gray-600add font-semibold text-xs md:text-sm lg:text-base">
                   {item.title}
                 </h3>
               </div>
