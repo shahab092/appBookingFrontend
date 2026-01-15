@@ -298,21 +298,53 @@ export default function AppointmentModal({
                       {!user && (
                         <div className="space-y-4 pt-2 border-t border-gray-100">
                           <p className="text-sm font-semibold text-gray-700">
-                            Guest Details
+                            Patient Details
                           </p>
                           <div>
                             <input
-                              {...methods.register("guestName")}
+                              {...methods.register("guestName", {
+                                required: "Name is required",
+                              })}
                               placeholder="Enter your Name"
-                              className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                              className={`w-full p-3 border rounded-lg focus:outline-none ${
+                                methods.formState.errors.guestName
+                                  ? "border-red-500"
+                                  : "border-gray-300 focus:border-blue-500"
+                              }`}
                             />
+                            {methods.formState.errors.guestName && (
+                              <p className="text-red-500 text-xs mt-1">
+                                {methods.formState.errors.guestName.message}
+                              </p>
+                            )}
                           </div>
                           <div>
                             <input
-                              {...methods.register("guestWhatsapp")}
+                              {...methods.register("guestWhatsapp", {
+                                required: "WhatsApp number is required",
+                                minLength: {
+                                  value: 10,
+                                  message: "Minimum 10 digits required",
+                                },
+                                onChange: (e) => {
+                                  e.target.value = e.target.value.replace(
+                                    /\D/g,
+                                    ""
+                                  );
+                                },
+                              })}
                               placeholder="WhatsApp Number"
-                              className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                              className={`w-full p-3 border rounded-lg focus:outline-none ${
+                                methods.formState.errors.guestWhatsapp
+                                  ? "border-red-500"
+                                  : "border-gray-300 focus:border-blue-500"
+                              }`}
                             />
+                            {methods.formState.errors.guestWhatsapp && (
+                              <p className="text-red-500 text-xs mt-1">
+                                {methods.formState.errors.guestWhatsapp.message}
+                              </p>
+                            )}
                           </div>
                         </div>
                       )}
@@ -409,6 +441,10 @@ export default function AppointmentModal({
       {bookingStep === "payment" && (
         <PaymentMethodModal
           visible={true}
+          price={
+            doctors.find((d) => d._id === methods.getValues("doctor"))
+              ?.consultationFee || 1500
+          }
           onClose={() => setBookingStep("form")}
           onProceed={handlePaymentProceed}
         />
