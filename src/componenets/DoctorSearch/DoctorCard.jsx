@@ -20,12 +20,8 @@ const DoctorCard = ({ doctor }) => {
 
   const handleBookClick = (type, e) => {
     e.stopPropagation();
-    if (!user) {
-      setShowLoginModal(true);
-    } else {
-      setSelectedType(type);
-      setShowAppointmentModal(true);
-    }
+    setSelectedType(type);
+    setShowAppointmentModal(true);
   };
 
   return (

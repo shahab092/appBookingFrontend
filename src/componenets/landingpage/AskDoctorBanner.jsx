@@ -29,7 +29,7 @@ export default function AskDoctorBanner() {
             </div>
           </div>
 
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="bg-white rounded-2xl p-3 shadow-md">
               <img
                 src="/assets/img/WhatsApp Image 2026-01-12 at 1.17.25 PM.jpeg"

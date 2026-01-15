@@ -18,11 +18,7 @@ export default function DocterDetails() {
 
   const handleProceed = (type) => {
     if (type && typeof type === "string") setBookingType(type);
-    if (!user) {
-      setShowLoginModal(true);
-    } else {
-      setShowAppointmentModal(true);
-    }
+    setShowAppointmentModal(true);
   };
 
   const breadcrumbItems = [

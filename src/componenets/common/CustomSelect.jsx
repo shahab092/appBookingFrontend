@@ -1,7 +1,12 @@
 import React from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
-export default function CustomSelect({ name, label, options = [], rules = {} }) {
+export default function CustomSelect({
+  name,
+  label,
+  options = [],
+  rules = {},
+}) {
   const { control } = useFormContext();
 
   return (
@@ -15,6 +20,12 @@ export default function CustomSelect({ name, label, options = [], rules = {} }) 
           <>
             <select
               {...field}
+              onChange={(e) => {
+                field.onChange(e); // Update react-hook-form state
+                if (rules.onChange) {
+                  rules.onChange(e); // Trigger custom handler
+                }
+              }}
               className={`border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 fieldState.error ? "border-red-500" : "border-gray-300"
               }`}
@@ -27,7 +38,9 @@ export default function CustomSelect({ name, label, options = [], rules = {} }) 
               ))}
             </select>
             {fieldState.error && (
-              <p className="text-red-500 text-xs mt-1">{fieldState.error.message}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {fieldState.error.message}
+              </p>
             )}
           </>
         )}

@@ -39,12 +39,7 @@ export default function ServiceCards() {
 
   const handleCardClick = (type) => {
     setSelectedType(type);
-    if (!user) {
-      setShowLoginModal(true);
-      // setShowAppointmentModal(true);
-    } else {
-      setShowAppointmentModal(true);
-    }
+    setShowAppointmentModal(true);
   };
 
   return (

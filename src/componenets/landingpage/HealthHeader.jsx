@@ -21,6 +21,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { MOCK_DOCTORS } from "../../constant/data";
 import ServiceCards from "./ServiceCards";
+import PaymentMethodModal from "../common/PaymentMethodModal";
 
 // Premium Background Images
 const HERO_IMAGES = [
@@ -214,6 +215,7 @@ const SearchComponent = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const dropdownRef = useRef(null);
   const blurTimeoutRef = useRef(null);
+  const [show, setShow] = useState(true);
 
   // Debounce logic for suggestions
   useEffect(() => {
@@ -345,6 +347,7 @@ const SearchComponent = () => {
         <div className="flex flex-col sm:flex-row items-stretch gap-2 sm:gap-1 bg-white/10 backdrop-blur-xl rounded-lg sm:rounded-xl shadow-2xl p-2 sm:p-3 md:p-4 border border-white/20">
           {/* Location Selector */}
           <div className="w-full sm:w-1/4 order-2 sm:order-1">
+            {show && <PaymentMethodModal onClose={() => setShow(false)} />}
             <div className="relative h-full">
               <select
                 value={selectedCity}
