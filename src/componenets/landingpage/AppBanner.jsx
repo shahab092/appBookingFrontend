@@ -190,7 +190,7 @@ const AppBanner = () => {
             {/* Phone Frame */}
             <div className="relative w-[260px] sm:w-[280px] md:w-[300px] h-[520px] sm:h-[560px] md:h-[620px] mx-auto bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 rounded-[36px] sm:rounded-[40px] md:rounded-[44px] shadow-2xl shadow-black/40 overflow-hidden">
               {/* Phone Curved Edges */}
-              <div className="absolute inset-0 rounded-[36px] sm:rounded-[40px] md:rounded-[44px] border-[8px] sm:border-[10px] md:border-[12px] border-slate-900/80 pointer-events-none"></div>
+              <div className="absolute inset-0 rounded-[36px] sm:rounded-[40px] md:rounded-[44px] border-8 sm:border-10 md:border-[12px] border-slate-900/80 pointer-events-none"></div>
 
               {/* Screen Reflection */}
               <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-white/5 to-transparent rounded-t-[36px] sm:rounded-t-[40px] md:rounded-t-[44px] pointer-events-none"></div>

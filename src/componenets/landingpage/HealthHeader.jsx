@@ -108,9 +108,9 @@ const HealthHero = () => {
           </div>
         ))}
 
-        {/* Cinematic Overlays - Lightened for better image clarity */}
-        <div className="absolute inset-0 bg-black/25"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-transparent to-zinc-900/40"></div>
+        {/* Cinematic Overlays - Stronger black overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/20 z-20"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/40 to-black/60 z-20"></div>
 
         {/* Animated Accent Blobs for Depth */}
         <div className="absolute top-1/4 -left-20 w-80 h-80 bg-primary/20 rounded-full blur-[100px] animate-pulse"></div>
