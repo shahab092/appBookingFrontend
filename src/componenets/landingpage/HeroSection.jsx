@@ -1,4 +1,5 @@
 import React from "react";
+import AppButtons from "../common/AppButtons";
 
 export default function HeroSection() {
   return (
@@ -33,25 +34,7 @@ export default function HeroSection() {
               </p>
 
               {/* CTA + QR */}
-              <div className="flex items-center gap-6 mt-10">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white rounded-xl shadow">
-                    <img
-                      src="/assets/img/qr.png"
-                      alt="QR"
-                      className="w-16 h-16"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase">
-                      Scan to install
-                    </p>
-                    <p className="text-primary font-semibold cursor-pointer hover:underline">
-                      Direct Download →
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <AppButtons className="mt-10" />
             </div>
 
             {/* RIGHT CONTENT */}

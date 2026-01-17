@@ -77,7 +77,7 @@ const HealthHero = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen sm:min-h-[calc(100vh-74px)] flex items-center justify-center flex-col pt-8 sm:pt-0 bg-neutral-950  md:mb-36 sm:mb-24 mb-12">
+    <div className="relative min-h-[720px] sm:min-h-[calc(100vh-74px)] py-8 sm:py-12 md:py-16 flex items-center py-2 justify-center flex-col bg-neutral-950 md:mb-36 sm:mb-24 ">
       {/* Dynamic Background Slideshow */}
       <div className="absolute inset-0 z-0 bg-neutral-900 overflow-hidden">
         {/* Persistent Base Image to prevent black flash */}
@@ -110,7 +110,7 @@ const HealthHero = () => {
 
         {/* Cinematic Overlays - Stronger black overlay for better text readability */}
         <div className="absolute inset-0 bg-black/20 z-20"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/40 to-black/60 z-20"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/90 to-black/60 z-20"></div>
 
         {/* Animated Accent Blobs for Depth */}
         <div className="absolute top-1/4 -left-20 w-80 h-80 bg-primary/20 rounded-full blur-[100px] animate-pulse"></div>

@@ -53,6 +53,7 @@
     background-color: var(--color-neutral-light);
     color: var(--color-neutral-dark);
     font-size: var(--font-size-body);
+    box-sizing: border-box;
   }
 
 /* High Specificity Typography Overrides */

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import AppButtons from "../common/AppButtons";
 
 const AppBanner = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -94,29 +95,11 @@ const AppBanner = () => {
             </div>
           </div>
 
-          {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <button className="group relative flex items-center justify-center gap-2 sm:gap-3 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/80 hover:to-primary text-white px-6 sm:px-8 h-14 sm:h-16 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-500 hover:-translate-y-1 active:scale-95 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-              <span className="material-symbols-outlined text-lg sm:text-xl animate-bounce">
-                download
-              </span>
-              <span>Download MediCare</span>
-            </button>
-            <button className="group flex items-center justify-center gap-2 sm:gap-3 bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/5 px-6 sm:px-8 h-14 sm:h-16 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg transition-all duration-300 hover:-translate-y-1">
-              <span className="text-slate-800 dark:text-white group-hover:text-primary">
-                Watch Demo
-              </span>
-              <span className="material-symbols-outlined group-hover:translate-x-2 transition-transform">
-                play_circle
-              </span>
-            </button>
-          </div>
+          <AppButtons />
 
           {/* Stats & Users */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 pt-6">
-            {/* User Avatars */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-0">
+            {/* <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-0">
               <div className="flex -space-x-3 sm:-space-x-4">
                 {[
                   "bg-gradient-to-r from-blue-400 to-cyan-400",
@@ -146,10 +129,10 @@ const AppBanner = () => {
                   4.9★ App Store Rating
                 </p>
               </div>
-            </div>
+            </div> */}
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full sm:flex-1">
+            {/* <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full sm:flex-1">
               {[
                 { value: "500+", label: "Doctors" },
                 { value: "24/7", label: "Support" },
@@ -167,7 +150,7 @@ const AppBanner = () => {
                   </div>
                 </div>
               ))}
-            </div>
+            </div> */}
           </div>
         </div>
 
