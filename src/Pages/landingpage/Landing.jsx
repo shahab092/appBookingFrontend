@@ -11,6 +11,8 @@ import TopBar from "../../componenets/landingpage/TopBar";
 import BookingSection from "../../componenets/landingpage/BookingSection";
 import HealthHeader from "../../componenets/landingpage/HealthHeader";
 import AskDoctorBanner from "../../componenets/landingpage/AskDoctorBanner";
+import HeroSection from "../../componenets/landingpage/HeroSection";
+import AppBanner from "../../componenets/landingpage/AppBanner";
 
 export default function Landing() {
   // Enable smooth scrolling for anchor links
@@ -54,10 +56,10 @@ export default function Landing() {
       <main className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative">
         <HealthHeader />
 
-        {/* Spacer for overlapped service cards */}
-        <div className="h-28 md:h-32"></div>
+        <HeroSection />
 
         <AskDoctorBanner />
+        <AppBanner />
         <Doctors />
         <BookingSection />
         <Testimonials />

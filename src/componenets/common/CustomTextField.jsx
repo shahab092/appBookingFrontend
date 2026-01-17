@@ -45,12 +45,12 @@ const CustomTextField = ({
         e.target.value = e.target.value.slice(0, maxLength);
       }
     },
-    [allowOnly, maxLength]
+    [allowOnly, maxLength],
   );
 
   const variantStyles = {
-    outlined: `border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500`,
-    standard: `border-b border-gray-300 rounded-none focus-within:border-blue-500`,
+    outlined: `border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-primary`,
+    standard: `border-b border-gray-300 rounded-none focus-within:border-primary`,
   };
 
   return (

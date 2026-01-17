@@ -77,16 +77,18 @@ const HealthHero = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen sm:min-h-[calc(100vh-74px)] flex items-center justify-center flex-col pt-8 sm:pt-0 bg-neutral-950 mb-48">
+    <div className="relative min-h-screen sm:min-h-[calc(100vh-74px)] flex items-center justify-center flex-col pt-8 sm:pt-0 bg-neutral-950  md:mb-36 sm:mb-24 mb-12">
       {/* Dynamic Background Slideshow */}
       <div className="absolute inset-0 z-0 bg-neutral-900 overflow-hidden">
         {/* Persistent Base Image to prevent black flash */}
         <div className="absolute inset-0 opacity-20">
+          {/* <div className="relative w-full h-full"> */}
           <img
             src={HERO_IMAGES[0]}
             alt="background-base"
             className="w-full h-full object-cover"
           />
+          {/* </div> */}
         </div>
 
         {HERO_IMAGES.map((img, idx) => (
@@ -224,7 +226,7 @@ const SearchComponent = () => {
         const filtered = MOCK_DOCTORS.filter(
           (doc) =>
             doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            doc.specialty.toLowerCase().includes(searchQuery.toLowerCase())
+            doc.specialty.toLowerCase().includes(searchQuery.toLowerCase()),
         ).slice(0, 5);
         setSuggestions(filtered);
         setShowSuggestions(true);

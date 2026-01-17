@@ -55,7 +55,7 @@ export default function PaymentMethodModal({
           <div className="bg-white rounded-3xl overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b">
-              <h2 className="text-lg font-bold">Choose payment method</h2>
+              <h3>Choose payment method</h3>
               {price && <span className="font-bold">PKR {price}</span>}
             </div>
 

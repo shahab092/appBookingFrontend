@@ -10,6 +10,7 @@ import {
 import api from "../../libs/api";
 import { useForm, FormProvider } from "react-hook-form";
 import CustomSelect from "../common/CustomSelect";
+import CustomTextField from "../common/CustomTextField";
 import { departmentOptions } from "../../constant/data";
 import { useSelector } from "react-redux";
 import { useToast } from "../../context/ToastContext";
@@ -207,230 +208,198 @@ export default function AppointmentModal({
         footer={null}
         closable={false}
         onCancel={onCancel}
-        width="100%"
         centered
-        style={{ maxWidth: 900 }}
+        width={880}
       >
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="rounded-xl overflow-hidden shadow-2xl">
-              {/* Header */}
-              <div className="bg-gradient-to-r from-blue-600 to-cyan-500 p-6 flex justify-between items-center text-white">
-                <div className="flex items-center gap-3">
-                  <CalendarOutlined />
-                  <div>
-                    <h3 className="text-xl font-bold">{title}</h3>
-                    <p className="text-sm opacity-90">Complete your booking</p>
-                  </div>
+            <div className="rounded-xl overflow-hidden bg-white shadow-lg">
+              {/* HEADER */}
+              <div className="bg-primary px-6 py-4 flex items-center justify-between text-white">
+                <div>
+                  <h3>{title}</h3>
+                  <p className="text-xs opacity-90">
+                    Complete your booking in a few simple steps
+                  </p>
                 </div>
                 <button onClick={onCancel}>
                   <CloseOutlined />
                 </button>
               </div>
-
-              {/* Content */}
-              <div className="p-6 bg-gray-50">
-                <Row gutter={[20, 28]}>
-                  <Col xs={24} md={12}>
-                    <div className="space-y-5">
-                      {/* Appointment Type */}
-                      {[
-                        {
-                          type: "online",
-                          icon: <VideoCameraOutlined />,
-                          label: "Online Consultation",
-                        },
-                        {
-                          type: "inclinic",
-                          icon: <HomeOutlined />,
-                          label: "In-clinic Visit",
-                        },
-                      ].map((item) => (
-                        <div
-                          key={item.type}
-                          onClick={() => setAppointmentType(item.type)}
-                          className={`p-3 border-2 rounded-lg cursor-pointer flex gap-3 ${
-                            appointmentType === item.type
-                              ? "border-blue-600 bg-blue-50"
-                              : "border-gray-200"
-                          }`}
-                        >
-                          {item.icon}
-                          {item.label}
-                        </div>
-                      ))}
-
-                      <CustomSelect
-                        name="department"
-                        label="Department"
-                        options={departmentOptions}
-                        rules={{ required: "Required" }}
-                      />
-
-                      <CustomSelect
-                        name="doctor"
-                        label="Doctor"
-                        options={doctors.map((d) => ({
-                          label: `${d.firstName} ${d.lastName}`,
-                          value: d._id,
-                        }))}
-                        rules={{
-                          required: "Required",
-                          onChange: (e) => {
-                            const selectedDocId = e.target.value;
-                            const doc = doctors.find(
-                              (d) => d._id === selectedDocId
-                            );
-                            if (doc && doc.specialization) {
-                              // Map specialization to department option value
-                              // Assuming departmentOptions values match specialization strings or need mapping
-                              // For now, direct mapping if values align
-                              methods.setValue(
-                                "department",
-                                doc.specialization
-                              );
-                            }
-                          },
-                        }}
-                      />
-
-                      {/* Guest Inputs */}
-                      {!user && (
-                        <div className="space-y-4 pt-2 border-t border-gray-100">
-                          <p className="text-sm font-semibold text-gray-700">
-                            Patient Details
-                          </p>
-                          <div>
-                            <input
-                              {...methods.register("guestName", {
-                                required: "Name is required",
-                              })}
-                              placeholder="Enter your Name"
-                              className={`w-full p-3 border rounded-lg focus:outline-none ${
-                                methods.formState.errors.guestName
-                                  ? "border-red-500"
-                                  : "border-gray-300 focus:border-blue-500"
-                              }`}
-                            />
-                            {methods.formState.errors.guestName && (
-                              <p className="text-red-500 text-xs mt-1">
-                                {methods.formState.errors.guestName.message}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <input
-                              {...methods.register("guestWhatsapp", {
-                                required: "WhatsApp number is required",
-                                minLength: {
-                                  value: 10,
-                                  message: "Minimum 10 digits required",
-                                },
-                                onChange: (e) => {
-                                  e.target.value = e.target.value.replace(
-                                    /\D/g,
-                                    ""
-                                  );
-                                },
-                              })}
-                              placeholder="WhatsApp Number"
-                              className={`w-full p-3 border rounded-lg focus:outline-none ${
-                                methods.formState.errors.guestWhatsapp
-                                  ? "border-red-500"
-                                  : "border-gray-300 focus:border-blue-500"
-                              }`}
-                            />
-                            {methods.formState.errors.guestWhatsapp && (
-                              <p className="text-red-500 text-xs mt-1">
-                                {methods.formState.errors.guestWhatsapp.message}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </Col>
-
-                  {/* Right Side */}
-                  <Col xs={24} md={12}>
-                    <div className="space-y-5">
-                      {/* Calendar */}
-                      <div className="bg-white border-2 rounded-xl p-4">
-                        <div className="flex justify-between mb-3">
-                          <div>
-                            <h4 className="font-bold text-blue-600">
-                              {monthNames[currentMonth - 1]}
-                            </h4>
-                            <p className="text-xs">{currentYear}</p>
-                          </div>
-                          <div className="flex gap-2">
-                            <button onClick={handlePrevMonth}>←</button>
-                            <button onClick={handleNextMonth}>→</button>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-7 gap-1">
-                          {Array.from({ length: firstDay }).map((_, i) => (
-                            <div key={i} />
-                          ))}
-                          {Array.from({ length: daysInMonth }).map((_, i) => (
-                            <button
-                              key={i}
-                              onClick={() => setSelectedDate(i + 1)}
-                              className={`h-9 rounded-lg ${
-                                selectedDate === i + 1
-                                  ? "bg-blue-600 text-white"
-                                  : "hover:bg-gray-100"
-                              }`}
-                            >
-                              {i + 1}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Time Slots */}
-                      <div>
-                        <h4 className="font-bold mb-2 flex items-center gap-2">
-                          <ClockCircleOutlined /> Available Slots
-                        </h4>
-
-                        <div className="grid grid-cols-3 gap-2">
-                          {timeSlots.map((slot) => (
-                            <button
-                              key={slot}
-                              onClick={() => setSelectedTime(slot)}
-                              className={`py-2 rounded-lg ${
-                                selectedTime === slot
-                                  ? "bg-blue-600 text-white"
-                                  : "bg-gray-100"
-                              }`}
-                            >
-                              {formatTo12Hour(slot)} {/* ✅ USER SEES AM/PM */}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </Col>
-                </Row>
-
-                {/* Footer */}
-                <div className="mt-6 flex justify-end gap-3">
-                  <button
-                    onClick={onCancel}
-                    className="px-6 py-2 bg-gray-100 rounded-lg"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="btn-primary"
-                  >
-                    {loading ? "Booking..." : "Book Appointment"}
-                  </button>
+              <div className="px-6 pt-5">
+                <div className="flex gap-3">
+                  {[
+                    {
+                      type: "online",
+                      label: "Online Consultation",
+                      icon: <VideoCameraOutlined />,
+                    },
+                    {
+                      type: "inclinic",
+                      label: "In-clinic Visit",
+                      icon: <HomeOutlined />,
+                    },
+                  ].map((item) => (
+                    <button
+                      type="button"
+                      key={item.type}
+                      onClick={() => setAppointmentType(item.type)}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border
+          ${
+            appointmentType === item.type
+              ? "bg-primary/10 border-primary text-primary"
+              : "border-gray-200 text-gray-600"
+          }`}
+                    >
+                      {item.icon}
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </button>
+                  ))}
                 </div>
+              </div>
+              {/* BODY */}
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* LEFT SIDE */}
+                <div className="space-y-5">
+                  <div className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <div>
+                        <p className="font-semibold text-primary">
+                          {monthNames[currentMonth - 1]}
+                        </p>
+                        <p className="text-xs text-gray-500">{currentYear}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={handlePrevMonth}>
+                          ‹
+                        </button>
+                        <button type="button" onClick={handleNextMonth}>
+                          ›
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-7 gap-1 text-sm">
+                      {Array.from({ length: firstDay }).map((_, i) => (
+                        <div key={i} />
+                      ))}
+                      {Array.from({ length: daysInMonth }).map((_, i) => (
+                        <button
+                          type="button"
+                          key={i}
+                          onClick={() => setSelectedDate(i + 1)}
+                          className={`h-8 rounded-md
+                      ${
+                        selectedDate === i + 1
+                          ? "bg-primary text-white"
+                          : "hover:bg-gray-100"
+                      }`}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* RIGHT SIDE */}
+                <div className="space-y-5">
+                  {/* Available Slots */}
+                  <div>
+                    <p className="text-sm font-semibold mb-2 flex items-center gap-2">
+                      <ClockCircleOutlined /> Available Slots
+                    </p>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      {timeSlots.map((slot) => (
+                        <button
+                          type="button"
+                          key={slot}
+                          onClick={() => setSelectedTime(slot)}
+                          className={`py-2 rounded-md text-sm border
+                      ${
+                        selectedTime === slot
+                          ? "bg-primary text-white border-primary"
+                          : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                        >
+                          {formatTo12Hour(slot)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Department & Doctor */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <CustomSelect
+                      name="department"
+                      label="Department"
+                      options={departmentOptions}
+                      rules={{ required: "Required" }}
+                    />
+
+                    <CustomSelect
+                      name="doctor"
+                      label="Doctor"
+                      options={doctors.map((d) => ({
+                        label: `${d.firstName} ${d.lastName}`,
+                        value: d._id,
+                      }))}
+                    />
+                  </div>
+                </div>
+              </div>
+              {!user && (
+                <div className="pt-4 px-6">
+                  <h4 className="mb-3">Patient Details</h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CustomTextField
+                      name="guestName"
+                      label="Patient Name"
+                      placeholder="Enter patient name"
+                      rules={{
+                        required: "Patient name is required",
+                        minLength: {
+                          value: 3,
+                          message: "Name must be at least 3 characters",
+                        },
+                      }}
+                    />
+
+                    <CustomTextField
+                      name="guestWhatsapp"
+                      label="WhatsApp Number"
+                      placeholder="Enter WhatsApp number"
+                      rules={{
+                        required: "WhatsApp number is required",
+                        pattern: {
+                          value: /^[0-9]{10,15}$/,
+                          message:
+                            "Please enter a valid phone number (10-15 digits)",
+                        },
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* FOOTER */}
+              <div className="px-6 py-4 flex justify-end gap-3 ">
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="px-4 py-2 rounded-md border"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-2 rounded-md bg-primary text-white"
+                >
+                  {loading ? "Booking..." : "Book Appointment"}
+                </button>
               </div>
             </div>
           </form>
