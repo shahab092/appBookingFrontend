@@ -8,26 +8,26 @@ const services = [
   {
     title: "Online Consultation",
     icon: Video,
-    color: "bg-emerald-100 text-emerald-600",
+    color: "bg-teal-50 text-teal-700",
     type: "online",
   },
   {
     title: "In-Clinic Care",
     icon: Hospital,
-    color: "bg-indigo-100 text-indigo-600",
+    color: "bg-violet-50 text-violet-700",
     type: "inclinic",
   },
   {
     title: "General Doctor",
     icon: Stethoscope,
-    color: "bg-blue-100 text-blue-600",
-    type: "online", // Default to online
+    color: "bg-sky-50 text-sky-700",
+    type: "online",
   },
   {
     title: "Instant Appointment",
     icon: Zap,
-    color: "bg-yellow-100 text-yellow-600",
-    type: "online", // Default to online
+    color: "bg-emerald-50 text-emerald-700",
+    type: "online",
   },
 ];
 
@@ -52,19 +52,15 @@ export default function ServiceCards() {
               <div
                 key={index}
                 onClick={() => handleCardClick(item.type)}
-                className="text-gray-900  flex flex-col items-center text-center transition hover:scale-[1.03] hover:shadow-2xl cursor-pointer p-4 rounded-2xl shadow-xl relative z-50 bg-white/80 hover:bg-white/20  border border-white/20 backdrop-blur-md"
+                className={`flex flex-col items-center text-center transition hover:scale-[1.03] hover:shadow-2xl cursor-pointer p-4 rounded-2xl shadow-lg relative z-50 border border-white/40 backdrop-blur-md ${item.color}`}
               >
                 {/* Icon Circle */}
-                <div
-                  className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center mb-3 md:mb-4 ${item.color}`}
-                >
+                <div className="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center mb-3 md:mb-4 bg-white/70">
                   <Icon className="w-6 h-6 md:w-7 md:h-7" />
                 </div>
 
                 {/* Title */}
-                <h3 className="text-gray-600add font-semibold text-xs md:text-sm lg:text-base">
-                  {item.title}
-                </h3>
+                <h3 className="font-medium">{item.title}</h3>
               </div>
             );
           })}
