@@ -21,7 +21,7 @@ const TopBar = () => {
   const user = {
     name: "John Doe",
     email: "john@example.com",
-    isLoggedIn: true, // Change this based on authentication status
+    isLoggedIn: false, // Reverted for final testing
   };
 
   const handleUserClick = () => {
@@ -146,22 +146,41 @@ const TopBar = () => {
               ))}
             </div>
 
-            {/* User Avatar at the end (right side) */}
-            <div className="hidden lg:flex items-center ml-4">
-              <button
-                onClick={handleUserClick}
-                className="flex items-center space-x-3 px-4 py-2 rounded-xl hover:bg-blue-50 transition-all duration-200"
-              >
-                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-lg">
-                  {user.name.charAt(0)}
+            {/* Desktop Navigation / Auth Buttons */}
+            <div className="hidden lg:flex items-center ml-4 space-x-4">
+              {user.isLoggedIn ? (
+                <button
+                  onClick={handleUserClick}
+                  className="flex items-center space-x-3 px-4 py-2 rounded-xl hover:bg-blue-50 transition-all duration-200"
+                >
+                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    {user.name.charAt(0)}
+                  </div>
+                  <div className="hidden xl:flex flex-col items-start">
+                    <span className="text-sm font-bold text-gray-800">
+                      {user.name}
+                    </span>
+                    <span className="text-[10px] text-primary font-medium uppercase tracking-wider">
+                      Account
+                    </span>
+                  </div>
+                </button>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => setShowDoctorModal(true)}
+                    className="btn-outline"
+                  >
+                    Join as a doctor
+                  </button>
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="btn-primary"
+                  >
+                    Login / Sign up
+                  </button>
                 </div>
-                <div className="hidden xl:flex flex-col items-start">
-                  <span className="text-sm font-medium text-gray-800">
-                    {user.name}
-                  </span>
-                  <span className="text-xs text-gray-500">{user.email}</span>
-                </div>
-              </button>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -219,37 +238,60 @@ const TopBar = () => {
 
                 {/* User Section in Mobile Menu */}
                 <div className="pt-3 sm:pt-4 mt-2 border-t border-gray-200">
-                  <div className="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-blue-50 rounded-lg sm:rounded-xl">
-                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-lg flex-shrink-0">
-                      {user.name.charAt(0)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900 text-sm sm:text-base truncate">
-                        {user.name}
-                      </p>
-                      <p className="text-xs sm:text-sm text-gray-600 truncate">
-                        {user.email}
-                      </p>
-                    </div>
-                  </div>
+                  {user.isLoggedIn ? (
+                    <>
+                      <div className="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-blue-50 rounded-lg sm:rounded-xl">
+                        <div className="w-10 sm:w-12 h-10 sm:h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-lg flex-shrink-0">
+                          {user.name.charAt(0)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-gray-900 text-sm sm:text-base truncate">
+                            {user.name}
+                          </p>
+                          <p className="text-[10px] text-primary font-semibold uppercase tracking-wider">
+                            Patient Account
+                          </p>
+                        </div>
+                      </div>
 
-                  <button
-                    onClick={() => {
-                      navigate("/profile");
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full mt-2 sm:mt-3 bg-primary/5 text-primary hover:bg-primary/10 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base transition-all duration-200 text-center"
-                  >
-                    View Profile
-                  </button>
+                      <button
+                        onClick={() => {
+                          navigate("/profile");
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full mt-2 sm:mt-3 bg-primary/5 text-primary hover:bg-primary/10 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base transition-all duration-200 text-center"
+                      >
+                        View Profile
+                      </button>
 
-                  {user.isLoggedIn && (
-                    <button
-                      onClick={handleLogout}
-                      className="w-full mt-2 bg-red-50 text-red-600 hover:bg-red-100 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base transition-all duration-200 text-center"
-                    >
-                      Logout
-                    </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full mt-2 bg-red-50 text-red-600 hover:bg-red-100 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base transition-all duration-200 text-center"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex flex-col space-y-2 px-1">
+                      <button
+                        onClick={() => {
+                          setShowDoctorModal(true);
+                          setIsMenuOpen(false);
+                        }}
+                        className="btn-outline w-full p-"
+                      >
+                        Join as a doctor
+                      </button>
+                      <button
+                        onClick={() => {
+                          navigate("/login");
+                          setIsMenuOpen(false);
+                        }}
+                        className="btn-primary w-full"
+                      >
+                        Login / Sign up
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

@@ -56,9 +56,9 @@ export default function Landing() {
       <main className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative">
         <HealthHeader />
 
+        <AskDoctorBanner />
         <HeroSection />
 
-        <AskDoctorBanner />
         <AppBanner />
         {/* <Doctors /> */}
         <BookingSection />
