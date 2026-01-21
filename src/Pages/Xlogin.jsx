@@ -11,7 +11,7 @@ import { jwtDecode } from "jwt-decode";
 import CustomTextField from "../componenets/common/CustomTextField";
 import { loginSchema } from "../validation/validation";
 import { useToast } from "../context/ToastContext";
-import CountryCodeInput from "../componenets/common/countryCodeInput";
+import CountryCodeInput from "../componenets/common/CountryCodeInput";
 
 const Xlogin = () => {
   const methods = useForm({
