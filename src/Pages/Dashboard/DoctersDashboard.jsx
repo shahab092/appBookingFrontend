@@ -12,7 +12,6 @@ import {
   CheckCircle,
   X,
   Filter,
-  Filter,
   Download,
   Phone,
   PhoneOff,
