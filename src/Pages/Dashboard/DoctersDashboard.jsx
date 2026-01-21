@@ -12,7 +12,7 @@ import {
   CheckCircle,
   X,
   Filter,
-  // Filter,
+  Filter,
   Download,
   Phone,
   PhoneOff,
