@@ -20,6 +20,7 @@ const Xlogin = () => {
   });
 
   const { handleSubmit } = methods;
+  // const { handleSubmit } = methods;
 
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
