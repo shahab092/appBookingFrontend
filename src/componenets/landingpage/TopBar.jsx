@@ -10,12 +10,14 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import DoctorRegistrationModal from "./DoctorRegistrationModal";
+import LoginModal from "../common/LoginModal";
 
 const TopBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeLink, setActiveLink] = useState("findDoctors");
   const navigate = useNavigate();
   const [showDoctorModal, setShowDoctorModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Mock user data - replace with actual user data from your auth context
   const user = {
@@ -29,7 +31,7 @@ const TopBar = () => {
       // Navigate to user profile or show simple dropdown
       //   navigate("/profile");
     } else {
-      navigate("/login");
+      setShowLoginModal(true);
     }
   };
 
@@ -74,7 +76,7 @@ const TopBar = () => {
                 </button>
               ) : (
                 <button
-                  onClick={() => navigate("/login")}
+                  onClick={() => setShowLoginModal(true)}
                   className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full transition-all duration-200 group"
                 >
                   <FaUser
@@ -91,7 +93,7 @@ const TopBar = () => {
           
             <div className="md:hidden">
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => setShowLoginModal(true)}
                 className="text-white text-sm font-medium"
               >
                 {user.isLoggedIn ? user.name : "Login"}
@@ -174,7 +176,7 @@ const TopBar = () => {
                     Join as a doctor
                   </button>
                   <button
-                    onClick={() => navigate("/login")}
+                    onClick={() => setShowLoginModal(true)}
                     className="btn-primary"
                   >
                     Login / Sign up
@@ -284,7 +286,7 @@ const TopBar = () => {
                       </button>
                       <button
                         onClick={() => {
-                          navigate("/login");
+                          setShowLoginModal(true);
                           setIsMenuOpen(false);
                         }}
                         className="btn-primary w-full"
@@ -304,6 +306,11 @@ const TopBar = () => {
         visible={showDoctorModal}
         onCancel={() => setShowDoctorModal(false)}
         onOk={() => setShowDoctorModal(false)}
+      />
+
+      <LoginModal
+        visible={showLoginModal}
+        onCancel={() => setShowLoginModal(false)}
       />
     </>
   );

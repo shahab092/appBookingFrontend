@@ -16,6 +16,7 @@ import { useSelector } from "react-redux";
 import { useToast } from "../../context/ToastContext";
 import PaymentMethodModal from "../common/PaymentMethodModal";
 import OTPModal from "../common/OTPModal";
+import CustomModal from "../common/CustomModal";
 
 /* ---------------- Constants ---------------- */
 const timeSlots = [
@@ -203,223 +204,192 @@ export default function AppointmentModal({
 
   return (
     <>
-      <Modal
-        open={visible && bookingStep === "form"}
-        footer={null}
-        closable={false}
+      <CustomModal
+        visible={visible && bookingStep === "form"}
+        title={title}
+        subtitle="Complete your booking in a few simple steps"
         onCancel={onCancel}
-        centered
-        width="95%"
-        style={{ maxWidth: "880px" }}
+        onSubmit={handleSubmit(onSubmit)}
+        submitText={loading ? "Booking..." : "Book Appointment"}
+        loading={loading}
+        width={880}
       >
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="rounded-xl overflow-hidden bg-white shadow-lg">
-              {/* HEADER */}
-              <div className="bg-primary px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between text-white">
-                <div>
-                  <h3 className="text-base sm:text-xl">{title}</h3>
-                  <p className="text-[10px] sm:text-xs opacity-90">
-                    Complete your booking in a few simple steps
-                  </p>
-                </div>
-                <button onClick={onCancel} className="text-lg sm:text-xl">
-                  <CloseOutlined />
-                </button>
-              </div>
-              <div className="px-4 sm:px-6 pt-4 sm:pt-5">
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  {[
-                    {
-                      type: "online",
-                      label: "Online Consultation",
-                      icon: <VideoCameraOutlined />,
-                    },
-                    {
-                      type: "inclinic",
-                      label: "In-clinic Visit",
-                      icon: <HomeOutlined />,
-                    },
-                  ].map((item) => (
-                    <button
-                      type="button"
-                      key={item.type}
-                      onClick={() => setAppointmentType(item.type)}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2 sm:py-2.5 rounded-lg border
-          ${
-            appointmentType === item.type
-              ? "bg-primary/10 border-primary text-primary"
-              : "border-neutral-medium text-gray-600"
-          }`}
-                    >
-                      {item.icon}
-                      <span className="text-xs sm:text-sm font-medium">
-                        {item.label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* BODY */}
-              <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                {/* LEFT SIDE */}
-                <div className="space-y-4 sm:space-y-5">
-                  <div className="border border-neutral-medium rounded-lg p-3 sm:p-4">
-                    <div className="flex justify-between items-center mb-2 sm:mb-3">
-                      <div>
-                        <p className="text-sm sm:text-base font-semibold text-primary">
-                          {monthNames[currentMonth - 1]}
-                        </p>
-                        <p className="text-[10px] sm:text-xs text-gray-500">
-                          {currentYear}
-                        </p>
-                      </div>
-                      <div className="flex gap-1 sm:gap-2">
-                        <button
-                          type="button"
-                          onClick={handlePrevMonth}
-                          className="p-1 sm:p-2 hover:bg-gray-100 rounded"
-                        >
-                          ‹
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleNextMonth}
-                          className="p-1 sm:p-2 hover:bg-gray-100 rounded"
-                        >
-                          ›
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-7 gap-0.5 sm:gap-1 text-xs sm:text-sm">
-                      {Array.from({ length: firstDay }).map((_, i) => (
-                        <div key={i} />
-                      ))}
-                      {Array.from({ length: daysInMonth }).map((_, i) => (
-                        <button
-                          type="button"
-                          key={i}
-                          onClick={() => setSelectedDate(i + 1)}
-                          className={`h-7 sm:h-8 rounded-md text-xs sm:text-sm
-                      ${
-                        selectedDate === i + 1
-                          ? "bg-primary text-white"
-                          : "hover:bg-gray-100"
-                      }`}
-                        >
-                          {i + 1}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* RIGHT SIDE */}
-                <div className="space-y-4 sm:space-y-5">
-                  {/* Available Slots */}
-                  <div>
-                    <p className="text-xs sm:text-sm font-semibold mb-2 flex items-center gap-2">
-                      <ClockCircleOutlined /> Available Slots
-                    </p>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
-                      {timeSlots.map((slot) => (
-                        <button
-                          type="button"
-                          key={slot}
-                          onClick={() => setSelectedTime(slot)}
-                          className={`py-1.5 sm:py-2 rounded-md text-xs sm:text-sm border
-                      ${
-                        selectedTime === slot
-                          ? "bg-primary text-white border-primary"
-                          : "border-neutral-medium hover:bg-gray-50"
-                      }`}
-                        >
-                          {formatTo12Hour(slot)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Department & Doctor */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <CustomSelect
-                      name="department"
-                      label="Department"
-                      options={departmentOptions}
-                      rules={{ required: "Required" }}
-                    />
-
-                    <CustomSelect
-                      name="doctor"
-                      label="Doctor"
-                      options={doctors.map((d) => ({
-                        label: `${d.firstName} ${d.lastName}`,
-                        value: d._id,
-                      }))}
-                    />
-                  </div>
-                </div>
-              </div>
-              {!user && (
-                <div className="pt-3 sm:pt-4 px-4 sm:px-6">
-                  <h4 className="mb-2 sm:mb-3 text-sm sm:text-base">
-                    Patient Details
-                  </h4>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <CustomTextField
-                      name="guestName"
-                      label="Patient Name"
-                      placeholder="Enter patient name"
-                      rules={{
-                        required: "Patient name is required",
-                        minLength: {
-                          value: 3,
-                          message: "Name must be at least 3 characters",
-                        },
-                      }}
-                    />
-
-                    <CustomTextField
-                      name="guestWhatsapp"
-                      label="WhatsApp Number"
-                      placeholder="Enter WhatsApp number"
-                      rules={{
-                        required: "WhatsApp number is required",
-                        pattern: {
-                          value: /^[0-9]{10,15}$/,
-                          message:
-                            "Please enter a valid phone number (10-15 digits)",
-                        },
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* FOOTER */}
-              <div className="px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 border-t border-neutral-medium">
-                <button
-                  type="button"
-                  onClick={onCancel}
-                  className="btn-outline"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full sm:w-auto px-6 py-2 rounded-md bg-primary text-white hover:bg-primary/90 disabled:opacity-50 text-sm sm:text-base"
-                >
-                  {loading ? "Booking..." : "Book Appointment"}
-                </button>
+            <div className="px-0 pt-0">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                {[
+                  {
+                    type: "online",
+                    label: "Online Consultation",
+                    icon: <VideoCameraOutlined />,
+                  },
+                  {
+                    type: "inclinic",
+                    label: "In-clinic Visit",
+                    icon: <HomeOutlined />,
+                  },
+                ].map((item) => (
+                  <button
+                    type="button"
+                    key={item.type}
+                    onClick={() => setAppointmentType(item.type)}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 sm:py-2.5 rounded-lg border
+            ${
+              appointmentType === item.type
+                ? "bg-primary/10 border-primary text-primary"
+                : "border-neutral-medium text-gray-600"
+            }`}
+                  >
+                    {item.icon}
+                    <span className="text-xs sm:text-sm font-medium">
+                      {item.label}
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
+            {/* BODY */}
+            <div className="p-0 mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              {/* LEFT SIDE */}
+              <div className="space-y-4 sm:space-y-5">
+                <div className="border border-neutral-medium rounded-lg p-3 sm:p-4">
+                  <div className="flex justify-between items-center mb-2 sm:mb-3">
+                    <div>
+                      <p className="text-sm sm:text-base font-semibold text-primary">
+                        {monthNames[currentMonth - 1]}
+                      </p>
+                      <p className="text-[10px] sm:text-xs text-gray-500">
+                        {currentYear}
+                      </p>
+                    </div>
+                    <div className="flex gap-1 sm:gap-2">
+                      <button
+                        type="button"
+                        onClick={handlePrevMonth}
+                        className="p-1 sm:p-2 hover:bg-gray-100 rounded"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleNextMonth}
+                        className="p-1 sm:p-2 hover:bg-gray-100 rounded"
+                      >
+                        ›
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-7 gap-0.5 sm:gap-1 text-xs sm:text-sm">
+                    {Array.from({ length: firstDay }).map((_, i) => (
+                      <div key={i} />
+                    ))}
+                    {Array.from({ length: daysInMonth }).map((_, i) => (
+                      <button
+                        type="button"
+                        key={i}
+                        onClick={() => setSelectedDate(i + 1)}
+                        className={`h-7 sm:h-8 rounded-md text-xs sm:text-sm
+                  ${
+                    selectedDate === i + 1
+                      ? "bg-primary text-white"
+                      : "hover:bg-gray-100"
+                  }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT SIDE */}
+              <div className="space-y-4 sm:space-y-5">
+                {/* Available Slots */}
+                <div>
+                  <p className="text-xs sm:text-sm font-semibold mb-2 flex items-center gap-2">
+                    <ClockCircleOutlined /> Available Slots
+                  </p>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
+                    {timeSlots.map((slot) => (
+                      <button
+                        type="button"
+                        key={slot}
+                        onClick={() => setSelectedTime(slot)}
+                        className={`py-1.5 sm:py-2 rounded-md text-xs sm:text-sm border
+                  ${
+                    selectedTime === slot
+                      ? "bg-primary text-white border-primary"
+                      : "border-neutral-medium hover:bg-gray-50"
+                  }`}
+                      >
+                        {formatTo12Hour(slot)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Department & Doctor */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <CustomSelect
+                    name="department"
+                    label="Department"
+                    options={departmentOptions}
+                    rules={{ required: "Required" }}
+                  />
+
+                  <CustomSelect
+                    name="doctor"
+                    label="Doctor"
+                    options={doctors.map((d) => ({
+                      label: `${d.firstName} ${d.lastName}`,
+                      value: d._id,
+                    }))}
+                  />
+                </div>
+              </div>
+            </div>
+            {!user && (
+              <div className="pt-3 sm:pt-4">
+                <h4 className="mb-2 sm:mb-3 text-sm sm:text-base">
+                  Patient Details
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <CustomTextField
+                    name="guestName"
+                    label="Patient Name"
+                    placeholder="Enter patient name"
+                    rules={{
+                      required: "Patient name is required",
+                      minLength: {
+                        value: 3,
+                        message: "Name must be at least 3 characters",
+                      },
+                    }}
+                  />
+
+                  <CustomTextField
+                    name="guestWhatsapp"
+                    label="WhatsApp Number"
+                    placeholder="Enter WhatsApp number"
+                    rules={{
+                      required: "WhatsApp number is required",
+                      pattern: {
+                        value: /^[0-9]{10,15}$/,
+                        message:
+                          "Please enter a valid phone number (10-15 digits)",
+                      },
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </form>
         </FormProvider>
-      </Modal>
+      </CustomModal>
 
       {/* Guest Booking Flow Modals */}
       {bookingStep === "payment" && (

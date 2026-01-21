@@ -8,7 +8,7 @@ const CustomTextField = ({
   variant = "outlined",
   rules,
   label,
-  height = "56px", // default height consistent with select
+  height = "35px", // Decreased from 56px to 35px
   onBlur,
   minRows,
   maxRows,
@@ -23,6 +23,7 @@ const CustomTextField = ({
   showHelperText = true,
   endAdornment,
   showSearchIcon = false,
+  className = "", // Added className prop for custom styling
 }) => {
   const { control } = useFormContext();
 
@@ -54,7 +55,7 @@ const CustomTextField = ({
   };
 
   return (
-    <div className="w-full">
+    <div className={className}>
       {label && (
         <label className="mb-2 block text-xs font-bold text-gray-700">
           {label}
@@ -71,16 +72,16 @@ const CustomTextField = ({
           return (
             <>
               <div
-                className={`form-input  ${variantStyles[variant]} ${
+                className={`flex items-center ${variantStyles[variant]} ${
                   fieldState.error ? "border-red-500 ring-red-500" : ""
-                } ${disabled ? "opacity-50" : ""}`}
+                } ${disabled ? "opacity-50" : ""} px-3`} // Added px-3 for padding
                 style={{
-                  height: multiline ? "auto" : height, // same as select
-                  minHeight: "39px", // ensures minimum height consistency
+                  height: multiline ? "auto" : height,
+                  minHeight: "35px", // Updated min-height
                 }}
               >
                 {showSearchIcon && (
-                  <Search className="mr-2 h-4 w-4 text-gray-400" />
+                  <Search className="mr-3 h-4 w-4 text-gray-400" />
                 )}
 
                 <InputComponent
@@ -97,7 +98,13 @@ const CustomTextField = ({
                     onBlur?.(e);
                   }}
                   onFocus={onFocus}
-                  className={`w-full bg-transparent text-sm outline-none placeholder-gray-400 resize-none h-full`}
+                  className={`w-full bg-transparent text-sm outline-none placeholder-gray-400 resize-none ${
+                    multiline ? "py-2" : "" // Add padding for multiline
+                  }`}
+                  style={{
+                    height: multiline ? "auto" : "100%",
+                    lineHeight: "1.5", // Better text alignment
+                  }}
                 />
 
                 {endAdornment && (

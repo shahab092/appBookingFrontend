@@ -61,7 +61,7 @@ export default function Landing() {
 
         <AppBanner />
         {/* <Doctors /> */}
-        <BookingSection />
+        {/* <BookingSection /> */}
         <Testimonials />
         {/* <CTA /> */}
         <Footer />

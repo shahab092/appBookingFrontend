@@ -77,7 +77,7 @@ const HealthHero = () => {
   }, []);
 
   return (
-    <div className="relative min-h-[720px] sm:min-h-[calc(100vh-74px)] py-8 sm:py-12 md:py-16 flex items-center py-2 justify-center flex-col bg-neutral-950 md:mb-36 sm:mb-24 ">
+    <div className="relative min-h-[720px] sm:min-h-[calc(100vh-74px)] py-8 sm:py-12 md:py-16 flex items-center py-2 justify-center flex-col bg-neutral-950 md:mb-36 sm:mb-24">
       {/* Dynamic Background Slideshow */}
       <div className="absolute inset-0 z-0 bg-neutral-900 overflow-hidden">
         {/* Persistent Base Image to prevent black flash */}
@@ -194,7 +194,7 @@ const CategoryPill = ({ icon, label, active = false }) => {
   return (
     <button
       className={`
-      flex items-center space-x-2 sm:space-x-3 px-3 sm:px-5 md:px-6 py-2 sm:py-3 md:py-4 rounded-full transition-all duration-300 text-xs sm:text-sm md:text-base
+      flex items-center space-x-2 sm:space-x-3 px-2 sm:px-3 md:px-5 py-2 sm:py-3 md:py-4 rounded-full transition-all duration-300 text-xs sm:text-sm md:text-base
       ${
         active
           ? "bg-white text-primary shadow-lg scale-105"

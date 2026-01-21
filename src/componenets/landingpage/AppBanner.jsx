@@ -104,7 +104,7 @@ const AppBanner = () => {
           {/* Stats Section */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8 pt-4 sm:pt-6">
             {/* Users Avatars */}
-            <div className="flex items-center gap-3 sm:gap-4">
+            {/* <div className="flex items-center gap-3 sm:gap-4">
               <div className="flex -space-x-2 sm:-space-x-3 md:-space-x-4">
                 {[
                   "bg-gradient-to-r from-blue-400 to-cyan-400",
@@ -134,7 +134,7 @@ const AppBanner = () => {
                   4.9★ App Store Rating
                 </p>
               </div>
-            </div>
+            </div> */}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 w-full sm:flex-1">

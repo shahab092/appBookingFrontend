@@ -15,6 +15,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { doctorRegistrationSchema } from "../../validation/validation";
 import { departmentOptions, specializationOptions } from "../../constant/data";
+import CustomModal from "../common/CustomModal";
 
 export default function DoctorRegistrationModal({
   visible,
@@ -59,7 +60,10 @@ export default function DoctorRegistrationModal({
     try {
       setLoading(true);
       const res = await api.post("/doctor/register", payload);
-      showToast("Registration submitted successfully! We will review it shortly.", "success");
+      showToast(
+        "Registration submitted successfully! We will review it shortly.",
+        "success",
+      );
 
       // Reset form after successful submission
       reset();
@@ -81,29 +85,20 @@ export default function DoctorRegistrationModal({
   );
 
   return (
-    <Modal open={visible} footer={null} closable={false} width={800} centered>
+    <CustomModal
+      visible={visible}
+      title={title}
+      subtitle="Register as a doctor. We will review and contact you shortly."
+      onCancel={onCancel}
+      onSubmit={handleSubmit(onSubmit)}
+      submitText={loading ? "Submitting..." : "Submit Registration"}
+      loading={loading}
+      width={800}
+    >
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Header */}
-          <div className="bg-blue-50 p-4 flex justify-between items-start rounded-t-lg">
-            <div className="flex gap-3 items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <FaStethoscope className="text-blue-600 text-2xl" />
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-blue-800">{title}</h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Register as a doctor. We will review and contact you shortly.
-                </p>
-              </div>
-            </div>
-            <button onClick={onCancel} type="button">
-              <FaTimes className="text-gray-400 text-lg" />
-            </button>
-          </div>
-
           {/* Body */}
-          <div className="p-6 max-h-[75vh] overflow-y-auto">
+          <div className="p-0">
             {/* Personal Info */}
             {sectionTitle(<FaUser />, "Personal Information")}
             <Row gutter={[16, 16]}>
@@ -235,27 +230,9 @@ export default function DoctorRegistrationModal({
                 />
               </Col>
             </Row>
-
-            {/* Footer */}
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="px-5 py-2 border rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-5 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-60"
-              >
-                {loading ? "Submitting..." : "Submit Registration"}
-              </button>
-            </div>
           </div>
         </form>
       </FormProvider>
-    </Modal>
+    </CustomModal>
   );
 }

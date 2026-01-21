@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light dark;
   /* Main Scheme */
   --color-primary: #2e76ad;
   --color-success: #4CAF50;
@@ -19,6 +20,16 @@
   --color-offline: #9E9E9E;
   --color-emergency: #E63946;
   --color-info: #2e76ad;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-neutral-light: #121212;
+    --color-neutral-medium: #1e1e1e;
+    --color-neutral-dark: #f3f4f6; /* Lighter for dark mode */
+    --color-typegray: #9ca3af;
+    --color-primary: #5baae6; /* More vibrant blue for dark mode */
+  }
 }
 
 @theme {
@@ -54,6 +65,46 @@
     color: var(--color-neutral-dark);
     font-size: var(--font-size-body);
     box-sizing: border-box;
+  }
+
+  /* Professional Global Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(var(--color-primary-rgb, 46, 118, 173), 0.3) transparent;
+  }
+
+  /* Chrome, Edge, and Safari */
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--color-primary-rgb, 46, 118, 173), 0.2);
+    border-radius: 20px;
+    border: 1px solid transparent;
+    transition: background-color 0.3s ease;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(var(--color-primary-rgb, 46, 118, 173), 0.5);
+  }
+
+  /* Dark mode scrollbar adjustment */
+  @media (prefers-color-scheme: dark) {
+    * {
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+    *::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    *::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
   }
 
 /* High Specificity Typography Overrides */
@@ -109,17 +160,32 @@ html body h4 {
 /* Helper for sections that need huge headers but want to respect theme colors */
 .hero-title {
   @apply font-black leading-tight;
-  /* We can add specific overrides here if needed, but per user request, headers should be h1/h2 etc. */
 }
 
 /* Button Utilities */
 .btn-primary {
-  @apply bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg flex items-center justify-center gap-2 border-2 border-transparent;
+  @apply text-white px-6 py-2.5 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg flex items-center justify-center gap-2 border-2 border-transparent;
+  background-color: var(--color-primary) !important;
   min-width: 160px;
+  
+  &:hover {
+    opacity: 0.9;
+  }
 }
 
 .btn-outline {
-  @apply border-2 border-primary text-primary hover:bg-primary/5 px-6 py-2.5 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2;
+  @apply border-2 px-6 py-2.5 rounded-xl font-bold 
+         transition-all duration-300 transform hover:scale-105 active:scale-95 
+         flex items-center justify-center gap-2 whitespace-nowrap;
+  background-color: transparent !important;
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
   min-width: 160px;
+  forced-color-adjust: none; /* Prevents browsers from overriding colors */
+
+  &:hover {
+    background-color: var(--color-primary) !important;
+    color: white !important;
+  }
 }
 }

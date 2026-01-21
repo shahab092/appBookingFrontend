@@ -44,7 +44,7 @@ export default function ServiceCards() {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-1 sm:px-2 md:px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {services.map((item, index) => {
             const Icon = item.icon;
@@ -52,7 +52,7 @@ export default function ServiceCards() {
               <div
                 key={index}
                 onClick={() => handleCardClick(item.type)}
-                className={`flex flex-col items-center text-center transition hover:scale-[1.03] hover:shadow-2xl cursor-pointer p-4 rounded-2xl shadow-lg relative z-50 border border-white/40 backdrop-blur-md ${item.color}`}
+                className={`flex flex-col items-center text-center transition hover:scale-[1.03] hover:shadow-2xl cursor-pointer p-2F sm:p-2 md:p-4 rounded-2xl shadow-lg relative z-50 border border-white/40 backdrop-blur-md ${item.color}`}
               >
                 {/* Icon Circle */}
                 <div className="w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center mb-3 md:mb-4 bg-white/70">
@@ -60,7 +60,7 @@ export default function ServiceCards() {
                 </div>
 
                 {/* Title */}
-                <h3 className="font-medium">{item.title}</h3>
+                <h4>{item.title}</h4>
               </div>
             );
           })}

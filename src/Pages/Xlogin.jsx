@@ -11,6 +11,7 @@ import { jwtDecode } from "jwt-decode";
 import CustomTextField from "../componenets/common/CustomTextField";
 import { loginSchema } from "../validation/validation";
 import { useToast } from "../context/ToastContext";
+import CountryCodeInput from "../componenets/common/countryCodeInput";
 
 const Xlogin = () => {
   const methods = useForm({
@@ -48,7 +49,7 @@ const Xlogin = () => {
           token: accessToken,
           refreshToken,
           user: userData,
-        })
+        }),
       );
 
       if (decoded.role === "admin") navigate("/admin/dashboard");
@@ -71,7 +72,7 @@ const Xlogin = () => {
         setCredentials({
           token: res.data.data.accessToken,
           user: res.data.data.user,
-        })
+        }),
       );
       navigate("/patient/dashboard");
       showToast("Google login successful!", "success");
@@ -112,10 +113,14 @@ const Xlogin = () => {
             <div className="mx-4 text-gray-500">or</div>
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
-
           {/* Email/Password Form */}
           <FormProvider {...methods}>
             <form onSubmit={handleSubmit(onSubmit)}>
+              <CountryCodeInput
+                name="phone"
+                label="Phone Number"
+                country={"pk"}
+              />
               <CustomTextField
                 name="email"
                 label="Email or Username"
