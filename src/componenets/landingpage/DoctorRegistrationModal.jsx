@@ -93,7 +93,7 @@ export default function DoctorRegistrationModal({
       onSubmit={handleSubmit(onSubmit)}
       submitText={loading ? "Submitting..." : "Submit Registration"}
       loading={loading}
-      width={800}
+      width={1000}
     >
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>

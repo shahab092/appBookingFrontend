@@ -189,3 +189,19 @@ html body h4 {
   }
 }
 }
+/* Global Fix for Ant Design Modal Padding and Borders */
+:where(.ant-modal) .ant-modal-content,
+:where(.ant-modal) .ant-modal-body,
+:where(.ant-modal) .ant-modal-header,
+.ant-modal-container,
+.ant-modal-root .ant-modal-content,
+.ant-modal-root .ant-modal-body {
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.ant-modal-wrap {
+  padding: 0 !important;
+}

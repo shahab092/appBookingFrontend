@@ -1,7 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Modal } from "antd";
+import CustomModal from "./CustomModal";
 
-export default function OTPModal({ visible, onClose, onVerify, mobileNumber }) {
+export default function OTPModal({
+  visible,
+  onClose,
+  onVerify,
+  mobileNumber,
+  loading = false,
+}) {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const inputRefs = useRef([]);
@@ -24,6 +31,8 @@ export default function OTPModal({ visible, onClose, onVerify, mobileNumber }) {
     // Move to next input if value is entered
     if (value && index < 5) {
       inputRefs.current[index + 1].focus();
+    } else if (value && index === 5) {
+      inputRefs.current[index].blur(); // Trigger onBlur verification
     }
   };
 
@@ -49,29 +58,31 @@ export default function OTPModal({ visible, onClose, onVerify, mobileNumber }) {
 
   const handleVerify = () => {
     const otpString = otp.join("");
-    if (otpString !== "123456") {
-      setError("Invalid OTP. Please try again.");
-      return;
-    }
+    if (otpString.length < 6) return; // Don't verify incomplete OTP
+
     setError("");
-    onVerify(otpString);
+    onVerify?.(otpString);
+  };
+
+  const handleBlur = () => {
+    const otpString = otp.join("");
+    if (otpString.length === 6) {
+      handleVerify();
+    }
   };
 
   return (
-    <Modal
-      open={visible}
-      footer={null}
+    <CustomModal
+      visible={visible}
+      title="Verify OTP"
+      subtitle={`Enter the code sent to ${mobileNumber || "your WhatsApp number"}`}
       onCancel={onClose}
-      centered
-      width={400}
-      className="p-0 otp-modal"
+      onSubmit={handleVerify}
+      submitText="Verify OTP"
+      loading={loading}
+      width={450}
     >
-      <div className="p-6 text-center">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Verify OTP</h2>
-        <p className="text-sm text-gray-500 mb-8">
-          Enter the code sent to {mobileNumber || "your WhatsApp number"}
-        </p>
-
+      <div className="text-center">
         <div className="flex gap-2 justify-center mb-6">
           {otp.map((digit, index) => (
             <input
@@ -83,6 +94,7 @@ export default function OTPModal({ visible, onClose, onVerify, mobileNumber }) {
               onChange={(e) => handleChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={handlePaste}
+              onBlur={handleBlur}
               className={`w-12 h-12 text-center text-xl font-bold border-2 rounded-lg focus:outline-none transition-colors ${
                 error
                   ? "border-red-500 text-red-500 focus:border-red-500"
@@ -96,20 +108,13 @@ export default function OTPModal({ visible, onClose, onVerify, mobileNumber }) {
           <p className="text-red-500 text-sm mb-4 font-medium">{error}</p>
         )}
 
-        <button
-          onClick={handleVerify}
-          className="w-full bg-primary text-white rounded-xl py-3 font-semibold hover:opacity-90 transition shadow-lg"
-        >
-          Verify & Book
-        </button>
-
-        <p className="text-xs text-gray-400 mt-6">
+        <p className="text-xs text-gray-400">
           Didn't receive code?{" "}
           <span className="text-primary font-semibold cursor-pointer hover:underline">
             Resend
           </span>
         </p>
       </div>
-    </Modal>
+    </CustomModal>
   );
 }

@@ -193,13 +193,30 @@ export default function AppointmentModal({
     setBookingStep("otp");
   };
 
-  const handleOTPVerify = (otp) => {
-    // Here we assume OTP is correct for the demo/frontend task
-    processBooking({
-      ...pendingData,
-      paymentMethod: "confirmed",
-      otpVerified: true,
-    });
+  const handleOTPVerify = async (otp) => {
+    setLoading(true);
+    try {
+      const res = await api.post("/verify-otp", {
+        whatsappnumber: pendingData.guestWhatsapp,
+        otp,
+      });
+      if (res.data?.success) {
+        processBooking({
+          ...pendingData,
+          paymentMethod: "confirmed",
+          otpVerified: true,
+        });
+      } else {
+        showToast("Invalid OTP. Please try again.", "error");
+      }
+    } catch (error) {
+      showToast(
+        error.response?.data?.message || "Verification failed",
+        "error",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -410,6 +427,7 @@ export default function AppointmentModal({
           onClose={() => setBookingStep("payment")} // Go back to payment
           onVerify={handleOTPVerify}
           mobileNumber={pendingData?.guestWhatsapp}
+          loading={loading}
         />
       )}
     </>
