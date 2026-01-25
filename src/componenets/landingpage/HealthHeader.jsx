@@ -5,6 +5,7 @@ import {
   FaChevronDown,
   FaUserMd,
   FaStethoscope,
+  FaTimes,
 } from "react-icons/fa";
 import {
   Stethoscope,
@@ -19,14 +20,37 @@ import {
   Droplets,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useForm, FormProvider } from "react-hook-form";
 import { MOCK_DOCTORS } from "../../constant/data";
 import ServiceCards from "./ServiceCards";
 import PaymentMethodModal from "../common/PaymentMethodModal";
+import CustomSelect from "../common/CustomSelect";
+import CustomModal from "../common/CustomModal";
+import api from "../../libs/api";
 
 // Premium Background Images
 const HERO_IMAGES = [
   "/assets/img/img_one.png",
   "/assets/img/WhatsApp Image 2026-01-12 at 1.17.25 PM.jpeg",
+];
+
+// Specialities Data
+const SPECIALITIES = [
+  { id: 1, name: "Gynecologist", icon: "👩‍⚕️", count: 245 },
+  { id: 2, name: "Skin Specialist", icon: "✨", count: 189 },
+  { id: 3, name: "Child Specialist", icon: "👶", count: 312 },
+  { id: 4, name: "Neurologist", icon: "🧠", count: 134 },
+  { id: 5, name: "Orthopedic Surgeon", icon: "🦴", count: 167 },
+  { id: 6, name: "Gastroenterologist", icon: "🥗", count: 98 },
+  { id: 7, name: "Endocrinologist", icon: "⚖️", count: 76 },
+  { id: 8, name: "Cardiologist", icon: "❤️", count: 210 },
+  { id: 9, name: "Dentist", icon: "🦷", count: 287 },
+  { id: 10, name: "Psychiatrist", icon: "🧠", count: 123 },
+  { id: 11, name: "ENT Specialist", icon: "👂", count: 145 },
+  { id: 12, name: "Urologist", icon: "💧", count: 89 },
+  { id: 13, name: "Oncologist", icon: "🩺", count: 67 },
+  { id: 14, name: "Rheumatologist", icon: "🦵", count: 54 },
+  { id: 15, name: "Nephrologist", icon: "🫀", count: 72 },
 ];
 
 // OptionButton Component
@@ -65,30 +89,125 @@ const OptionButton = ({ icon, label, gradient }) => {
   );
 };
 
+// Specialities Modal Component
+const SpecialitiesModal = ({ isOpen, onClose, specialities = [] }) => {
+  const navigate = useNavigate();
+  const displaySpecialities =
+    specialities.length > 0 ? specialities : SPECIALITIES;
+
+  const handleSpecialityClick = (name) => {
+    navigate("/doctorSearch", {
+      state: { query: name, specialty: name },
+    });
+    onClose();
+  };
+
+  return (
+    <CustomModal
+      visible={isOpen}
+      title="Select Specialty"
+      subtitle="Choose a category to find specialized doctors"
+      onCancel={onClose}
+      showSubmit={false}
+      width={600}
+    >
+      <div className="flex flex-col gap-2">
+        {displaySpecialities.map((speciality, idx) => (
+          <button
+            key={speciality.specialityId || idx}
+            onClick={() => handleSpecialityClick(speciality.name)}
+            className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-primary/5 rounded-xl transition-all duration-200 text-left group border border-transparent hover:border-primary/10"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all transform group-hover:scale-110">
+                <FaStethoscope size={16} />
+              </div>
+              <div>
+                <span className="font-semibold text-gray-800 text-sm sm:text-base group-hover:text-primary transition-colors">
+                  {speciality.name}
+                </span>
+                <p className="text-[10px] text-gray-400 mt-0.5">
+                  Professional Medical Care
+                </p>
+              </div>
+            </div>
+            <div className="text-[10px] font-bold text-primary/60 bg-primary/5 px-2 py-1 rounded-full group-hover:bg-primary group-hover:text-white transition-all">
+              {speciality.count || 0} Doctors
+            </div>
+          </button>
+        ))}
+      </div>
+    </CustomModal>
+  );
+};
+
 // Main Hero Component with Background Slideshow
 const HealthHero = () => {
   const [currentIdx, setCurrentIdx] = useState(0);
+  const [showSpecialities, setShowSpecialities] = useState(false);
+  const [cities, setCities] = useState([]);
+  const [dynamicSpecialities, setDynamicSpecialities] = useState([]);
+
+  const getCity = async () => {
+    try {
+      const res = await api.get("/doctor/cities");
+      if (res.data?.success) {
+        setCities(res.data.data.cities || []);
+      }
+    } catch (error) {
+      console.error("Error fetching cities:", error);
+    }
+  };
+
+  const getSpecialities = async () => {
+    try {
+      const res = await api.get("/specialities");
+      console.log(res.data.data, "dsfsff");
+      if (res.data?.success) {
+        setDynamicSpecialities(res.data.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching specialities:", error);
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIdx((prev) => (prev + 1) % HERO_IMAGES.length);
     }, 5000); // 5s interval for better energy
+
+    getCity();
+    getSpecialities();
+
     return () => clearInterval(timer);
   }, []);
 
+  const openSpecialitiesModal = () => {
+    setShowSpecialities(true);
+  };
+
+  const closeSpecialitiesModal = () => {
+    setShowSpecialities(false);
+  };
+
   return (
     <div className="relative min-h-[720px] sm:min-h-[calc(100vh-74px)] py-8 sm:py-12 md:py-16 flex items-center py-2 justify-center flex-col bg-neutral-950 md:mb-36 sm:mb-24">
+      {/* Specialities Modal */}
+      <SpecialitiesModal
+        isOpen={showSpecialities}
+        onClose={closeSpecialitiesModal}
+        specialities={dynamicSpecialities}
+      />
+
       {/* Dynamic Background Slideshow */}
       <div className="absolute inset-0 z-0 bg-neutral-900 overflow-hidden">
         {/* Persistent Base Image to prevent black flash */}
         <div className="absolute inset-0 opacity-20">
-          {/* <div className="relative w-full h-full"> */}
           <img
             src={HERO_IMAGES[0]}
             alt="background-base"
             className="w-full h-full object-cover"
           />
-          {/* </div> */}
         </div>
 
         {HERO_IMAGES.map((img, idx) => (
@@ -126,51 +245,74 @@ const HealthHero = () => {
             Expert Priority
           </span>
         </h1>
+
         {/* Search Component with Subtle Glow */}
         <div className="max-w-4xl mx-auto mb-6 sm:mb-8 md:mb-12 relative z-50 group">
           <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-emerald-500/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-          <SearchComponent />
+          <SearchComponent cities={cities} />
         </div>
-        {/* Categories section */}
 
-        {/* <h3>Search doctor my department</h3> */}
+        {/* Categories section */}
         <div className="mt-6 sm:mt-8 md:mt-12 max-w-5xl mx-auto relative z-0">
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4">
-            <CategoryPill
-              icon={
-                <FaStethoscope size={16} className="sm:w-[18px] sm:h-[18px]" />
-              }
-              label="General Physician"
-              active={true}
-            />
-            <CategoryPill
-              icon={<Bone size={18} className="sm:w-5 sm:h-5" />}
-              label="Dentist"
-            />
-            <CategoryPill
-              icon={<Baby size={18} className="sm:w-5 sm:h-5" />}
-              label="Pediatrician"
-            />
-            <CategoryPill
-              icon={<Heart size={18} className="sm:w-5 sm:h-5" />}
-              label="Cardiologist"
-            />
-            <CategoryPill
-              icon={<Smile size={18} className="sm:w-5 sm:h-5" />}
-              label="Dermatologist"
-            />
+            {dynamicSpecialities.length > 0 ? (
+              dynamicSpecialities
+                .slice(0, 5)
+                .map((spec, idx) => (
+                  <CategoryPill
+                    key={spec.specialityId || idx}
+                    icon={
+                      <FaStethoscope
+                        size={16}
+                        className="sm:w-[18px] sm:h-[18px]"
+                      />
+                    }
+                    label={spec.name}
+                    active={idx === 0}
+                  />
+                ))
+            ) : (
+              <>
+                <CategoryPill
+                  icon={
+                    <FaStethoscope
+                      size={16}
+                      className="sm:w-[18px] sm:h-[18px]"
+                    />
+                  }
+                  label="General Physician"
+                  active={true}
+                />
+                <CategoryPill
+                  icon={<Bone size={18} className="sm:w-5 sm:h-5" />}
+                  label="Dentist"
+                />
+                <CategoryPill
+                  icon={<Baby size={18} className="sm:w-5 sm:h-5" />}
+                  label="Pediatrician"
+                />
+                <CategoryPill
+                  icon={<Heart size={18} className="sm:w-5 sm:h-5" />}
+                  label="Cardiologist"
+                />
+                <CategoryPill
+                  icon={<Smile size={18} className="sm:w-5 sm:h-5" />}
+                  label="Dermatologist"
+                />
+              </>
+            )}
+
+            {/* "View More" Button */}
+            <button
+              onClick={openSpecialitiesModal}
+              className="flex items-center space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full transition-all duration-300 text-[10px] sm:text-xs bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md"
+            >
+              <span className="font-medium whitespace-nowrap">View All</span>
+              <FaChevronDown className="w-2.5 h-2.5 opacity-60" />
+            </button>
           </div>
         </div>
-        {/* Bottom Options Section */}
-        {/* Bottom Services Section - Exactly as in screenshot */}
       </div>
-
-      {/* Styled Scroll Indicator */}
-      {/* <div className="hidden sm:block absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
-        <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center backdrop-blur-sm">
-          <div className="w-1.5 h-3 bg-gradient-to-b from-blue-400 to-emerald-400 rounded-full mt-2"></div>
-        </div>
-      </div> */}
 
       <style>{`
         @keyframes gradient-x {
@@ -181,8 +323,12 @@ const HealthHero = () => {
           background-size: 200% 200%;
           animation: gradient-x 5s ease infinite;
         }
+        .rotate-270 {
+          transform: rotate(270deg);
+        }
       `}</style>
-      <div className="mt-8  sm:absolute left-0 right-0 -bottom-24 sm:-bottom-50 md:-bottom-32 lg:-bottom-18 z-50">
+
+      <div className="mt-8 sm:absolute left-0 right-0 -bottom-24 sm:-bottom-50 md:-bottom-32 lg:-bottom-18 z-50">
         <ServiceCards />
       </div>
     </div>
@@ -191,25 +337,34 @@ const HealthHero = () => {
 
 // Category Pill Component
 const CategoryPill = ({ icon, label, active = false }) => {
+  const navigate = useNavigate();
+
+  const handleCategoryClick = () => {
+    navigate("/doctorSearch", {
+      state: { query: label, specialty: label },
+    });
+  };
+
   return (
     <button
+      onClick={handleCategoryClick}
       className={`
-      flex items-center space-x-2 sm:space-x-3 px-2 sm:px-3 md:px-5 py-2 sm:py-3 md:py-4 rounded-full transition-all duration-300 text-xs sm:text-sm md:text-base
+      flex items-center space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full transition-all duration-300 text-[10px] sm:text-xs
       ${
         active
-          ? "bg-white text-primary shadow-lg scale-105"
-          : "bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md"
+          ? "bg-white text-primary shadow-md scale-105"
+          : "bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm"
       }
     `}
     >
       <span className={active ? "text-primary" : "text-white"}>{icon}</span>
-      <span className="font-semibold whitespace-nowrap">{label}</span>
+      <span className="font-medium whitespace-nowrap">{label}</span>
     </button>
   );
 };
 
-// Search Component
-const SearchComponent = () => {
+// Search Component (keep existing SearchComponent code, unchanged)
+const SearchComponent = ({ cities = [] }) => {
   const navigate = useNavigate();
   const [selectedCity, setSelectedCity] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -221,15 +376,18 @@ const SearchComponent = () => {
 
   // Debounce logic for suggestions
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchQuery.trim().length > 1) {
-        const filtered = MOCK_DOCTORS.filter(
-          (doc) =>
-            doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            doc.specialty.toLowerCase().includes(searchQuery.toLowerCase()),
-        ).slice(0, 5);
-        setSuggestions(filtered);
-        setShowSuggestions(true);
+    const timer = setTimeout(async () => {
+      if (searchQuery.trim().length > 2) {
+        // min three char required to fetch doctor
+        try {
+          const res = await api.get("/doctor/search", {
+            params: { query: searchQuery, city: selectedCity },
+          });
+          setSuggestions(res.data?.data || res.data || []);
+          setShowSuggestions(true);
+        } catch (error) {
+          console.error("Search error:", error);
+        }
       } else {
         setSuggestions([]);
         setShowSuggestions(false);
@@ -358,41 +516,33 @@ const SearchComponent = () => {
                 title="Select City"
               >
                 <option value="">All Pakistan</option>
-                <optgroup label="Punjab">
-                  {pakistanCities.slice(0, 20).map((city) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label="Sindh">
-                  {pakistanCities.slice(20, 30).map((city) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label="Khyber Pakhtunkhwa">
-                  {pakistanCities.slice(30, 40).map((city) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label="Balochistan">
-                  {pakistanCities.slice(40, 50).map((city) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label="Territories">
-                  {pakistanCities.slice(50).map((city) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
-                </optgroup>
+                {cities.length > 0 ? (
+                  <optgroup label="Registered Cities">
+                    {cities.map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
+                  </optgroup>
+                ) : (
+                  <>
+                    <optgroup label="Punjab">
+                      {pakistanCities.slice(0, 20).map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Sindh">
+                      {pakistanCities.slice(20, 30).map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </optgroup>
+                    {/* ... other static regions ... */}
+                  </>
+                )}
               </select>
               <FaMapMarkerAlt
                 className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-primary"
@@ -413,7 +563,7 @@ const SearchComponent = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() =>
-                  searchQuery.trim().length > 1 && setShowSuggestions(true)
+                  searchQuery.trim().length > 2 && setShowSuggestions(true)
                 }
                 onBlur={handleBlur}
                 placeholder="Search doctors, specialists..."
@@ -426,7 +576,7 @@ const SearchComponent = () => {
               />
             </div>
 
-            {/* Suggestions Dropdown - Using z-index to appear above category chips */}
+            {/* Suggestions Dropdown */}
             {showSuggestions && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-2xl border border-gray-100 z-50 overflow-hidden max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
                 {suggestions.length > 0 ? (

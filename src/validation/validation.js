@@ -39,14 +39,13 @@ export const doctorRegistrationSchema = yup.object().shape({
 });
 
 export const loginSchema = yup.object().shape({
-  email: yup
-    .string()
-    .required("Email or Username is required")
-    .email("Invalid email format"),
+  whatsappnumber: yup.string().required("Whatsapp Number is required"),
   password: yup
     .string()
     .required("Password is required")
     .min(6, "Password must be at least 6 characters"),
+
+  role: yup.string().nullable(), // Optional for login, enforced manually or via separate schema for register if needed
 });
 
 export const paymentSchema = yup.object().shape({
