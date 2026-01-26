@@ -5,26 +5,10 @@ import {
   FaChevronDown,
   FaUserMd,
   FaStethoscope,
-  FaTimes,
 } from "react-icons/fa";
-import {
-  Stethoscope,
-  Baby,
-  Heart,
-  Activity,
-  Smile,
-  Syringe,
-  Eye,
-  Bone,
-  Brain,
-  Droplets,
-} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useForm, FormProvider } from "react-hook-form";
-import { MOCK_DOCTORS } from "../../constant/data";
 import ServiceCards from "./ServiceCards";
 import PaymentMethodModal from "../common/PaymentMethodModal";
-import CustomSelect from "../common/CustomSelect";
 import CustomModal from "../common/CustomModal";
 import api from "../../libs/api";
 
@@ -34,7 +18,7 @@ const HERO_IMAGES = [
   "/assets/img/WhatsApp Image 2026-01-12 at 1.17.25 PM.jpeg",
 ];
 
-// Specialities Data
+// Specialities Data for fallback
 const SPECIALITIES = [
   { id: 1, name: "Gynecologist", icon: "👩‍⚕️", count: 245 },
   { id: 2, name: "Skin Specialist", icon: "✨", count: 189 },
@@ -53,51 +37,31 @@ const SPECIALITIES = [
   { id: 15, name: "Nephrologist", icon: "🫀", count: 72 },
 ];
 
-// OptionButton Component
-const OptionButton = ({ icon, label, gradient }) => {
-  return (
-    <button
-      className={`
-      group relative flex flex-col items-center justify-center 
-      w-20 h-20 xs:w-22 xs:h-22 sm:w-24 sm:h-24 md:w-28 md:h-28 
-      rounded-2xl overflow-hidden transition-all duration-300 
-      hover:scale-105 hover:shadow-2xl active:scale-95
-      backdrop-blur-md border border-white/20
-    `}
-    >
-      {/* Gradient Background */}
-      <div
-        className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-90 group-hover:opacity-100 transition-opacity`}
-      ></div>
+const pakistanCities = [
+  "Karachi",
+  "Lahore",
+  "Islamabad",
+  "Rawalpindi",
+  "Faisalabad",
+  "Multan",
+  "Peshawar",
+  "Quetta",
+  "Sialkot",
+  "Gujranwala",
+  "Hyderabad",
+];
 
-      {/* Inner Shadow Effect */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
-
-      {/* Icon */}
-      <div className="relative mb-1 sm:mb-2 text-2xl xs:text-2xl sm:text-3xl md:text-4xl">
-        {icon}
-      </div>
-
-      {/* Label */}
-      <span className="relative text-[10px] xs:text-xs sm:text-sm font-bold text-white text-center px-1 leading-tight">
-        {label}
-      </span>
-
-      {/* Hover Glow Effect */}
-      <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-white/30 transition-all duration-300"></div>
-    </button>
-  );
-};
-
-// Specialities Modal Component
 const SpecialitiesModal = ({ isOpen, onClose, specialities = [] }) => {
   const navigate = useNavigate();
   const displaySpecialities =
     specialities.length > 0 ? specialities : SPECIALITIES;
 
-  const handleSpecialityClick = (name) => {
+  const handleSpecialityClick = (speciality) => {
+    console.log("--- Speciality Clicked (Modal) ---", speciality.name);
     navigate("/doctorSearch", {
-      state: { query: name, specialty: name },
+      state: {
+        specialityId: speciality.specialityId || speciality.id,
+      },
     });
     onClose();
   };
@@ -115,7 +79,7 @@ const SpecialitiesModal = ({ isOpen, onClose, specialities = [] }) => {
         {displaySpecialities.map((speciality, idx) => (
           <button
             key={speciality.specialityId || idx}
-            onClick={() => handleSpecialityClick(speciality.name)}
+            onClick={() => handleSpecialityClick(speciality)}
             className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-primary/5 rounded-xl transition-all duration-200 text-left group border border-transparent hover:border-primary/10"
           >
             <div className="flex items-center gap-3">
@@ -162,7 +126,6 @@ const HealthHero = () => {
   const getSpecialities = async () => {
     try {
       const res = await api.get("/specialities");
-      console.log(res.data.data, "dsfsff");
       if (res.data?.success) {
         setDynamicSpecialities(res.data.data || []);
       }
@@ -255,52 +218,19 @@ const HealthHero = () => {
         {/* Categories section */}
         <div className="mt-6 sm:mt-8 md:mt-12 max-w-5xl mx-auto relative z-0">
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4">
-            {dynamicSpecialities.length > 0 ? (
+            {dynamicSpecialities &&
+              dynamicSpecialities.length > 0 &&
               dynamicSpecialities
                 .slice(0, 5)
                 .map((spec, idx) => (
                   <CategoryPill
-                    key={spec.specialityId || idx}
-                    icon={
-                      <FaStethoscope
-                        size={16}
-                        className="sm:w-[18px] sm:h-[18px]"
-                      />
-                    }
+                    key={spec.specialityId || spec.id || idx}
+                    icon={<FaStethoscope size={16} />}
                     label={spec.name}
+                    specialityId={spec.specialityId || spec.id}
                     active={idx === 0}
                   />
-                ))
-            ) : (
-              <>
-                <CategoryPill
-                  icon={
-                    <FaStethoscope
-                      size={16}
-                      className="sm:w-[18px] sm:h-[18px]"
-                    />
-                  }
-                  label="General Physician"
-                  active={true}
-                />
-                <CategoryPill
-                  icon={<Bone size={18} className="sm:w-5 sm:h-5" />}
-                  label="Dentist"
-                />
-                <CategoryPill
-                  icon={<Baby size={18} className="sm:w-5 sm:h-5" />}
-                  label="Pediatrician"
-                />
-                <CategoryPill
-                  icon={<Heart size={18} className="sm:w-5 sm:h-5" />}
-                  label="Cardiologist"
-                />
-                <CategoryPill
-                  icon={<Smile size={18} className="sm:w-5 sm:h-5" />}
-                  label="Dermatologist"
-                />
-              </>
-            )}
+                ))}
 
             {/* "View More" Button */}
             <button
@@ -335,13 +265,16 @@ const HealthHero = () => {
   );
 };
 
-// Category Pill Component
-const CategoryPill = ({ icon, label, active = false }) => {
+// Category Pill Component - UPDATED
+const CategoryPill = ({ icon, label, specialityId, active = false }) => {
   const navigate = useNavigate();
 
   const handleCategoryClick = () => {
+    console.log("--- Category Clicked (Pill) ---", label);
     navigate("/doctorSearch", {
-      state: { query: label, specialty: label },
+      state: {
+        specialityId: specialityId,
+      },
     });
   };
 
@@ -363,7 +296,7 @@ const CategoryPill = ({ icon, label, active = false }) => {
   );
 };
 
-// Search Component (keep existing SearchComponent code, unchanged)
+// Search Component
 const SearchComponent = ({ cities = [] }) => {
   const navigate = useNavigate();
   const [selectedCity, setSelectedCity] = useState("");
@@ -377,25 +310,36 @@ const SearchComponent = ({ cities = [] }) => {
   // Debounce logic for suggestions
   useEffect(() => {
     const timer = setTimeout(async () => {
-      if (searchQuery.trim().length > 2) {
+      console.log("--- HealthHeader Suggestion Debounce Triggered ---");
+      console.log("searchQuery:", searchQuery, "selectedCity:", selectedCity);
+
+      if (searchQuery.trim().length >= 3) {
         // min three char required to fetch doctor
         try {
           const res = await api.get("/doctor/search", {
-            params: { query: searchQuery, city: selectedCity },
+            params: { search: searchQuery, city: selectedCity },
           });
-          setSuggestions(res.data?.data || res.data || []);
+          console.log(
+            "Suggestions API Success Response (HealthHeader):",
+            res.data,
+          );
+          const docs =
+            res.data?.data?.doctors || res.data?.data || res.data || [];
+          console.log("Extracted Doctors for suggestions:", docs);
+          setSuggestions(Array.isArray(docs) ? docs : []);
           setShowSuggestions(true);
         } catch (error) {
-          console.error("Search error:", error);
+          console.error("Suggestions API Error (HealthHeader):", error);
         }
       } else {
+        console.log("Search query too short for suggestions (< 3 chars)");
         setSuggestions([]);
         setShowSuggestions(false);
       }
-    }, 300);
+    }, 2000);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, selectedCity]);
 
   // Handle outside click
   useEffect(() => {
@@ -410,10 +354,12 @@ const SearchComponent = ({ cities = [] }) => {
 
   const handleSearch = (e) => {
     if (e) e.preventDefault();
+    console.log("--- HealthHeader Search Triggered ---");
+    console.log("search:", searchQuery, "city:", selectedCity);
     if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
     setShowSuggestions(false);
     navigate("/doctorSearch", {
-      state: { query: searchQuery, city: selectedCity },
+      state: { search: searchQuery, city: selectedCity },
     });
   };
 
@@ -431,74 +377,9 @@ const SearchComponent = ({ cities = [] }) => {
     setSearchQuery(doctor.name);
     setShowSuggestions(false);
     navigate("/doctorSearch", {
-      state: { query: doctor.name, city: selectedCity },
+      state: { search: doctor.name, city: selectedCity },
     });
   };
-
-  // All Pakistan Cities (Provinces and Major Cities)
-  const pakistanCities = [
-    "Lahore",
-    "Faisalabad",
-    "Rawalpindi",
-    "Gujranwala",
-    "Multan",
-    "Sialkot",
-    "Bahawalpur",
-    "Sargodha",
-    "Sheikhupura",
-    "Jhang",
-    "Rahim Yar Khan",
-    "Gujrat",
-    "Kasur",
-    "Sahiwal",
-    "Okara",
-    "Wah Cantonment",
-    "Dera Ghazi Khan",
-    "Mandi Bahauddin",
-    "Chiniot",
-    "Kamoke",
-    "Karachi",
-    "Hyderabad",
-    "Sukkur",
-    "Larkana",
-    "Nawabshah",
-    "Mirpur Khas",
-    "Jacobabad",
-    "Shikarpur",
-    "Khairpur",
-    "Dadu",
-    "Peshawar",
-    "Mardan",
-    "Mingora",
-    "Kohat",
-    "Abbottabad",
-    "Dera Ismail Khan",
-    "Charsadda",
-    "Nowshera",
-    "Swabi",
-    "Mansehra",
-    "Quetta",
-    "Turbat",
-    "Khuzdar",
-    "Chaman",
-    "Gwadar",
-    "Dera Allah Yar",
-    "Zhob",
-    "Usta Muhammad",
-    "Sibi",
-    "Loralai",
-    "Islamabad",
-    "Muzaffarabad",
-    "Mirpur",
-    "Rawalakot",
-    "Kotli",
-    "Bhimber",
-    "Gilgit",
-    "Skardu",
-    "Chilas",
-    "Ghizer",
-    "Khaplu",
-  ];
 
   return (
     <div className="w-full relative" ref={dropdownRef}>
@@ -540,7 +421,6 @@ const SearchComponent = ({ cities = [] }) => {
                         </option>
                       ))}
                     </optgroup>
-                    {/* ... other static regions ... */}
                   </>
                 )}
               </select>
@@ -562,9 +442,14 @@ const SearchComponent = ({ cities = [] }) => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() =>
-                  searchQuery.trim().length > 2 && setShowSuggestions(true)
-                }
+                onFocus={() => {
+                  if (searchQuery.trim().length >= 3) {
+                    console.log(
+                      "HealthHeader focused with 3+ chars, showing suggestions",
+                    );
+                    setShowSuggestions(true);
+                  }
+                }}
                 onBlur={handleBlur}
                 placeholder="Search doctors, specialists..."
                 className="w-full h-full p-2.5 sm:p-3 pl-9 sm:pl-11 pr-3 sm:pr-4 bg-white border border-gray-200 sm:border-l-0 sm:border-r-0 rounded-lg sm:rounded-none focus:border-primary focus:ring-0 focus:outline-none text-gray-800 font-medium text-xs sm:text-sm hover:border-gray-300 transition-colors"
@@ -596,7 +481,7 @@ const SearchComponent = ({ cities = [] }) => {
                       </div>
                       <div className="min-w-0 flex-1">
                         <h4 className="text-xs sm:text-sm font-bold text-gray-800 group-hover:text-primary transition-colors flex items-center truncate">
-                          {doctor.name}
+                          {doctor.name || "NA"}
                           {doctor.isVerified && (
                             <FaUserMd
                               className="ml-1 text-primary flex-shrink-0"
@@ -605,7 +490,8 @@ const SearchComponent = ({ cities = [] }) => {
                           )}
                         </h4>
                         <p className="text-xs text-gray-500 truncate">
-                          {doctor.specialty} • {doctor.experience} Exp
+                          {doctor.speciality || doctor.superSpeciality || "NA"}{" "}
+                          • {doctor.experience ?? "NA"} Exp
                         </p>
                       </div>
                     </button>
@@ -614,10 +500,10 @@ const SearchComponent = ({ cities = [] }) => {
                   <div className="p-6 text-center">
                     <div className="text-gray-400 mb-2 text-3xl">🔍</div>
                     <h4 className="text-sm font-bold text-gray-800 mb-1">
-                      No Doctors Found
+                      No Results
                     </h4>
                     <p className="text-xs text-gray-500">
-                      Try searching with different keywords or doctor specialty.
+                      Try searching with different keywords.
                     </p>
                   </div>
                 )}

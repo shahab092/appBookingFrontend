@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, MapPin, ChevronDown, User } from "lucide-react";
-import { MOCK_DOCTORS } from "../../constant/data";
+import api from "../../libs/api";
 
 const DoctorSearchBar = ({
   initialQuery = "",
@@ -40,26 +40,42 @@ const DoctorSearchBar = ({
 
   // Debounce suggestions
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isUserTyping.current && searchQuery.trim().length > 1) {
-        const filtered = MOCK_DOCTORS.filter(
-          (doc) =>
-            doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            doc.specialty.toLowerCase().includes(searchQuery.toLowerCase())
-        ).slice(0, 5);
+    const timer = setTimeout(async () => {
+      console.log("--- DoctorSearchBar Suggestion Debounce Triggered ---");
+      console.log("searchQuery:", searchQuery, "selectedCity:", selectedCity);
 
-        setSuggestions(filtered);
-        setShowSuggestions(true);
+      if (isUserTyping.current && searchQuery.trim().length >= 3) {
+        try {
+          console.log("Fetching suggestions (SearchBar) with params:", {
+            search: searchQuery,
+            city: selectedCity,
+          });
+          const res = await api.get("/doctor/search", {
+            params: { search: searchQuery, city: selectedCity },
+          });
+          console.log(
+            "Suggestions API Success Response (SearchBar):",
+            res.data,
+          );
+          const docs =
+            res.data?.data?.doctors || res.data?.data || res.data || [];
+          console.log("Extracted Doctors (SearchBar):", docs);
+          setSuggestions(Array.isArray(docs) ? docs : []);
+          setShowSuggestions(true);
+        } catch (error) {
+          console.error("Suggestions API Error (SearchBar):", error);
+        }
       } else {
+        if (isUserTyping.current) {
+          console.log("Suggestion criteria not met (length < 3 or not typing)");
+        }
         setSuggestions([]);
         setShowSuggestions(false);
       }
-
-      if (onSearch) onSearch(searchQuery);
-    }, 400);
+    }, 2000);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, onSearch]);
+  }, [searchQuery, selectedCity]);
 
   const handleInputChange = (e) => {
     isUserTyping.current = true;
@@ -75,6 +91,8 @@ const DoctorSearchBar = ({
   };
 
   const handleSuggestionClick = (doctor) => {
+    console.log("--- Suggestion Clicked (SearchBar) ---");
+    console.log("Selected doctor:", doctor);
     if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
     isUserTyping.current = false;
     setSearchQuery(doctor.name);
@@ -87,10 +105,27 @@ const DoctorSearchBar = ({
     if (onCityChange) onCityChange(e.target.value);
   };
 
+  const [cities, setCities] = useState([]);
+
+  const getCity = async () => {
+    try {
+      const res = await api.get("/doctor/cities");
+      if (res.data?.success) {
+        setCities(res.data.data.cities || []);
+      }
+    } catch (error) {
+      console.error("Error fetching cities:", error);
+    }
+  };
+
+  useEffect(() => {
+    getCity();
+  }, []);
+
   const pakistanCities = [
-    "Islamabad",
-    "Lahore",
     "Karachi",
+    "Lahore",
+    "Islamabad",
     "Rawalpindi",
     "Faisalabad",
     "Multan",
@@ -98,6 +133,7 @@ const DoctorSearchBar = ({
     "Quetta",
     "Sialkot",
     "Gujranwala",
+    "Hyderabad",
   ];
 
   return (
@@ -121,11 +157,21 @@ const DoctorSearchBar = ({
             className="w-full h-full pl-10 pr-8 py-2.5 bg-gray-50 border border-transparent rounded-xl outline-none appearance-none text-gray-700 font-bold focus:bg-white focus:border-blue-100 transition-all cursor-pointer text-sm"
           >
             <option value="">All Pakistan</option>
-            {pakistanCities.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
+            {cities.length > 0 ? (
+              <optgroup label="Registered Cities">
+                {cities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </optgroup>
+            ) : (
+              pakistanCities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))
+            )}
           </select>
           <ChevronDown
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
@@ -145,7 +191,10 @@ const DoctorSearchBar = ({
             value={searchQuery}
             onChange={handleInputChange}
             onFocus={() => {
-              if (searchQuery.trim().length > 1) {
+              if (searchQuery.trim().length >= 3) {
+                console.log(
+                  "SearchBar focused with 3+ chars, showing suggestions",
+                );
                 isUserTyping.current = true;
                 setShowSuggestions(true);
               }
@@ -175,13 +224,14 @@ const DoctorSearchBar = ({
                     </div>
                     <div className="min-w-0 flex-1">
                       <h4 className="text-sm font-bold text-gray-800 truncate flex items-center">
-                        {doctor.name}
+                        {doctor.name || "NA"}
                         {doctor.isVerified && (
                           <User className="ml-1 text-primary" size={12} />
                         )}
                       </h4>
                       <p className="text-xs text-gray-500 truncate">
-                        {doctor.specialty} • {doctor.experience} Exp
+                        {doctor.speciality || doctor.superSpeciality || "NA"} •{" "}
+                        {doctor.experience ?? "NA"} Exp
                       </p>
                     </div>
                   </button>
