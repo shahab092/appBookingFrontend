@@ -87,7 +87,7 @@ export default function AppointmentModal({
 
   const fetchDoctors = async () => {
     try {
-      const res = await api.get("doctor");
+      const res = await api.get("/doctor");
       console.log(res.data, "res.data");
       setDoctors(res.data?.data || []);
     } catch {

@@ -39,16 +39,15 @@ export default function LoginModal({ visible, onCancel }) {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
-  const [tempData, setTempData] = useState(null);
+  const [storeOtp, setStoreOtp] = useState(null);
+  const [registrationData, setRegistrationData] = useState(null); // To store signup data
   const [userId, setUserId] = useState(null);
 
   const dispatch = useDispatch();
   const { showToast } = useToast();
 
-  // Watch values for debugging
+  // Watch values
   const formValues = watch();
-  console.log("Form values:", formValues);
-  console.log("Form errors:", errors);
 
   const onSubmit = async (data) => {
     setIsLoading(true);
@@ -69,17 +68,22 @@ export default function LoginModal({ visible, onCancel }) {
           );
         }
       } else {
-        // SIGN UP FLOW
-        // Remove confirmPassword from data before sending to API
         const { confirmPassword, ...registerData } = data;
 
         const res = await api.post("/auth/register", registerData);
 
         if (res.data?.success) {
-          setTempData(registerData);
+          console.log(res.data, "registration user response");
+
+          const receivedOtp = res.data.otp || res.data.data?.otp;
+          if (receivedOtp) {
+            setStoreOtp(receivedOtp);
+          }
+
+          setRegistrationData(registerData); // Save data for possible login later
           setUserId(res.data.userId || res.data.data?.userId);
-          setShowOTP(true);
           showToast(res.data.message || "OTP sent for verification", "info");
+          setShowOTP(true);
         } else {
           showToast(res.data?.message || "Registration failed", "error");
         }
@@ -146,8 +150,9 @@ export default function LoginModal({ visible, onCancel }) {
           showToast("Verification successful! Logging you in...", "success");
 
           const loginRes = await api.post("/auth/login", {
-            whatsappnumber: tempData.whatsappnumber,
-            password: tempData.password,
+            whatsappnumber:
+              registrationData?.whatsappnumber || formValues.whatsappnumber,
+            password: registrationData?.password || formValues.password,
           });
 
           if (loginRes.data?.data?.accessToken) {
@@ -172,6 +177,7 @@ export default function LoginModal({ visible, onCancel }) {
     } finally {
       setIsLoading(false);
       setShowOTP(false);
+      setStoreOtp(null); // Reset storeOtp after verification attempts
     }
   };
 
@@ -184,6 +190,7 @@ export default function LoginModal({ visible, onCancel }) {
       confirmPassword: "",
       role: "",
     });
+    setStoreOtp(null); // Reset OTP when switching modes
   };
 
   return (
@@ -282,22 +289,6 @@ export default function LoginModal({ visible, onCancel }) {
           </form>
         </FormProvider>
 
-        {/* Debug output - you can remove this in production */}
-        <div className="mt-4 p-3 bg-gray-100 rounded text-xs">
-          <div>Mode: {isLogin ? "Login" : "Sign Up"}</div>
-          <div>Password: {formValues.password || "(empty)"}</div>
-          <div>Confirm: {formValues.confirmPassword || "(empty)"}</div>
-          <div>
-            Match:{" "}
-            {formValues.password === formValues.confirmPassword ? "Yes" : "No"}
-          </div>
-          {errors.confirmPassword && (
-            <div className="text-red-600">
-              Error: {errors.confirmPassword.message}
-            </div>
-          )}
-        </div>
-
         <div className="mt-6 text-center">
           <p className="text-gray-500 text-sm">
             {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
@@ -320,8 +311,9 @@ export default function LoginModal({ visible, onCancel }) {
         visible={showOTP}
         onClose={() => setShowOTP(false)}
         onVerify={handleOTPVerify}
-        mobileNumber={tempData?.whatsappnumber}
+        mobileNumber={formValues.whatsappnumber}
         loading={isLoading}
+        autoOtp={storeOtp}
       />
     </CustomModal>
   );

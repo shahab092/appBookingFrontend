@@ -88,7 +88,7 @@ const SpecialitiesModal = ({ isOpen, onClose, specialities = [] }) => {
               </div>
               <div>
                 <span className="font-semibold text-gray-800 text-sm sm:text-base group-hover:text-primary transition-colors">
-                  {speciality.name}
+                  {speciality.speciality}
                 </span>
                 <p className="text-[10px] text-gray-400 mt-0.5">
                   Professional Medical Care
@@ -126,14 +126,17 @@ const HealthHero = () => {
   const getSpecialities = async () => {
     try {
       const res = await api.get("/specialities");
+      console.log(res.data.data.speciality,'sfsdfsdfsdfsdfsdfsakjdfhsadkjfshadfsdjkh')
       if (res.data?.success) {
         setDynamicSpecialities(res.data.data || []);
+   
       }
     } catch (error) {
       console.error("Error fetching specialities:", error);
     }
   };
 
+  console.log(dynamicSpecialities,"dynamicSpecialities")
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIdx((prev) => (prev + 1) % HERO_IMAGES.length);
@@ -226,7 +229,7 @@ const HealthHero = () => {
                   <CategoryPill
                     key={spec.specialityId || spec.id || idx}
                     icon={<FaStethoscope size={16} />}
-                    label={spec.name}
+                    label={spec.speciality}
                     specialityId={spec.specialityId || spec.id}
                     active={idx === 0}
                   />

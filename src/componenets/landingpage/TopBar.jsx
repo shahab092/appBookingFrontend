@@ -1,13 +1,5 @@
-import React, { useState } from "react";
-import {
-  FaPhone,
-  FaEnvelope,
-  FaUser,
-  FaBars,
-  FaTimes,
-  FaHeartbeat,
-  FaUserCircle,
-} from "react-icons/fa";
+import { useState } from "react";
+import { FaBars, FaTimes, FaHeartbeat } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import DoctorRegistrationModal from "./DoctorRegistrationModal";
 import LoginModal from "../common/LoginModal";

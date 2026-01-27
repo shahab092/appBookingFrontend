@@ -73,7 +73,7 @@ const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
   // Logout handler
   const handleLogout = () => {
     dispatch(logout()); // clears Redux and localStorage
-    navigate("/login"); // redirect to login page
+    navigate("/"); // redirect to login page
     message.success("Logged out successfully");
   };
 
