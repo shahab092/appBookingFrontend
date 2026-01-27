@@ -1,43 +1,65 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Search as SearchIcon, Loader2 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
 import DoctorCard from "../../componenets/DoctorSearch/DoctorCard";
 import DoctorSearchBar from "../../componenets/DoctorSearch/DoctorSearchBar";
-import { MOCK_DOCTORS } from "../../constant/data";
+import { searchDoctors } from "../../features/DoctorSlice";
 
 const DoctorSearch = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const searchState = location.state || {};
 
+  // Redux state
+  const { doctors, loading, error } = useSelector((state) => state.doctor);
+
   // Local state to manage live filtering on this page
-  const [currentQuery, setCurrentQuery] = useState(searchState.query || "");
-  const [currentCity, setCurrentCity] = useState(searchState.city || "");
+  const [currentQuery, setCurrentQuery] = useState(() => {
+    const val =
+      searchState.search || searchState.name || searchState.query || "";
+    console.log("--- DoctorSearch initialized with query:", val);
+    return val;
+  });
+  const [currentCity, setCurrentCity] = useState(() => {
+    const val = searchState.city || "";
+    console.log("--- DoctorSearch initialized with city:", val);
+    return val;
+  });
+  const [currentSpecialityId, setCurrentSpecialityId] = useState(() => {
+    const val = searchState.specialityId || "";
+    console.log("--- DoctorSearch initialized with specialityId:", val);
+    return val;
+  });
+
+  // Fetch doctors whenever search params change
+  useEffect(() => {
+    console.log("--- DoctorSearch useEffect Triggered (Params Change) ---");
+    console.log("Filters:", {
+      search: currentQuery,
+      city: currentCity,
+      specialityId: currentSpecialityId,
+    });
+
+    dispatch(
+      searchDoctors({
+        search: currentQuery,
+        city: currentCity,
+        specialityId: currentSpecialityId,
+      }),
+    );
+  }, [dispatch, currentQuery, currentCity, currentSpecialityId]);
 
   const handleSearchUpdate = (newQuery) => {
+    console.log("handleSearchUpdate called with:", newQuery);
     setCurrentQuery(newQuery);
   };
 
   const handleCityUpdate = (newCity) => {
+    console.log("handleCityUpdate called with:", newCity);
     setCurrentCity(newCity);
   };
-
-  const filteredDoctors = MOCK_DOCTORS.filter((doctor) => {
-    const query = currentQuery.toLowerCase();
-    const city = currentCity.toLowerCase();
-
-    const matchesQuery =
-      doctor.name.toLowerCase().includes(query) ||
-      doctor.specialty.toLowerCase().includes(query) ||
-      doctor.tags.some((tag) => tag.toLowerCase().includes(query));
-
-    // Simple city match if needed
-    const matchesCity =
-      !city ||
-      doctor.consultations.some((c) => c.subtitle.toLowerCase().includes(city));
-
-    return matchesQuery && matchesCity;
-  });
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -82,7 +104,7 @@ const DoctorSearch = () => {
         <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4 px-2">
           <div>
             <h2 className="text-gray-800">
-              Found {filteredDoctors.length} Specialists
+              Found {doctors.length} Specialists
             </h2>
             <p className="text-typegray font-medium">
               Top rated doctors available for you
@@ -104,14 +126,69 @@ const DoctorSearch = () => {
 
         {/* Doctor Cards Grid/List */}
         <div className="grid grid-cols-1 gap-6 max-w-6xl mx-auto">
-          {filteredDoctors.length > 0 ? (
-            filteredDoctors.map((doctor) => (
-              <DoctorCard key={doctor.id} doctor={doctor} />
-            ))
+          {loading ? (
+            <div className="text-center py-20 flex flex-col items-center gap-4">
+              <Loader2 className="w-12 h-12 text-primary animate-spin" />
+              <p className="text-gray-500 font-medium">
+                Searching for best doctors...
+              </p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-red-100">
+              <h3 className="text-red-600 mb-2">Search Error</h3>
+              <p className="text-gray-500">
+                {typeof error === "string"
+                  ? error
+                  : "Something went wrong while fetching doctors."}
+              </p>
+            </div>
+          ) : doctors.length > 0 ? (
+            doctors.map((doctor) => {
+              // Map API response to DoctorCard props
+              const mappedDoctor = {
+                id: doctor.doctorId || doctor.id || "NA",
+                name: doctor.name || "NA",
+                image:
+                  doctor.image ||
+                  "https://images.pexels.com/photos/5215024/pexels-photo-5215024.jpeg?auto=compress&cs=tinysrgb&w=600",
+                specialty: doctor.speciality || doctor.superSpeciality || "NA",
+                qualifications:
+                  doctor.education?.length > 0
+                    ? doctor.education.map((e) => e.degree || "NA").join(", ")
+                    : "NA",
+                experience: doctor.experience ?? "NA",
+                reviews: doctor.numReviews ?? "NA",
+                satisfaction:
+                  doctor.completenessScore !== undefined &&
+                  doctor.completenessScore !== null
+                    ? `${doctor.completenessScore}%`
+                    : "NA",
+                tags: doctor.services?.length > 0 ? doctor.services : ["NA"],
+                consultations:
+                  doctor.locations?.length > 0
+                    ? doctor.locations.map((loc) => ({
+                        title: loc.name || "NA",
+                        subtitle: doctor.address?.city || "NA",
+                        price: "Rs. 2,500",
+                        type: "inclinic",
+                      }))
+                    : [
+                        {
+                          title: "Online Consultation",
+                          subtitle: "Instant Video Call",
+                          price: "Rs. 2,000",
+                          type: "video",
+                          highlight: true,
+                        },
+                      ],
+              };
+
+              return <DoctorCard key={mappedDoctor.id} doctor={mappedDoctor} />;
+            })
           ) : (
             <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-gray-100">
               <div className="text-gray-300 mb-4 flex justify-center">
-                <Search size={64} className="opacity-20" />
+                <SearchIcon size={64} className="opacity-20" />
               </div>
               <h3 className="text-gray-800 mb-2">No Doctors Found</h3>
               <p className="text-typegray">
