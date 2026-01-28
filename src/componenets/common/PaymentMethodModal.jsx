@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Modal } from "antd";
 import { CreditCard } from "lucide-react";
 import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import CustomTextField from "../common/CustomTextField";
 import { paymentSchema } from "../../validation/validation";
+import CustomModal from "../common/CustomModal";
 
 export default function PaymentMethodModal({
   visible,
@@ -49,18 +49,24 @@ export default function PaymentMethodModal({
   };
 
   return (
-    <Modal open={visible} footer={null} onCancel={onClose} centered width={600}>
+    <CustomModal
+      visible={visible}
+      title="Choose payment method"
+      subtitle={
+        price
+          ? `Amount to pay: PKR ${price}`
+          : "Select your preferred way to pay"
+      }
+      onCancel={onClose}
+      onSubmit={handleSubmit(submitPayment)}
+      submitText={`Proceed`}
+      width={600}
+    >
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(submitPayment)}>
-          <div className="bg-white rounded-3xl overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b">
-              <h3>Choose payment method</h3>
-              {price && <span className="font-bold">PKR {price}</span>}
-            </div>
-
+          <div className="bg-white dark:bg-neutral-medium rounded-3xl overflow-hidden">
             {/* Body */}
-            <div className="p-6 space-y-4">
+            <div className="space-y-4">
               <WalletOption
                 title="Easypaisa"
                 desc="Pay using your mobile wallet"
@@ -84,27 +90,10 @@ export default function PaymentMethodModal({
                 onClick={() => selectMethod("card")}
               />
             </div>
-
-            {/* Footer */}
-            <div className="p-6 flex gap-4 border-t">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 border rounded-xl py-3 font-semibold"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 bg-primary text-white rounded-xl py-3 font-semibold"
-              >
-                Proceed {price && `PKR ${price}`}
-              </button>
-            </div>
           </div>
         </form>
       </FormProvider>
-    </Modal>
+    </CustomModal>
   );
 }
 

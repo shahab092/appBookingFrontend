@@ -8,7 +8,7 @@ import { jwtDecode } from "jwt-decode";
 import { useToast } from "../../context/ToastContext";
 import CustomModal from "./CustomModal";
 import CustomTextField from "./CustomTextField";
-import CountryCodeInput from "./countryCodeInput";
+import CountryCodeInput from "./CountryCodeInput";
 import { loginSchema } from "../../validation/validation";
 import CustomSelect from "./CustomSelect";
 import OTPModal from "./OTPModal";

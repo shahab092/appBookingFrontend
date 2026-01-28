@@ -11,12 +11,13 @@ import api from "../../libs/api";
 import { useForm, FormProvider } from "react-hook-form";
 import CustomSelect from "../common/CustomSelect";
 import CustomTextField from "../common/CustomTextField";
-import { departmentOptions } from "../../constant/data";
+import { specializationOptions } from "../../constant/data";
 import { useSelector } from "react-redux";
 import { useToast } from "../../context/ToastContext";
 import PaymentMethodModal from "../common/PaymentMethodModal";
 import OTPModal from "../common/OTPModal";
 import CustomModal from "../common/CustomModal";
+import CountryCodeInput from "../common/CountryCodeInput";
 
 /* ---------------- Constants ---------------- */
 const timeSlots = [
@@ -148,7 +149,7 @@ export default function AppointmentModal({
     // Prepare Payload
     const payload = {
       doctorId: data.doctor,
-      department: data.department,
+      speciality: data.department, // Internal field still named department in state but label is Speciality
       patientId: user?.id || null, // Allow null for guests
       date: `${monthNames[currentMonth - 1]} ${selectedDate}, ${currentYear}`,
       timeSlot: selectedTime,
@@ -351,8 +352,8 @@ export default function AppointmentModal({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <CustomSelect
                     name="department"
-                    label="Department"
-                    options={departmentOptions}
+                    label="Speciality"
+                    options={specializationOptions}
                     rules={{ required: "Required" }}
                   />
 
@@ -369,9 +370,7 @@ export default function AppointmentModal({
             </div>
             {!user && (
               <div className="pt-3 sm:pt-4">
-                <h4 className="mb-2 sm:mb-3 text-sm sm:text-base">
-                  Patient Details
-                </h4>
+                <h4 className="mb-2 sm:mb-3  ">Patient Details</h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <CustomTextField
@@ -387,17 +386,12 @@ export default function AppointmentModal({
                     }}
                   />
 
-                  <CustomTextField
+                  <CountryCodeInput
                     name="guestWhatsapp"
                     label="WhatsApp Number"
                     placeholder="Enter WhatsApp number"
                     rules={{
                       required: "WhatsApp number is required",
-                      pattern: {
-                        value: /^[0-9]{10,15}$/,
-                        message:
-                          "Please enter a valid phone number (10-15 digits)",
-                      },
                     }}
                   />
                 </div>
