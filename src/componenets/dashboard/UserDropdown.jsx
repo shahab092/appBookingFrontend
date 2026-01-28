@@ -1,10 +1,10 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiUser, FiSettings, FiLogOut, FiChevronDown } from 'react-icons/fi';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { logout } from '../../features/AuthSlice';
-import { useToast } from '../../context/ToastContext';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiUser, FiSettings, FiLogOut, FiChevronDown } from "react-icons/fi";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../../features/AuthSlice";
+import { useToast } from "../../context/ToastContext";
 
 const UserDropdown = ({ user, isOpen, onClose }) => {
   const dispatch = useDispatch();
@@ -14,18 +14,22 @@ const UserDropdown = ({ user, isOpen, onClose }) => {
   const handleLogout = () => {
     dispatch(logout());
     showToast("Logged out successfully. See you soon!", "info");
-    navigate('/login');
+    navigate("/");
     onClose();
   };
 
   const menuItems = [
-    { icon: <FiUser />, label: 'My Profile', path: '/dashboard/profile' },
-    { icon: <FiSettings />, label: 'Settings', path: '/dashboard/settings' },
+    { icon: <FiUser />, label: "My Profile", path: "/dashboard/profile" },
+    { icon: <FiSettings />, label: "Settings", path: "/dashboard/settings" },
   ];
 
-  const userAvatar = user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=2F74AA&color=fff`;
-  const userName = user?.name || 'User';
-  const userRole = user?.role ? user.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : '';
+  const userAvatar =
+    user?.avatar ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "User")}&background=2F74AA&color=fff`;
+  const userName = user?.name || "User";
+  const userRole = user?.role
+    ? user.role.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())
+    : "";
 
   return (
     <div className="relative">
@@ -42,9 +46,9 @@ const UserDropdown = ({ user, isOpen, onClose }) => {
             >
               {/* User Info Header */}
               <div className="p-4 border-b border-gray-50 bg-gray-50/50 flex items-center gap-3">
-                <img 
+                <img
                   src={userAvatar}
-                  alt="Avatar" 
+                  alt="Avatar"
                   className="w-12 h-12 rounded-full border-2 border-white shadow-sm"
                 />
                 <div className="overflow-hidden">
@@ -59,8 +63,8 @@ const UserDropdown = ({ user, isOpen, onClose }) => {
                   <button
                     key={index}
                     onClick={() => {
-                        navigate(item.path);
-                        onClose();
+                      navigate(item.path);
+                      onClose();
                     }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-600 hover:bg-blue-50 hover:text-[#2F74AA] rounded-lg transition-all duration-200"
                   >
@@ -76,7 +80,9 @@ const UserDropdown = ({ user, isOpen, onClose }) => {
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
                 >
-                  <span className="text-lg opacity-70"><FiLogOut /></span>
+                  <span className="text-lg opacity-70">
+                    <FiLogOut />
+                  </span>
                   <span className="font-semibold">Logout</span>
                 </button>
               </div>

@@ -97,7 +97,7 @@ const Hero = () => {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-5 pt-4 sm:pt-6 md:pt-8 justify-center lg:justify-start">
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => navigate("/")}
                 className="bg-primary text-white px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 rounded-xl sm:rounded-2xl transition-all duration-300 font-bold text-sm sm:text-base md:text-lg shadow-2xl hover:shadow-3xl transform hover:scale-105 flex items-center justify-center space-x-2 sm:space-x-3 group w-full sm:w-auto"
               >
                 <FaCalendarCheck

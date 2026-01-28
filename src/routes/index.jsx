@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import Xlogin from "../Pages/Xlogin";
 import Landing from "../Pages/landingpage/Landing";
 import DocterDetails from "../Pages/landingpage/DocterDetails";
 import DashboardLayout from "../componenets/dashboard/DashboardLayout";
@@ -21,8 +20,7 @@ export default function AppRoutes() {
         {/* Public routes */}
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Landing />} />
-        <Route path="/doctorDetail" element={<DocterDetails />} />
-          <Route path="/login" element={<Xlogin />} />
+          <Route path="/doctorDetail" element={<DocterDetails />} />
           <Route path="/doctorSearch" element={<DoctorSearch />} />
         </Route>
 

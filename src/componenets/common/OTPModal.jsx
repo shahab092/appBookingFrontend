@@ -8,6 +8,7 @@ export default function OTPModal({
   onVerify,
   mobileNumber,
   loading = false,
+  autoOtp = "", // Added autoOtp prop
 }) {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
@@ -15,11 +16,25 @@ export default function OTPModal({
 
   useEffect(() => {
     if (visible) {
-      setOtp(["", "", "", "", "", ""]);
-      setError("");
-      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+      if (autoOtp) {
+        const otpArray = autoOtp.toString().split("").slice(0, 6);
+
+        while (otpArray.length < 6) otpArray.push("");
+        setOtp(otpArray);
+        setError("");
+
+        if (autoOtp.toString().length === 6 && !loading) {
+          setTimeout(() => {
+            onVerify?.(autoOtp.toString());
+          }, 600);
+        }
+      } else {
+        setOtp(["", "", "", "", "", ""]);
+        setError("");
+        setTimeout(() => inputRefs.current[0]?.focus(), 100);
+      }
     }
-  }, [visible]);
+  }, [visible, autoOtp, loading]);
 
   const handleChange = (index, value) => {
     if (isNaN(value)) return;
@@ -27,12 +42,10 @@ export default function OTPModal({
     newOtp[index] = value;
     setOtp(newOtp);
     setError("");
-
-    // Move to next input if value is entered
     if (value && index < 5) {
       inputRefs.current[index + 1].focus();
     } else if (value && index === 5) {
-      inputRefs.current[index].blur(); // Trigger onBlur verification
+      inputRefs.current[index].blur();
     }
   };
 
@@ -57,6 +70,7 @@ export default function OTPModal({
   };
 
   const handleVerify = () => {
+    if (loading) return;
     const otpString = otp.join("");
     if (otpString.length < 6) return; // Don't verify incomplete OTP
 

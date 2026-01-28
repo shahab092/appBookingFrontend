@@ -98,7 +98,7 @@ export default function CTA() {
                 {/* CTA Buttons */}
                 <div className="flex flex-col sm:flex-row gap-5 pt-4">
                   <button
-                    onClick={() => navigate("/login")}
+                    onClick={() => navigate("/")}
                     className="bg-primary hover:bg-primary/90 text-white px-10 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-3xl flex items-center justify-center space-x-2 group"
                   >
                     <FaCalendarCheck
