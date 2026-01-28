@@ -13,7 +13,7 @@ import { loginSchema } from "../../validation/validation";
 import CustomSelect from "./CustomSelect";
 import OTPModal from "./OTPModal";
 
-export default function LoginModal({ visible, onCancel }) {
+export default function LoginModal({ visible, onCancel, selectedRole }) {
   const [isLogin, setIsLogin] = useState(true);
 
   // Pass isSignup context to schema for conditional validation
@@ -25,7 +25,7 @@ export default function LoginModal({ visible, onCancel }) {
       whatsappnumber: "",
       password: "",
       confirmPassword: "",
-      role: "",
+      role: selectedRole || "",
     },
   });
 
@@ -57,6 +57,7 @@ export default function LoginModal({ visible, onCancel }) {
         const res = await api.post("/auth/login", {
           whatsappnumber: data.whatsappnumber,
           password: data.password,
+          role: selectedRole || data.role, // Send role with login
         });
 
         if (res.data?.data?.accessToken) {
@@ -70,7 +71,13 @@ export default function LoginModal({ visible, onCancel }) {
       } else {
         const { confirmPassword, ...registerData } = data;
 
-        const res = await api.post("/auth/register", registerData);
+        // Add selectedRole to registration data
+        const registrationPayload = {
+          ...registerData,
+          role: selectedRole || "patient", // Default to patient if no role selected
+        };
+
+        const res = await api.post("/auth/register", registrationPayload);
 
         if (res.data?.success) {
           console.log(res.data, "registration user response");
@@ -188,7 +195,7 @@ export default function LoginModal({ visible, onCancel }) {
       whatsappnumber: "",
       password: "",
       confirmPassword: "",
-      role: "",
+      role: selectedRole || "",
     });
     setStoreOtp(null); // Reset OTP when switching modes
   };
@@ -198,7 +205,11 @@ export default function LoginModal({ visible, onCancel }) {
       visible={visible}
       onCancel={onCancel}
       title="HealthCare Inc."
-      subtitle={isLogin ? "Patient Portal Login" : "Create Patient Account"}
+      subtitle={
+        isLogin
+          ? `${selectedRole ? selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1) : "Patient"} Portal Login`
+          : `Create ${selectedRole ? selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1) : "Patient"} Account`
+      }
       showSubmit={false}
       width={450}
     >
@@ -241,17 +252,6 @@ export default function LoginModal({ visible, onCancel }) {
                       : "✗ Passwords do not match"}
                   </div>
                 )}
-
-                <CustomSelect
-                  name="role"
-                  label="Role"
-                  placeholder="Select your role"
-                  options={[
-                    { value: "patient", label: "Patient" },
-                    { value: "doctor", label: "Doctor" },
-                  ]}
-                  required
-                />
               </>
             )}
 

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { FaBars, FaTimes, FaHeartbeat } from "react-icons/fa";
+import { useState, useRef, useEffect } from "react";
+import { FaBars, FaTimes, FaHeartbeat, FaUserMd, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import DoctorRegistrationModal from "./DoctorRegistrationModal";
 import LoginModal from "../common/LoginModal";
@@ -10,6 +10,9 @@ const TopBar = () => {
   const navigate = useNavigate();
   const [showDoctorModal, setShowDoctorModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRoleMenu, setShowRoleMenu] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const roleMenuRef = useRef(null);
 
   // Mock user data - replace with actual user data from your auth context
   const user = {
@@ -23,9 +26,32 @@ const TopBar = () => {
       // Navigate to user profile or show simple dropdown
       //   navigate("/profile");
     } else {
-      setShowLoginModal(true);
+      setShowRoleMenu(true);
     }
   };
+
+  const handleRoleSelect = (role) => {
+    setSelectedRole(role);
+    setShowRoleMenu(false);
+    setShowLoginModal(true);
+  };
+
+  // Close role menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (roleMenuRef.current && !roleMenuRef.current.contains(event.target)) {
+        setShowRoleMenu(false);
+      }
+    };
+
+    if (showRoleMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showRoleMenu]);
 
   const handleLogout = () => {
     // Add your logout logic here
@@ -102,7 +128,7 @@ const TopBar = () => {
           <div className="flex justify-between items-center py-2 sm:py-3">
             {/* Logo */}
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="bg-primary text-white p-2 sm:p-3 rounded-lg sm:rounded-2xl shadow-lg flex-shrink-0">
+              <div className="bg-primary text-white p-2 sm:p-3 rounded-lg sm:rounded-2xl shadow-lg shrink-0">
                 <FaHeartbeat className="text-lg sm:text-2xl" />
               </div>
               <div className="min-w-0">
@@ -167,12 +193,62 @@ const TopBar = () => {
                   >
                     Join as a doctor
                   </button>
-                  <button
-                    onClick={() => setShowLoginModal(true)}
-                    className="btn-primary"
-                  >
-                    Login / Sign up
-                  </button>
+                  <div className="relative" ref={roleMenuRef}>
+                    <button
+                      onClick={() => setShowRoleMenu(!showRoleMenu)}
+                      className="btn-primary"
+                    >
+                      Login / Sign up
+                    </button>
+
+                    {/* Role Selection Dropdown */}
+                    {showRoleMenu && (
+                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="p-3 bg-linear-to-r from-primary/5 to-blue-50 border-b border-gray-100">
+                          <p className="text-sm font-bold text-gray-800">
+                            Select Your Role
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            Choose how you want to continue
+                          </p>
+                        </div>
+                        <div className="p-2">
+                          <button
+                            onClick={() => handleRoleSelect("patient")}
+                            className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors duration-200 group"
+                          >
+                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                              <FaUser className="text-blue-600" size={18} />
+                            </div>
+                            <div className="text-left">
+                              <p className="font-semibold text-gray-800 text-sm">
+                                Patient
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Book appointments & consultations
+                              </p>
+                            </div>
+                          </button>
+                          <button
+                            onClick={() => handleRoleSelect("doctor")}
+                            className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-green-50 transition-colors duration-200 group"
+                          >
+                            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                              <FaUserMd className="text-green-600" size={18} />
+                            </div>
+                            <div className="text-left">
+                              <p className="font-semibold text-gray-800 text-sm">
+                                Doctor
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Manage patients & appointments
+                              </p>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -184,13 +260,13 @@ const TopBar = () => {
                 onClick={handleUserClick}
                 className="flex items-center space-x-1 sm:space-x-2"
               >
-                <div className="w-8 sm:w-10 h-8 sm:h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
+                <div className="w-8 sm:w-10 h-8 sm:h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base shrink-0">
                   {user.name.charAt(0)}
                 </div>
               </button>
 
               <button
-                className="bg-neutral-light hover:bg-primary text-neutral-dark hover:text-white p-2 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-200 flex-shrink-0"
+                className="bg-neutral-light hover:bg-primary text-neutral-dark hover:text-white p-2 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-200 shrink-0"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 {isMenuOpen ? (
@@ -235,7 +311,7 @@ const TopBar = () => {
                   {user.isLoggedIn ? (
                     <>
                       <div className="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-blue-50 rounded-lg sm:rounded-xl">
-                        <div className="w-10 sm:w-12 h-10 sm:h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-lg flex-shrink-0">
+                        <div className="w-10 sm:w-12 h-10 sm:h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-lg shrink-0">
                           {user.name.charAt(0)}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -302,7 +378,11 @@ const TopBar = () => {
 
       <LoginModal
         visible={showLoginModal}
-        onCancel={() => setShowLoginModal(false)}
+        onCancel={() => {
+          setShowLoginModal(false);
+          setSelectedRole(null);
+        }}
+        selectedRole={selectedRole}
       />
     </>
   );

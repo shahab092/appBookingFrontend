@@ -57,10 +57,12 @@ const SpecialitiesModal = ({ isOpen, onClose, specialities = [] }) => {
     specialities.length > 0 ? specialities : SPECIALITIES;
 
   const handleSpecialityClick = (speciality) => {
-    console.log("--- Speciality Clicked (Modal) ---", speciality.name);
+    console.log("--- Speciality Clicked (Modal) ---", speciality.speciality);
     navigate("/doctorSearch", {
       state: {
-        specialityId: speciality.specialityId || speciality.id,
+        specialityId:
+          speciality._id || speciality.specialityId || speciality.id,
+        specialityName: speciality.speciality || speciality.name,
       },
     });
     onClose();
@@ -78,9 +80,9 @@ const SpecialitiesModal = ({ isOpen, onClose, specialities = [] }) => {
       <div className="flex flex-col gap-2">
         {displaySpecialities.map((speciality, idx) => (
           <button
-            key={speciality.specialityId || idx}
+            key={speciality._id || speciality.specialityId || idx}
             onClick={() => handleSpecialityClick(speciality)}
-            className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-primary/5 rounded-xl transition-all duration-200 text-left group border border-transparent hover:border-primary/10"
+            className="w-full flex items-center justify-between p-1 hover:bg-primary/5 rounded-xl transition-all duration-200 text-left group border border-transparent hover:border-primary/10"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all transform group-hover:scale-110">
@@ -126,17 +128,28 @@ const HealthHero = () => {
   const getSpecialities = async () => {
     try {
       const res = await api.get("/specialities");
-      console.log(res.data.data.speciality,'sfsdfsdfsdfsdfsdfsakjdfhsadkjfshadfsdjkh')
+      console.log("Full API Response:", res.data);
+
       if (res.data?.success) {
-        setDynamicSpecialities(res.data.data || []);
-   
+        // Handle multiple possible response structures
+        const specialitiesData =
+          res.data.data?.speciality || // Try res.data.data.speciality first
+          res.data.data?.specialities || // Try res.data.data.specialities
+          res.data.data || // Try res.data.data directly (if it's an array)
+          res.data.speciality || // Try res.data.speciality
+          res.data.specialities || // Try res.data.specialities
+          [];
+
+        console.log("Extracted Specialities:", specialitiesData);
+        setDynamicSpecialities(
+          Array.isArray(specialitiesData) ? specialitiesData : [],
+        );
       }
     } catch (error) {
       console.error("Error fetching specialities:", error);
     }
   };
 
-  console.log(dynamicSpecialities,"dynamicSpecialities")
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIdx((prev) => (prev + 1) % HERO_IMAGES.length);
@@ -213,13 +226,13 @@ const HealthHero = () => {
         </h1>
 
         {/* Search Component with Subtle Glow */}
-        <div className="max-w-4xl mx-auto mb-6 sm:mb-8 md:mb-12 relative z-50 group">
+        <div className="max-w-4xl mx-auto mb-3 sm:mb-4 md:mb-6 relative z-50 group">
           <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-emerald-500/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
           <SearchComponent cities={cities} />
         </div>
 
         {/* Categories section */}
-        <div className="mt-6 sm:mt-8 md:mt-12 max-w-5xl mx-auto relative z-0">
+        <div className="max-w-5xl mx-auto relative z-0">
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4">
             {dynamicSpecialities &&
               dynamicSpecialities.length > 0 &&
@@ -227,10 +240,10 @@ const HealthHero = () => {
                 .slice(0, 5)
                 .map((spec, idx) => (
                   <CategoryPill
-                    key={spec.specialityId || spec.id || idx}
+                    key={spec._id || spec.specialityId || spec.id || idx}
                     icon={<FaStethoscope size={16} />}
                     label={spec.speciality}
-                    specialityId={spec.specialityId || spec.id}
+                    specialityId={spec._id || spec.specialityId || spec.id}
                     active={idx === 0}
                   />
                 ))}
@@ -261,22 +274,24 @@ const HealthHero = () => {
         }
       `}</style>
 
-      <div className="mt-8 sm:absolute left-0 right-0 -bottom-24 sm:-bottom-50 md:-bottom-32 lg:-bottom-18 z-50">
+      {/* Updated ServiceCards container with higher z-index */}
+      <div className="mt-8 sm:absolute left-0 right-0 -bottom-24 sm:-bottom-50 md:-bottom-32 lg:-bottom-18 z-30">
         <ServiceCards />
       </div>
     </div>
   );
 };
 
-// Category Pill Component - UPDATED
+// Category Pill Component
 const CategoryPill = ({ icon, label, specialityId, active = false }) => {
   const navigate = useNavigate();
 
   const handleCategoryClick = () => {
-    console.log("--- Category Clicked (Pill) ---", label);
+    console.log("--- Category Clicked (Pill) ---", label, "ID:", specialityId);
     navigate("/doctorSearch", {
       state: {
         specialityId: specialityId,
+        specialityName: label,
       },
     });
   };
@@ -310,6 +325,8 @@ const SearchComponent = ({ cities = [] }) => {
   const blurTimeoutRef = useRef(null);
   const [show, setShow] = useState(true);
 
+  const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false);
+
   // Debounce logic for suggestions
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -319,6 +336,7 @@ const SearchComponent = ({ cities = [] }) => {
       if (searchQuery.trim().length >= 3) {
         // min three char required to fetch doctor
         try {
+          setIsSuggestionsLoading(true);
           const res = await api.get("/doctor/search", {
             params: { search: searchQuery, city: selectedCity },
           });
@@ -333,6 +351,8 @@ const SearchComponent = ({ cities = [] }) => {
           setShowSuggestions(true);
         } catch (error) {
           console.error("Suggestions API Error (HealthHeader):", error);
+        } finally {
+          setIsSuggestionsLoading(false);
         }
       } else {
         console.log("Search query too short for suggestions (< 3 chars)");
@@ -367,12 +387,9 @@ const SearchComponent = ({ cities = [] }) => {
   };
 
   const handleBlur = () => {
-    // Small delay to allow clicking on suggestions
-    blurTimeoutRef.current = setTimeout(() => {
-      if (searchQuery.trim().length > 0) {
-        handleSearch();
-      }
-    }, 200);
+    // No longer automatically searching on blur to allow manual clicks
+    // Only keeping the timeout to give time for suggestion clicks
+    blurTimeoutRef.current = setTimeout(() => {}, 200);
   };
 
   const handleSuggestionClick = (doctor) => {
@@ -455,18 +472,23 @@ const SearchComponent = ({ cities = [] }) => {
                 }}
                 onBlur={handleBlur}
                 placeholder="Search doctors, specialists..."
-                className="w-full h-full p-2.5 sm:p-3 pl-9 sm:pl-11 pr-3 sm:pr-4 bg-white border border-gray-200 sm:border-l-0 sm:border-r-0 rounded-lg sm:rounded-none focus:border-primary focus:ring-0 focus:outline-none text-gray-800 font-medium text-xs sm:text-sm hover:border-gray-300 transition-colors"
+                className="w-full h-full p-2.5 sm:p-3 pl-9 sm:pl-11 pr-10 bg-white border border-gray-200 sm:border-l-0 sm:border-r-0 rounded-lg sm:rounded-none focus:border-primary focus:ring-0 focus:outline-none text-gray-800 font-medium text-xs sm:text-sm hover:border-gray-300 transition-colors"
                 autoComplete="off"
               />
               <FaSearch
                 className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-primary"
                 size={14}
               />
+              {isSuggestionsLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
             </div>
 
-            {/* Suggestions Dropdown */}
+            {/* Suggestions Dropdown - FIXED with proper z-index */}
             {showSuggestions && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-2xl border border-gray-100 z-50 overflow-hidden max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-2xl border border-gray-100 z-[9999] overflow-hidden max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
                 {suggestions.length > 0 ? (
                   suggestions.map((doctor) => (
                     <button

@@ -17,9 +17,14 @@ const DoctorSearch = () => {
 
   // Local state to manage live filtering on this page
   const [currentQuery, setCurrentQuery] = useState(() => {
+    // For display in search bar - use specialty NAME if coming from specialty click
     const val =
-      searchState.search || searchState.name || searchState.query || "";
-    console.log("--- DoctorSearch initialized with query:", val);
+      searchState.specialityName ||
+      searchState.search ||
+      searchState.name ||
+      searchState.query ||
+      "";
+    console.log("--- DoctorSearch initialized with query (for display):", val);
     return val;
   });
   const [currentCity, setCurrentCity] = useState(() => {
@@ -28,8 +33,12 @@ const DoctorSearch = () => {
     return val;
   });
   const [currentSpecialityId, setCurrentSpecialityId] = useState(() => {
+    // For API request - use specialty ID
     const val = searchState.specialityId || "";
-    console.log("--- DoctorSearch initialized with specialityId:", val);
+    console.log(
+      "--- DoctorSearch initialized with specialityId (for API):",
+      val,
+    );
     return val;
   });
 
@@ -44,7 +53,7 @@ const DoctorSearch = () => {
 
     dispatch(
       searchDoctors({
-        search: currentQuery,
+        search: currentSpecialityId ? "" : currentQuery, // Don't send search if we have specialityId
         city: currentCity,
         specialityId: currentSpecialityId,
       }),
@@ -54,6 +63,7 @@ const DoctorSearch = () => {
   const handleSearchUpdate = (newQuery) => {
     console.log("handleSearchUpdate called with:", newQuery);
     setCurrentQuery(newQuery);
+    setCurrentSpecialityId(""); // Clear specialty filter if user manually searches
   };
 
   const handleCityUpdate = (newCity) => {
