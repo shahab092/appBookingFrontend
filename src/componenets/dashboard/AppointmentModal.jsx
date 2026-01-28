@@ -76,8 +76,6 @@ export default function AppointmentModal({
   const { watch, handleSubmit, reset } = methods;
   const selectedDepartment = watch("department");
 
-  /* ---------------- Fetch Doctors ---------------- */
-  /* ---------------- Fetch Doctors & Sync Type ---------------- */
   useEffect(() => {
     if (visible) {
       fetchDoctors();
@@ -88,13 +86,14 @@ export default function AppointmentModal({
   const fetchDoctors = async () => {
     try {
       const res = await api.get("/doctor");
-      console.log(res.data, "res.data");
+      console.log(res.data.data, "res.data");
       setDoctors(res.data?.data || []);
     } catch {
       showToast("Failed to fetch doctors", "error");
     }
   };
-
+  // fetchDoctors();
+  // console.log(doctors.name, "dcitirer");
   /* ---------------- Reset Flow ---------------- */
   useEffect(() => {
     if (!visible) {
@@ -361,7 +360,7 @@ export default function AppointmentModal({
                     name="doctor"
                     label="Doctor"
                     options={doctors.map((d) => ({
-                      label: `${d.firstName} ${d.lastName}`,
+                      label: `${d.name}`,
                       value: d._id,
                     }))}
                   />
