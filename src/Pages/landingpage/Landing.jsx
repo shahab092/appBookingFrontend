@@ -13,6 +13,7 @@ import HealthHeader from "../../componenets/landingpage/HealthHeader";
 import AskDoctorBanner from "../../componenets/landingpage/AskDoctorBanner";
 import HeroSection from "../../componenets/landingpage/HeroSection";
 import AppBanner from "../../componenets/landingpage/AppBanner";
+import TopRatedDoctors from "../../componenets/landingpage/TopRatedDoctors";
 
 export default function Landing() {
   // Enable smooth scrolling for anchor links
@@ -57,6 +58,7 @@ export default function Landing() {
         <HealthHeader />
 
         <AskDoctorBanner />
+        <TopRatedDoctors />
         <HeroSection />
 
         <AppBanner />

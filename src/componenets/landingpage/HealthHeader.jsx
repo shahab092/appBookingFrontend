@@ -150,7 +150,6 @@ const HealthHero = () => {
     }
   };
 
-  console.log(dynamicSpecialities, "dynamicSpecialities");
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIdx((prev) => (prev + 1) % HERO_IMAGES.length);
@@ -227,7 +226,7 @@ const HealthHero = () => {
         </h1>
 
         {/* Search Component with Subtle Glow */}
-        <div className="max-w-4xl mx-auto mb-6 sm:mb-8 md:mb-12 relative z-50 group">
+        <div className="max-w-4xl mx-auto mb-3 sm:mb-4 md:mb-6 relative z-50 group">
           <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-emerald-500/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
           <SearchComponent cities={cities} />
         </div>
@@ -275,14 +274,15 @@ const HealthHero = () => {
         }
       `}</style>
 
-      <div className="mt-8 sm:absolute left-0 right-0 -bottom-24 sm:-bottom-50 md:-bottom-32 lg:-bottom-18 z-50">
+      {/* Updated ServiceCards container with higher z-index */}
+      <div className="mt-8 sm:absolute left-0 right-0 -bottom-24 sm:-bottom-50 md:-bottom-32 lg:-bottom-18 z-30">
         <ServiceCards />
       </div>
     </div>
   );
 };
 
-// Category Pill Component - UPDATED
+// Category Pill Component
 const CategoryPill = ({ icon, label, specialityId, active = false }) => {
   const navigate = useNavigate();
 
@@ -486,9 +486,9 @@ const SearchComponent = ({ cities = [] }) => {
               )}
             </div>
 
-            {/* Suggestions Dropdown */}
+            {/* Suggestions Dropdown - FIXED with proper z-index */}
             {showSuggestions && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-2xl border border-gray-100 z-50 overflow-hidden max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-2xl border border-gray-100 z-[9999] overflow-hidden max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
                 {suggestions.length > 0 ? (
                   suggestions.map((doctor) => (
                     <button
