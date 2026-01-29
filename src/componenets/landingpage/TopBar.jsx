@@ -1,30 +1,28 @@
 import { useState, useRef, useEffect } from "react";
 import { FaBars, FaTimes, FaHeartbeat, FaUserMd, FaUser } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import DoctorRegistrationModal from "./DoctorRegistrationModal";
 import LoginModal from "../common/LoginModal";
 
 const TopBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeLink, setActiveLink] = useState("findDoctors");
-  const navigate = useNavigate();
   const [showDoctorModal, setShowDoctorModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [selectedRole, setSelectedRole] = useState(null);
   const roleMenuRef = useRef(null);
+  const navigate = useNavigate();
 
   // Mock user data - replace with actual user data from your auth context
   const user = {
     name: "John Doe",
     email: "john@example.com",
-    isLoggedIn: false, // Reverted for final testing
+    isLoggedIn: false,
   };
 
   const handleUserClick = () => {
     if (user.isLoggedIn) {
-      // Navigate to user profile or show simple dropdown
-      //   navigate("/profile");
+      navigate("/profile");
     } else {
       setShowRoleMenu(true);
     }
@@ -58,190 +56,151 @@ const TopBar = () => {
     console.log("Logout clicked");
   };
 
+  // Define navigation items with routes
+  const navItems = [
+    { name: "Home", path: "/" },
+    { name: "Doctors", path: "/doctorSearch" },
+    { name: "Hospitals", path: "/hospitals" },
+    { name: "Order Medicines", path: "/order-medicines" },
+    { name: "Lab ", path: "/tests" },
+  ];
+
   return (
     <>
-      {/* Top Info Bar */}
-      {/* <div className="bg-[#2e76ad] text-white py-2 px-4">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
-            
-            <div className="flex flex-wrap justify-center md:justify-start items-center space-x-4 text-sm">
-              <div className="flex items-center space-x-2 bg-white/10 px-3 py-1 rounded-full">
-                <FaPhone className="text-blue-200" size={12} />
-                <span className="text-blue-50">+1 (555) 123-4567</span>
-              </div>
-              <div className="flex items-center space-x-2 bg-white/10 px-3 py-1 rounded-full">
-                <FaEnvelope className="text-blue-200" size={12} />
-                <span className="text-blue-50">info@healthcare.com</span>
-              </div>
-            </div>
-
-            <div className="hidden md:flex items-center space-x-3">
-              {user.isLoggedIn ? (
-                <button
-                  onClick={handleUserClick}
-                  className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full transition-all duration-200"
-                >
-                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                    <FaUserCircle className="text-[#2e76ad]" size={18} />
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <span className="text-white text-sm font-medium">
-                      {user.name}
-                    </span>
-                    <span className="text-blue-200 text-xs">View Profile</span>
-                  </div>
-                </button>
-              ) : (
-                <button
-                  onClick={() => setShowLoginModal(true)}
-                  className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full transition-all duration-200 group"
-                >
-                  <FaUser
-                    size={14}
-                    className="text-blue-200 group-hover:text-white"
-                  />
-                  <span className="text-blue-50 group-hover:text-white text-sm">
-                    Login / Signup
-                  </span>
-                </button>
-              )}
-            </div>
-
-          
-            <div className="md:hidden">
-              <button
-                onClick={() => setShowLoginModal(true)}
-                className="text-white text-sm font-medium"
-              >
-                {user.isLoggedIn ? user.name : "Login"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div> */}
-
       {/* Main Navigation Bar */}
-
-      <nav className="bg-white shadow-xl z-50 border-b border-gray-100">
+      <nav className="bg-white shadow-md z-50 border-b border-gray-100 sticky top-0">
         <div className="px-3 sm:px-4">
-          <div className="flex justify-between items-center py-2 sm:py-3">
+          <div className="flex justify-between items-center py-1.5 sm:py-2">
             {/* Logo */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="bg-primary text-white p-2 sm:p-3 rounded-lg sm:rounded-2xl shadow-lg shrink-0">
-                <FaHeartbeat className="text-lg sm:text-2xl" />
+            <div className="flex items-center space-x-2">
+              <div className="bg-primary text-white p-1.5 sm:p-2 rounded-lg shadow-md shrink-0">
+                <FaHeartbeat className="text-base sm:text-xl" />
               </div>
-              <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-primary truncate">
+              <NavLink
+                to="/"
+                className="min-w-0 hover:opacity-90 transition-opacity"
+              >
+                <h1 className="text-base sm:text-lg md:text-xl font-bold text-primary truncate">
                   MediCare
                 </h1>
-                <p className="text-xs text-gray-500 font-medium hidden sm:block">
+                <p className="text-[10px] sm:text-xs text-gray-500 font-medium hidden sm:block">
                   Trusted Healthcare
                 </p>
-              </div>
+              </NavLink>
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex flex-1 items-center ml-8 space-x-1">
-              {/* Navigation items aligned to left */}
-              {[
-                { name: "Find Doctors", id: "findDoctors" },
-                { name: "Hospitals", id: "hospitals" },
-                { name: "Medicines", id: "medicines" },
-                { name: "Lab Tests", id: "labTests" },
-                // { name: "Contact", id: "contact" },
-              ].map((item) => (
-                <a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  onClick={() => setActiveLink(item.id)}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
-                    activeLink === item.id
-                      ? "bg-primary text-white shadow-lg transform scale-105"
-                      : "text-neutral-dark hover:bg-primary/5 hover:text-primary hover:shadow-md"
-                  }`}
+            <div className="hidden lg:flex flex-1 items-center ml-6 space-x-1">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `px-4 py-2 text-sm font-medium transition-all duration-200 relative group ${
+                      isActive
+                        ? "text-primary"
+                        : "text-gray-700 hover:text-primary"
+                    }`
+                  }
+                  end={item.path === "/"}
                 >
-                  {item.name}
-                </a>
+                  {({ isActive }) => (
+                    <>
+                      <span className="relative z-10">{item.name}</span>
+                      {/* Bottom border for active state */}
+                      <div
+                        className={`absolute bottom-0 left-0 right-0 h-[2px] transform origin-left transition-all duration-300 ${
+                          isActive
+                            ? "scale-x-100 bg-primary"
+                            : "scale-x-0 group-hover:scale-x-100 group-hover:bg-primary/50"
+                        }`}
+                      />
+                    </>
+                  )}
+                </NavLink>
               ))}
             </div>
 
             {/* Desktop Navigation / Auth Buttons */}
-            <div className="hidden lg:flex items-center ml-4 space-x-4">
+            <div className="hidden lg:flex items-center ml-3 space-x-3">
               {user.isLoggedIn ? (
-                <button
-                  onClick={handleUserClick}
-                  className="flex items-center space-x-3 px-4 py-2 rounded-xl hover:bg-blue-50 transition-all duration-200"
+                <NavLink
+                  to="/profile"
+                  className={({ isActive }) =>
+                    `flex items-center space-x-2 px-3 py-1.5 rounded-lg transition-all duration-200 hover:bg-blue-50 ${
+                      isActive ? "bg-blue-50 border-b-[2px] border-primary" : ""
+                    }`
+                  }
                 >
-                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
                     {user.name.charAt(0)}
                   </div>
                   <div className="hidden xl:flex flex-col items-start">
-                    <span className="text-sm font-bold text-gray-800">
+                    <span className="text-xs font-semibold text-gray-800">
                       {user.name}
                     </span>
-                    <span className="text-[10px] text-primary font-medium uppercase tracking-wider">
+                    <span className="text-[9px] text-primary font-medium uppercase tracking-wider">
                       Account
                     </span>
                   </div>
-                </button>
+                </NavLink>
               ) : (
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setShowDoctorModal(true)}
-                    className="btn-outline"
+                    className="text-xs font-medium text-primary hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors duration-200 border border-primary/20"
                   >
-                    Join as a doctor
+                    Join as Doctor
                   </button>
                   <div className="relative" ref={roleMenuRef}>
                     <button
                       onClick={() => setShowRoleMenu(!showRoleMenu)}
-                      className="btn-primary"
+                      className="bg-primary text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors duration-200"
                     >
-                      Login / Sign up
+                      Login
                     </button>
 
                     {/* Role Selection Dropdown */}
                     {showRoleMenu && (
-                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                        <div className="p-3 bg-linear-to-r from-primary/5 to-blue-50 border-b border-gray-100">
-                          <p className="text-sm font-bold text-gray-800">
+                      <div className="absolute right-0 mt-1.5 w-48 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="p-2.5 bg-gradient-to-r from-primary/5 to-blue-50 border-b border-gray-100">
+                          <p className="text-xs font-bold text-gray-800">
                             Select Your Role
                           </p>
-                          <p className="text-xs text-gray-500 mt-0.5">
+                          <p className="text-[10px] text-gray-500 mt-0.5">
                             Choose how you want to continue
                           </p>
                         </div>
-                        <div className="p-2">
+                        <div className="p-1.5">
                           <button
                             onClick={() => handleRoleSelect("patient")}
-                            className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors duration-200 group"
+                            className="w-full flex items-center gap-2 p-2 rounded hover:bg-blue-50 transition-colors duration-200 group"
                           >
-                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                              <FaUser className="text-blue-600" size={18} />
+                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                              <FaUser className="text-blue-600" size={14} />
                             </div>
                             <div className="text-left">
-                              <p className="font-semibold text-gray-800 text-sm">
+                              <p className="font-semibold text-gray-800 text-xs">
                                 Patient
                               </p>
-                              <p className="text-xs text-gray-500">
-                                Book appointments & consultations
+                              <p className="text-[10px] text-gray-500">
+                                Book appointments
                               </p>
                             </div>
                           </button>
                           <button
                             onClick={() => handleRoleSelect("doctor")}
-                            className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-green-50 transition-colors duration-200 group"
+                            className="w-full flex items-center gap-2 p-2 rounded hover:bg-green-50 transition-colors duration-200 group"
                           >
-                            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                              <FaUserMd className="text-green-600" size={18} />
+                            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                              <FaUserMd className="text-green-600" size={14} />
                             </div>
                             <div className="text-left">
-                              <p className="font-semibold text-gray-800 text-sm">
+                              <p className="font-semibold text-gray-800 text-xs">
                                 Doctor
                               </p>
-                              <p className="text-xs text-gray-500">
-                                Manage patients & appointments
+                              <p className="text-[10px] text-gray-500">
+                                Manage patients
                               </p>
                             </div>
                           </button>
@@ -254,25 +213,25 @@ const TopBar = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="flex items-center space-x-2 sm:space-x-3 lg:hidden">
+            <div className="flex items-center space-x-2 lg:hidden">
               {/* User Avatar for Mobile */}
               <button
                 onClick={handleUserClick}
-                className="flex items-center space-x-1 sm:space-x-2"
+                className="flex items-center space-x-1"
               >
-                <div className="w-8 sm:w-10 h-8 sm:h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base shrink-0">
+                <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0">
                   {user.name.charAt(0)}
                 </div>
               </button>
 
               <button
-                className="bg-neutral-light hover:bg-primary text-neutral-dark hover:text-white p-2 sm:p-3 rounded-lg sm:rounded-xl transition-all duration-200 shrink-0"
+                className="bg-gray-100 hover:bg-primary text-gray-700 hover:text-white p-1.5 sm:p-2 rounded-lg transition-all duration-200 shrink-0"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 {isMenuOpen ? (
-                  <FaTimes size={18} className="sm:w-5 sm:h-5" />
+                  <FaTimes size={14} className="sm:w-4 sm:h-4" />
                 ) : (
-                  <FaBars size={18} className="sm:w-5 sm:h-5" />
+                  <FaBars size={14} className="sm:w-4 sm:h-4" />
                 )}
               </button>
             </div>
@@ -280,84 +239,82 @@ const TopBar = () => {
 
           {/* Mobile Navigation */}
           {isMenuOpen && (
-            <div className="lg:hidden bg-white border-t border-gray-200 py-3 sm:py-4">
-              <div className="flex flex-col space-y-1 sm:space-y-2">
-                {[
-                  { name: "Find Doctors", id: "findDoctors" },
-                  { name: "Hospitals", id: "hospitals" },
-                  { name: "Medicines", id: "medicines" },
-                  { name: "Lab Tests", id: "labTests" },
-                  { name: "Contact", id: "contact" },
-                ].map((item) => (
-                  <a
-                    key={item.id}
-                    href={`#${item.id}`}
-                    onClick={() => {
-                      setActiveLink(item.id);
-                      setIsMenuOpen(false);
-                    }}
-                    className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base transition-all duration-200 ${
-                      activeLink === item.id
-                        ? "bg-primary text-white shadow-lg"
-                        : "text-neutral-dark hover:bg-primary/5 hover:text-primary"
-                    }`}
+            <div className="lg:hidden bg-white border-t border-gray-200 py-2">
+              <div className="flex flex-col space-y-1">
+                {navItems.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 relative ${
+                        isActive
+                          ? "text-primary pl-4 border-l-[3px] border-primary"
+                          : "text-gray-700 hover:text-primary hover:pl-4 hover:border-l-[3px] hover:border-primary/50"
+                      }`
+                    }
+                    end={item.path === "/"}
                   >
                     {item.name}
-                  </a>
+                  </NavLink>
                 ))}
 
                 {/* User Section in Mobile Menu */}
-                <div className="pt-3 sm:pt-4 mt-2 border-t border-gray-200">
+                <div className="pt-2 mt-1 border-t border-gray-200">
                   {user.isLoggedIn ? (
                     <>
-                      <div className="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-blue-50 rounded-lg sm:rounded-xl">
-                        <div className="w-10 sm:w-12 h-10 sm:h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-lg shrink-0">
+                      <div className="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 rounded-lg">
+                        <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0">
                           {user.name.charAt(0)}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-bold text-gray-900 text-sm sm:text-base truncate">
+                          <p className="font-semibold text-gray-900 text-xs truncate">
                             {user.name}
                           </p>
-                          <p className="text-[10px] text-primary font-semibold uppercase tracking-wider">
+                          <p className="text-[9px] text-primary font-semibold uppercase tracking-wider">
                             Patient Account
                           </p>
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => {
-                          navigate("/profile");
-                          setIsMenuOpen(false);
-                        }}
-                        className="w-full mt-2 sm:mt-3 bg-primary/5 text-primary hover:bg-primary/10 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base transition-all duration-200 text-center"
+                      <NavLink
+                        to="/profile"
+                        onClick={() => setIsMenuOpen(false)}
+                        className={({ isActive }) =>
+                          `w-full mt-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 text-center block ${
+                            isActive
+                              ? "bg-primary text-white"
+                              : "bg-primary/5 text-primary hover:bg-primary/10"
+                          }`
+                        }
                       >
                         View Profile
-                      </button>
+                      </NavLink>
 
                       <button
                         onClick={handleLogout}
-                        className="w-full mt-2 bg-red-50 text-red-600 hover:bg-red-100 px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-sm sm:text-base transition-all duration-200 text-center"
+                        className="w-full mt-1 bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 text-center"
                       >
                         Logout
                       </button>
                     </>
                   ) : (
-                    <div className="flex flex-col space-y-2 px-1">
+                    <div className="flex flex-col space-y-1 px-1">
                       <button
                         onClick={() => {
                           setShowDoctorModal(true);
                           setIsMenuOpen(false);
                         }}
-                        className="btn-outline w-full p-"
+                        className="text-xs font-medium text-primary hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors duration-200 border border-primary/20"
                       >
-                        Join as a doctor
+                        Join as Doctor
                       </button>
                       <button
                         onClick={() => {
                           setShowLoginModal(true);
                           setIsMenuOpen(false);
                         }}
-                        className="btn-primary w-full"
+                        className="bg-primary text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors duration-200"
                       >
                         Login / Sign up
                       </button>
@@ -370,10 +327,10 @@ const TopBar = () => {
         </div>
       </nav>
 
+      {/* Modals */}
       <DoctorRegistrationModal
         visible={showDoctorModal}
         onCancel={() => setShowDoctorModal(false)}
-        onOk={() => setShowDoctorModal(false)}
       />
 
       <LoginModal

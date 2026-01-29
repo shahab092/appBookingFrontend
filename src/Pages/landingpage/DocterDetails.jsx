@@ -34,11 +34,13 @@ export default function DocterDetails() {
               // Keep existing data
               ...doctor,
               // Map API fields
+              _id: apiData._id, // Critical for AppointmentModal matching
               id: apiData.doctorId,
               doctorId: apiData.doctorId,
               name: apiData.name,
               email: apiData.email,
               speciality: apiData.speciality,
+              specialty: apiData.speciality, // Normalized field for compatibility
               superSpeciality: apiData.superSpeciality,
               services: apiData.services || [],
               consultationTime: apiData.consultationTime,
@@ -797,6 +799,7 @@ export default function DocterDetails() {
         visible={showAppointmentModal}
         onCancel={() => setShowAppointmentModal(false)}
         initialType={bookingType}
+        initialDoctor={doctor}
       />
     </div>
   );

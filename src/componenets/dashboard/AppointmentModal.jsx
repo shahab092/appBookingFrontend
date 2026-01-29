@@ -11,7 +11,6 @@ import api from "../../libs/api";
 import { useForm, FormProvider } from "react-hook-form";
 import CustomSelect from "../common/CustomSelect";
 import CustomTextField from "../common/CustomTextField";
-import { specializationOptions } from "../../constant/data";
 import { useSelector } from "react-redux";
 import { useToast } from "../../context/ToastContext";
 import PaymentMethodModal from "../common/PaymentMethodModal";
@@ -53,12 +52,15 @@ export default function AppointmentModal({
   onOk,
   onCancel,
   initialType = "online", // Default to online
+  initialDoctor = null,
+  initialSpecialty = null,
 }) {
   const { user } = useSelector((state) => state.auth);
   const { showToast } = useToast();
 
   const [appointmentType, setAppointmentType] = useState(initialType);
   const [doctors, setDoctors] = useState([]);
+  const [specialities, setSpecialities] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Guest Flow State
@@ -74,34 +76,115 @@ export default function AppointmentModal({
     defaultValues: { department: "", doctor: "" },
   });
 
-  const { watch, handleSubmit, reset } = methods;
+  const { watch, handleSubmit, reset, setValue } = methods;
   const selectedDepartment = watch("department");
+  const selectedDoctor = watch("doctor");
 
   useEffect(() => {
     if (visible) {
       fetchDoctors();
+      fetchSpecialities();
       setAppointmentType(initialType);
     }
   }, [visible, initialType]);
 
+  // Pre-fill doctor and specialty if provided
+  useEffect(() => {
+    if (visible && initialDoctor) {
+      setValue("doctor", initialDoctor._id || initialDoctor.id);
+      // Auto-select specialty if available in doctor object
+      const spec = initialDoctor.speciality || initialDoctor.specialty;
+      if (spec) {
+        setValue("department", spec);
+      }
+    } else if (visible && initialSpecialty) {
+      setValue("department", initialSpecialty);
+    }
+  }, [visible, initialDoctor, initialSpecialty, setValue]);
+
   const fetchDoctors = async () => {
     try {
       const res = await api.get("/doctor");
-      console.log(res.data.data, "res.data");
+      // console.log(res.data.data, "res.data");
       setDoctors(res.data?.data || []);
     } catch {
       showToast("Failed to fetch doctors", "error");
     }
   };
-  // fetchDoctors();
-  // console.log(doctors.name, "dcitirer");
+
+  const [patients, setPatients] = useState([]);
+  const isAdmin = user?.role === "admin";
+
+  useEffect(() => {
+    if (visible && isAdmin) {
+      fetchPatients();
+    }
+  }, [visible, isAdmin]);
+
+  const fetchPatients = async () => {
+    try {
+      const res = await api.get("/patient");
+      if (res.data?.success) {
+        setPatients(res.data.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch patients", error);
+    }
+  };
+
+  const fetchSpecialities = async () => {
+    try {
+      const res = await api.get("/specialities");
+      if (res.data?.success) {
+        const spData =
+          res.data.data?.speciality ||
+          res.data.data?.specialities ||
+          res.data.data ||
+          [];
+        setSpecialities(Array.isArray(spData) ? spData : []);
+      }
+    } catch (error) {
+      console.error("Error fetching specialities:", error);
+    }
+  };
+
+  // Filter doctors based on selected specialty, but ALWAYS include the currently selected doctor
+  const filteredDoctors = React.useMemo(() => {
+    let list = doctors;
+    if (selectedDepartment) {
+      list = list.filter((d) => {
+        const docSpec = d.speciality || d.specialty || "";
+        // If this is the currently selected doctor, always keep them
+        if (
+          selectedDoctor &&
+          (d._id === selectedDoctor || d.id === selectedDoctor)
+        )
+          return true;
+
+        return docSpec.toLowerCase().includes(selectedDepartment.toLowerCase());
+      });
+    }
+    return list;
+  }, [doctors, selectedDepartment, selectedDoctor]);
+
+  // Auto-set specialty if doctor is selected manually and no specialty is selected
+  useEffect(() => {
+    if (selectedDoctor && !selectedDepartment) {
+      const doc = doctors.find((d) => d._id === selectedDoctor);
+      if (doc && (doc.speciality || doc.specialty)) {
+        setValue("department", doc.speciality || doc.specialty);
+      }
+    }
+  }, [selectedDoctor, selectedDepartment, doctors, setValue]);
+
   /* ---------------- Reset Flow ---------------- */
   useEffect(() => {
     if (!visible) {
       setBookingStep("form");
       setPendingData(null);
+      reset({ department: "", doctor: "" }); // Reset form on close
     }
-  }, [visible]);
+  }, [visible, reset]);
 
   /* ---------------- Time Formatter (DISPLAY ONLY) ---------------- */
   const formatTo12Hour = (time24) => {
@@ -135,25 +218,31 @@ export default function AppointmentModal({
 
   /* ---------------- Submit ---------------- */
   const onSubmit = async (data) => {
-    if (!appointmentType || !data.department || !data.doctor) {
-      showToast("Please fill all required fields", "warning");
+    if (!appointmentType || !data.doctor) {
+      showToast("Please select a doctor", "warning");
       return;
     }
 
-    // Guest Validation
+    // Guest/Admin Validation
     if (!user && (!data.guestName || !data.guestWhatsapp)) {
       showToast("Please provide your name and WhatsApp number", "warning");
+      return;
+    }
+
+    if (isAdmin && !data.patient) {
+      showToast("Please select a patient", "warning");
       return;
     }
 
     // Prepare Payload
     const payload = {
       doctorId: data.doctor,
-      speciality: data.department, // Internal field still named department in state but label is Speciality
-      patientId: user?.id || null, // Allow null for guests
+      speciality: data.department || "General", // Default if blank
+      patientId: isAdmin ? data.patient : user?.id || null, // Allow null for guests
       date: `${monthNames[currentMonth - 1]} ${selectedDate}, ${currentYear}`,
       timeSlot: selectedTime,
       appointmentType,
+      bookedBy: isAdmin ? "admin" : "patient",
       // Guest fields
       ...(!user && {
         guestName: data.guestName,
@@ -353,18 +442,35 @@ export default function AppointmentModal({
                   <CustomSelect
                     name="department"
                     label="Speciality"
-                    options={specializationOptions}
-                    rules={{ required: "Required" }}
+                    options={specialities.map((s) => ({
+                      label: s.speciality || s.name,
+                      value: s.speciality || s.name, // matching by string name
+                    }))}
+                    // Removed required rule
                   />
 
                   <CustomSelect
                     name="doctor"
                     label="Doctor"
-                    options={doctors.map((d) => ({
+                    options={filteredDoctors.map((d) => ({
                       label: `${d.name}`,
                       value: d._id,
                     }))}
                   />
+
+                  {isAdmin && (
+                    <div className="sm:col-span-2">
+                      <CustomSelect
+                        name="patient"
+                        label="Select Patient"
+                        options={patients.map((p) => ({
+                          label: `${p.name} (${p.email})`,
+                          value: p._id,
+                        }))}
+                        rules={{ required: "Patient is required" }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

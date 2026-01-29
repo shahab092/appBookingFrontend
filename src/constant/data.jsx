@@ -101,11 +101,7 @@ export const SIDEBAR_MENU = {
       icon: Users,
       path: "/admin/users",
     },
-    {
-      label: "Reports",
-      icon: FileText,
-      path: "/admin/appiontment",
-    },
+    // Removed "Reports" link that pointed to deleted appointment page
     {
       label: "Settings",
       icon: Settings,
@@ -210,21 +206,6 @@ export const appointments = [
   },
 ];
 
-export const specializationOptions = [
-  { label: "Cardiology", value: "cardiology" },
-  { label: "Dermatology", value: "dermatology" },
-  { label: "Neurology", value: "neurology" },
-  { label: "Pediatrics", value: "pediatrics" },
-  { label: "Radiology", value: "radiology" },
-];
-
-export const departmentOptions = [
-  { label: "Heart Center", value: "heart-center" },
-  { label: "Skin Clinic", value: "skin-clinic" },
-  { label: "Neuro Department", value: "neuro-dept" },
-  { label: "Children Care", value: "children-care" },
-  { label: "Imaging Center", value: "imaging-center" },
-];
 export const MOCK_DOCTORS = [
   {
     id: 1,

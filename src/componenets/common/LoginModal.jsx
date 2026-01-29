@@ -16,6 +16,63 @@ import OTPModal from "./OTPModal";
 export default function LoginModal({ visible, onCancel, selectedRole }) {
   const [isLogin, setIsLogin] = useState(true);
 
+  // Format role for display
+  const formatRoleName = (role) => {
+    if (!role) return "User";
+
+    // Handle special cases
+    if (role.toLowerCase() === "doctor") return "Doctor";
+    if (role.toLowerCase() === "patient") return "Patient";
+    if (role.toLowerCase() === "pharmacy") return "Pharmacy";
+    if (role.toLowerCase() === "laboratory") return "Laboratory";
+    if (role.toLowerCase() === "admin") return "Admin";
+
+    // Default: capitalize first letter
+    return role.charAt(0).toUpperCase() + role.slice(1);
+  };
+
+  // Get appropriate title and subtitle based on role and mode
+  const getTitle = () => {
+    if (!selectedRole) return "HealthCare Inc.";
+
+    const roleName = formatRoleName(selectedRole);
+
+    if (isLogin) {
+      return `${roleName} Portal`;
+    } else {
+      return `Join as ${roleName}`;
+    }
+  };
+
+  const getSubtitle = () => {
+    if (!selectedRole) {
+      return isLogin
+        ? "Welcome back! Please sign in to continue."
+        : "Create your account to get started.";
+    }
+
+    const roleName = formatRoleName(selectedRole);
+
+    if (isLogin) {
+      return `Sign in to your ${roleName} account`;
+    } else {
+      return `Register as a ${roleName} on our platform`;
+    }
+  };
+
+  const getModalWidth = () => {
+    // Adjust width based on role for better visual presentation
+    switch (selectedRole?.toLowerCase()) {
+      case "doctor":
+        return 500;
+      case "pharmacy":
+      case "laboratory":
+        return 480;
+      default:
+        return 450;
+    }
+  };
+
   // Pass isSignup context to schema for conditional validation
   const methods = useForm({
     resolver: yupResolver(loginSchema),
@@ -204,14 +261,10 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
     <CustomModal
       visible={visible}
       onCancel={onCancel}
-      title="HealthCare Inc."
-      subtitle={
-        isLogin
-          ? `${selectedRole ? selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1) : "Patient"} Portal Login`
-          : `Create ${selectedRole ? selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1) : "Patient"} Account`
-      }
+      title={getTitle()}
+      subtitle={getSubtitle()}
       showSubmit={false}
-      width={450}
+      width={getModalWidth()}
     >
       <div className="flex flex-col p-4 sm:p-6">
         <FormProvider {...methods}>
@@ -300,10 +353,6 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
               {isLogin ? "Sign Up" : "Sign In"}
             </button>
           </p>
-        </div>
-
-        <div className="mt-8 text-center text-gray-400 text-[10px] sm:text-xs">
-          <p>Secure • HIPAA Compliant • Encrypted</p>
         </div>
       </div>
 
