@@ -8,10 +8,10 @@ import PatientDashboard from "../componenets/dashboard/PatientDashboard";
 import DoctorDashboard from "../Pages/Dashboard/DoctersDashboard";
 import PublicRoute from "../hoc/PublicRoute";
 import ProtectedRoute from "../hoc/ProtectedRoute";
-import CreateAppiontmentAdmin from "../componenets/dashboard/CreateAppiontmentAdmin";
 
 import Calling from "../componenets/dashboard/Calling";
 import DoctorSearch from "../Pages/DoctorSearch/DoctorSearch";
+import UnderConstruction from "../Pages/UnderConstruction/UnderConstruction";
 
 export default function AppRoutes() {
   return (
@@ -20,6 +20,10 @@ export default function AppRoutes() {
         {/* Public routes */}
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Landing />} />
+          <Route path="/medicines" element={<UnderConstruction />} />
+          <Route path="/hospitals" element={<UnderConstruction />} />
+          <Route path="/order-medicines" element={<UnderConstruction />} />
+          <Route path="//tests" element={<UnderConstruction />} />
           <Route path="/doctorDetail" element={<DocterDetails />} />
           <Route path="/doctorSearch" element={<DoctorSearch />} />
         </Route>
@@ -29,7 +33,6 @@ export default function AppRoutes() {
           <Route path="/admin" element={<DashboardLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
             {/* <Route path="users" element={<Users />} /> */}
-            <Route path="appiontment" element={<CreateAppiontmentAdmin />} />
           </Route>
         </Route>
 

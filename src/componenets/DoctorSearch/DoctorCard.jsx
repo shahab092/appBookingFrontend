@@ -124,6 +124,7 @@ const DoctorCard = ({ doctor }) => {
         visible={showAppointmentModal}
         onCancel={() => setShowAppointmentModal(false)}
         initialType={selectedType}
+        initialDoctor={doctor}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaStar,
   FaUserMd,
@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import LoginModal from "../common/LoginModal";
 import AppointmentModal from "../dashboard/AppointmentModal";
+import { MapPin, Video } from "lucide-react";
 
 const TOP_RATED_DOCTORS = [
   {
@@ -75,14 +76,39 @@ const TOP_RATED_DOCTORS = [
   },
 ];
 
+import api from "../../libs/api";
+import { useToast } from "../../context/ToastContext";
+
 const TopRatedDoctors = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const { showToast } = useToast();
+
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [selectedType, setSelectedType] = useState("online");
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    fetchSimpleDoctors();
+  }, []);
+
+  const fetchSimpleDoctors = async () => {
+    try {
+      const res = await api.get("/doctor");
+      if (res.data?.success) {
+        setDoctors(res.data.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch doctors", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleBookAppointment = (doctor, type) => {
     setSelectedDoctor(doctor);
@@ -94,9 +120,13 @@ const TopRatedDoctors = () => {
     navigate("/doctorDetail", { state: { doctor } });
   };
 
-  const displayedDoctors = showAll
-    ? TOP_RATED_DOCTORS
-    : TOP_RATED_DOCTORS.slice(0, 4);
+  // For display, use the fetched doctors.
+  // If loading, maybe show skeletons, but for now we'll just wait.
+  // We can filter for "top rated" if the API supported it, but for now take first few.
+  const displayedDoctors = showAll ? doctors : doctors.slice(0, 4);
+
+  if (loading)
+    return <div className="py-20 text-center">Loading specialists...</div>;
 
   return (
     <section className="py-12 bg-gray-50">
@@ -120,7 +150,7 @@ const TopRatedDoctors = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {displayedDoctors.map((doctor) => (
             <DoctorCard
-              key={doctor.id}
+              key={doctor._id || doctor.id}
               doctor={doctor}
               onBook={handleBookAppointment}
               onViewProfile={handleViewProfile}
@@ -151,7 +181,7 @@ const TopRatedDoctors = () => {
         visible={showAppointmentModal}
         onCancel={() => setShowAppointmentModal(false)}
         initialType={selectedType}
-        doctor={selectedDoctor}
+        initialDoctor={selectedDoctor}
       />
     </section>
   );
@@ -161,49 +191,68 @@ const TopRatedDoctors = () => {
 const DoctorCard = ({ doctor, onBook, onViewProfile }) => {
   const [isFavorite, setIsFavorite] = useState(false);
 
+  // Helper to format availability
+  const availabilityText = doctor.isAvailable
+    ? "Available Today"
+    : "Next Slot Tomorrow";
+  const isAvailable = doctor.isAvailable;
+
+  // Helper for tags
+  const tags =
+    doctor.services && doctor.services.length > 0
+      ? doctor.services.slice(0, 2)
+      : [doctor.speciality || "Specialist", "General Care"];
+
   return (
     <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
       {/* Doctor Image */}
       <div className="relative h-48">
         <img
-          src={doctor.image}
+          src={
+            doctor.image ||
+            "https://img.freepik.com/free-photo/doctor-smiling-with-stethoscope_1154-36.jpg"
+          }
           alt={doctor.name}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover cursor-pointer"
+          onClick={() => onViewProfile(doctor)}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
 
         {/* Availability Badge */}
         <div className="absolute top-3 left-3">
           <span
             className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
-              doctor.availability === "Available Today"
+              isAvailable
                 ? "bg-green-100 text-green-800"
                 : "bg-blue-100 text-blue-800"
             }`}
           >
             <span
               className={`w-2 h-2 rounded-full ${
-                doctor.availability === "Available Today"
-                  ? "bg-green-500"
-                  : "bg-blue-500"
+                isAvailable ? "bg-green-500" : "bg-blue-500"
               }`}
             ></span>
-            {doctor.availability}
+            {availabilityText}
           </span>
         </div>
 
         {/* Favorite Button */}
         <button
-          onClick={() => setIsFavorite(!isFavorite)}
-          className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFavorite(!isFavorite);
+          }}
+          className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg z-10"
         >
           <FaHeart className={isFavorite ? "text-red-500" : "text-gray-400"} />
         </button>
 
         {/* Doctor Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+        <div className="absolute bottom-0 left-0 right-0 p-4 text-white pointer-events-none">
           <h3 className="font-bold text-lg">{doctor.name}</h3>
-          <p className="text-sm text-blue-200">{doctor.specialty}</p>
+          <p className="text-sm text-blue-200">
+            {doctor.speciality || doctor.specialty}
+          </p>
         </div>
       </div>
 
@@ -217,22 +266,29 @@ const DoctorCard = ({ doctor, onBook, onViewProfile }) => {
                 <FaStar
                   key={index}
                   className={`${
-                    index < Math.floor(doctor.rating)
+                    index <
+                    Math.floor(doctor.rating || doctor.averageRating || 0)
                       ? "text-yellow-400"
                       : "text-gray-300"
                   } w-4 h-4`}
                 />
               ))}
             </div>
-            <span className="font-semibold text-gray-900">{doctor.rating}</span>
-            <span className="text-sm text-gray-500">({doctor.reviews})</span>
+            <span className="font-semibold text-gray-900">
+              {doctor.rating || doctor.averageRating || "0.0"}
+            </span>
+            <span className="text-sm text-gray-500">
+              ({doctor.reviews || doctor.numReviews || 0})
+            </span>
           </div>
-          <span className="text-sm text-gray-600">{doctor.experience}</span>
+          <span className="text-sm text-gray-600">
+            {doctor.experience || 0}+ Years
+          </span>
         </div>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {doctor.tags.map((tag, idx) => (
+        <div className="flex flex-wrap gap-2 mb-4 h-12 overflow-hidden">
+          {tags.map((tag, idx) => (
             <span
               key={idx}
               className="text-xs px-3 py-1 bg-blue-50 text-blue-700 rounded-full"
@@ -246,36 +302,33 @@ const DoctorCard = ({ doctor, onBook, onViewProfile }) => {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="text-center">
             <p className="text-sm text-gray-500">Patients</p>
-            <p className="font-bold text-gray-900">{doctor.patients}</p>
+            <p className="font-bold text-gray-900">
+              {doctor.patients || "1000+"}
+            </p>
           </div>
           <div className="text-center">
             <p className="text-sm text-gray-500">Fee</p>
-            <p className="font-bold text-blue-600">₹{doctor.consultationFee}</p>
+            <p className="font-bold text-blue-600">
+              ₹{doctor.consultationFee || "1500"}
+            </p>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <button
-            onClick={() => onBook(doctor, "online")}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2"
-          >
-            <FaVideo />
-            <span>Book Online</span>
-          </button>
-          <button
-            onClick={() => onBook(doctor, "inclinic")}
-            className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2"
-          >
-            <FaHospital />
-            <span>In-Clinic Visit</span>
-          </button>
-          <button
-            onClick={() => onViewProfile(doctor)}
-            className="w-full text-gray-600 hover:text-blue-600 font-medium py-2 text-sm"
-          >
-            View Full Profile →
-          </button>
+        <div className="flex flex-col justify-between min-w-[220px]">
+          <div className="space-y-3">
+            <button
+              className="w-full bg-blue-600 hover:scale-[1.02] transition text-white px-4 py-3 rounded-xl font-semibold shadow-md flex items-center justify-center gap-2 text-sm"
+              onClick={() => onBook(doctor, "online")}
+            >
+              <Video size={18} /> Book Online Appointment
+            </button>
+            <button
+              className="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 transition px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm"
+              onClick={() => onBook(doctor, "inclinic")}
+            >
+              <MapPin size={18} /> In-Clinic Appointment
+            </button>
+          </div>
         </div>
       </div>
     </div>

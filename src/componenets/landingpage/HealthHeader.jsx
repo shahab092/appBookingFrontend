@@ -274,8 +274,7 @@ const HealthHero = () => {
         }
       `}</style>
 
-      {/* Updated ServiceCards container with higher z-index */}
-      <div className="mt-8 sm:absolute left-0 right-0 -bottom-24 sm:-bottom-50 md:-bottom-32 lg:-bottom-18 z-30">
+      <div className="mt-12 sm:absolute left-0 right-0 -bottom-24 sm:-bottom-25 md:-bottom-20 lg:-bottom-18 z-0 w-full">
         <ServiceCards />
       </div>
     </div>
@@ -488,7 +487,7 @@ const SearchComponent = ({ cities = [] }) => {
 
             {/* Suggestions Dropdown - FIXED with proper z-index */}
             {showSuggestions && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-2xl border border-gray-100 z-[9999] overflow-hidden max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute top-full left-0 right-0  bg-white rounded-lg shadow-2xl border border-gray-100 z-[9999] overflow-hidden max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200 z-[99993423424234]">
                 {suggestions.length > 0 ? (
                   suggestions.map((doctor) => (
                     <button
@@ -498,11 +497,14 @@ const SearchComponent = ({ cities = [] }) => {
                       className="w-full flex items-center p-2 sm:p-3 hover:bg-gray-50 transition-colors text-left group border-b border-gray-50 last:border-0"
                     >
                       <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full overflow-hidden mr-2 sm:mr-3 border border-gray-100 shrink-0 group-hover:border-primary transition-colors">
-                        <img
+                        {/* <img
                           src={doctor.image}
                           alt={doctor.name}
                           className="w-full h-full object-cover"
-                        />
+                        /> */}
+                        <div className="bg-amber-100 w-full h-full rounded-full flex items-center justify-center">
+                          {doctor.name.charAt(0).toUpperCase()}
+                        </div>
                       </div>
                       <div className="min-w-0 flex-1">
                         <h4 className="text-xs sm:text-sm font-bold text-gray-800 group-hover:text-primary transition-colors flex items-center truncate">

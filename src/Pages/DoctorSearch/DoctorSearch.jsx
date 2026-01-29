@@ -156,6 +156,7 @@ const DoctorSearch = () => {
             doctors.map((doctor) => {
               // Map API response to DoctorCard props
               const mappedDoctor = {
+                _id: doctor._id, // CRITICAL: Required for checking appointment pre-selection
                 id: doctor.doctorId || doctor.id || "NA",
                 name: doctor.name || "NA",
                 image:
