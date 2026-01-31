@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Row, Col } from "antd";
+
 import {
-  CalendarOutlined,
-  CloseOutlined,
   VideoCameraOutlined,
   HomeOutlined,
   ClockCircleOutlined,
@@ -52,7 +50,7 @@ export default function AppointmentModal({
   onOk,
   onCancel,
   initialType = "online", // Default to online
-  initialDoctor = null,
+  initialDoctor,
   initialSpecialty = null,
 }) {
   const { user } = useSelector((state) => state.auth);
@@ -73,8 +71,9 @@ export default function AppointmentModal({
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
   const methods = useForm({
-    defaultValues: { department: "", doctor: "" },
+    defaultValues: { department: "", doctor: "", reason: "" },
   });
+  console.log(initialDoctor, "doctor");
 
   const { watch, handleSubmit, reset, setValue } = methods;
   const selectedDepartment = watch("department");
@@ -88,10 +87,21 @@ export default function AppointmentModal({
     }
   }, [visible, initialType]);
 
+  // const fetchTimeSlote = async () => {
+  //   try {
+  //     const resp = await api.get(`doctors/${selectedDoctor}/availability`);
+  //     console.log(resp.data, "timeslot");
+  //   } catch (error) {
+  //     showToast(
+  //       error.response?.data?.message || "Failed to fetch time slots",
+  //       "error",
+  //     );
+  //   }
+  // };
   // Pre-fill doctor and specialty if provided
   useEffect(() => {
     if (visible && initialDoctor) {
-      setValue("doctor", initialDoctor._id || initialDoctor.id);
+      setValue("doctor", initialDoctor.doctorId || initialDoctor._id);
       // Auto-select specialty if available in doctor object
       const spec = initialDoctor.speciality || initialDoctor.specialty;
       if (spec) {
@@ -116,6 +126,7 @@ export default function AppointmentModal({
   const isAdmin = user?.role === "admin";
 
   useEffect(() => {
+    // fetchTimeSlote("6979757088632d451d729d23");
     if (visible && isAdmin) {
       fetchPatients();
     }
@@ -182,7 +193,7 @@ export default function AppointmentModal({
     if (!visible) {
       setBookingStep("form");
       setPendingData(null);
-      reset({ department: "", doctor: "" }); // Reset form on close
+      reset({ department: "", doctor: "", reason: "" }); // Reset form on close
     }
   }, [visible, reset]);
 
@@ -218,13 +229,15 @@ export default function AppointmentModal({
 
   /* ---------------- Submit ---------------- */
   const onSubmit = async (data) => {
+    console.log(data, "dcotor data");
     if (!appointmentType || !data.doctor) {
       showToast("Please select a doctor", "warning");
       return;
     }
 
+    console.log("Doctor value:", data.doctor, "Type:", typeof data.doctor);
     // Guest/Admin Validation
-    if (!user && (!data.guestName || !data.guestWhatsapp)) {
+    if (!user && (!data.patientName || !data.patientPhone)) {
       showToast("Please provide your name and WhatsApp number", "warning");
       return;
     }
@@ -236,27 +249,32 @@ export default function AppointmentModal({
 
     // Prepare Payload
     const payload = {
-      doctorId: data.doctor,
+      doctorId: data.doctor, //docotor id
       speciality: data.department || "General", // Default if blank
-      patientId: isAdmin ? data.patient : user?.id || null, // Allow null for guests
+      // patientId: isAdmin ? data.patient : user?.id || null, // Allow null for guests
       date: `${monthNames[currentMonth - 1]} ${selectedDate}, ${currentYear}`,
       timeSlot: selectedTime,
       appointmentType,
-      bookedBy: isAdmin ? "admin" : "patient",
+      // bookedBy: isAdmin ? "admin" : "patient",
+      reason: data.reason,
       // Guest fields
       ...(!user && {
-        guestName: data.guestName,
-        guestWhatsapp: data.guestWhatsapp,
-        isGuest: true,
+        patientName: data.patientName,
+        patientPhone: data.patientPhone,
+        reason: data.reason,
+        // isGuest: true,
       }),
     };
 
     // If User -> Direct Book
     if (user) {
       processBooking(payload);
+      console.log(payload, "authentic user");
     } else {
       // If Guest -> Open Payment
       setPendingData(payload);
+      await api.post("/appointments", payload);
+      console.log(payload, "noon authentic user");
       setBookingStep("payment");
     }
   };
@@ -277,9 +295,14 @@ export default function AppointmentModal({
     }
   };
 
-  const handlePaymentProceed = (method) => {
-    // Ideally store payment method in payload
-    setBookingStep("otp");
+  const handlePaymentProceed = async (method) => {
+    const payload = {
+      appointmentId: pendingData._id,
+      paymentMethod: method,
+      amount: 500,
+    };
+    await api.post("/payments/start", payload);
+    // setBookingStep("otp");
   };
 
   const handleOTPVerify = async (otp) => {
@@ -454,7 +477,7 @@ export default function AppointmentModal({
                     label="Doctor"
                     options={filteredDoctors.map((d) => ({
                       label: `${d.name}`,
-                      value: d._id,
+                      value: d.doctorId,
                     }))}
                   />
 
@@ -471,16 +494,22 @@ export default function AppointmentModal({
                       />
                     </div>
                   )}
+
+                  <div className="sm:col-span-2">
+                    <CustomTextField
+                      name="reason"
+                      label="Reason for Visit"
+                      placeholder="Briefly describe the reason for your visit"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
             {!user && (
               <div className="pt-3 sm:pt-4">
-                <h4 className="mb-2 sm:mb-3  ">Patient Details</h4>
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <CustomTextField
-                    name="guestName"
+                    name="patientName"
                     label="Patient Name"
                     placeholder="Enter patient name"
                     rules={{
@@ -493,7 +522,7 @@ export default function AppointmentModal({
                   />
 
                   <CountryCodeInput
-                    name="guestWhatsapp"
+                    name="patientPhone"
                     label="WhatsApp Number"
                     placeholder="Enter WhatsApp number"
                     rules={{

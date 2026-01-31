@@ -30,9 +30,9 @@ export default function PaymentMethodModal({
 
   // update form value whenever selection changes
   useEffect(() => {
-    if (easypaisaActive) setValue("method", "easypaisa");
-    else if (jazzcashActive) setValue("method", "jazzcash");
-    else if (cardActive) setValue("method", "card");
+    if (easypaisaActive) setValue("paymentMethod", "easypaisa");
+    else if (jazzcashActive) setValue("paymentMethod", "jazzcash");
+    else if (cardActive) setValue("paymentMethod", "card");
   }, [easypaisaActive, jazzcashActive, cardActive, setValue]);
 
   const submitPayment = (data) => {
