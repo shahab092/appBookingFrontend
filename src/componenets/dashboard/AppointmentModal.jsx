@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-
 import {
   VideoCameraOutlined,
   HomeOutlined,
@@ -15,41 +14,17 @@ import PaymentMethodModal from "../common/PaymentMethodModal";
 import OTPModal from "../common/OTPModal";
 import CustomModal from "../common/CustomModal";
 import CountryCodeInput from "../common/CountryCodeInput";
+import { getAddressFromCoords } from "../../libs/locationUtils";
 
 /* ---------------- Constants ---------------- */
-const timeSlots = [
-  "09:00",
-  "09:30",
-  "10:00",
-  "10:30",
-  "11:00",
-  "11:30",
-  "14:00",
-  "15:30",
-  "16:00",
-];
-
-const monthNames = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+// Removed hardcoded timeSlots - now using dynamic slots from API
 
 export default function AppointmentModal({
   visible,
   title = "Schedule an Appointment",
   onOk,
   onCancel,
-  initialType = "online", // Default to online
+  initialType = "online",
   initialDoctor,
   initialSpecialty = null,
 }) {
@@ -64,20 +39,47 @@ export default function AppointmentModal({
   // Guest Flow State
   const [bookingStep, setBookingStep] = useState("form"); // form, payment, otp
   const [pendingData, setPendingData] = useState(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
-  const [selectedDate, setSelectedDate] = useState(new Date().getDate());
-  const [selectedTime, setSelectedTime] = useState(timeSlots[0]);
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  // Dynamic Time Slots State
+  const [availableTimeSlots, setAvailableTimeSlots] = useState({
+    morning: [],
+    afternoon: [],
+    evening: [],
+  });
+  const [selectedTime, setSelectedTime] = useState("");
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  // Custom Date Selector State
+  const generateDates = () => {
+    const dates = [];
+    const today = new Date();
+    for (let i = 0; i < 14; i++) {
+      const date = new Date();
+      date.setDate(today.getDate() + i);
+      dates.push(date);
+    }
+    return dates;
+  };
+
+  const [availableDates] = useState(generateDates());
+  const [dynamicHospitals, setDynamicHospitals] = useState([]);
+  const [loadingHospitals, setLoadingHospitals] = useState(false);
+  const [selectedHospital, setSelectedHospital] = useState(null);
 
   const methods = useForm({
-    defaultValues: { department: "", doctor: "", reason: "" },
+    defaultValues: {
+      department: "",
+      doctor: "",
+      reason: "",
+      date: availableDates[0].toISOString(),
+    },
   });
-  console.log(initialDoctor, "doctor");
 
   const { watch, handleSubmit, reset, setValue } = methods;
   const selectedDepartment = watch("department");
   const selectedDoctor = watch("doctor");
+  const selectedDate = watch("date");
 
   useEffect(() => {
     if (visible) {
@@ -87,18 +89,87 @@ export default function AppointmentModal({
     }
   }, [visible, initialType]);
 
-  // const fetchTimeSlote = async () => {
-  //   try {
-  //     const resp = await api.get(`doctors/${selectedDoctor}/availability`);
-  //     console.log(resp.data, "timeslot");
-  //   } catch (error) {
-  //     showToast(
-  //       error.response?.data?.message || "Failed to fetch time slots",
-  //       "error",
-  //     );
-  //   }
-  // };
-  // Pre-fill doctor and specialty if provided
+  // Fetch time slots when doctor, appointment type, or date changes
+  useEffect(() => {
+    if (selectedDoctor && selectedDate) {
+      fetchAvailableTimeSlots();
+    } else {
+      setAvailableTimeSlots({ morning: [], afternoon: [], evening: [] });
+      setSelectedTime("");
+    }
+  }, [selectedDoctor, appointmentType, selectedDate, selectedHospital]);
+
+  // Format date for API call (YYYY-MM-DD)
+  const formatDateForAPI = (dateString) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const fetchAvailableTimeSlots = async () => {
+    if (!selectedDoctor || !selectedDate) return;
+
+    try {
+      setLoadingSlots(true);
+      const formattedDate = formatDateForAPI(selectedDate);
+
+      const resp = await api.get("doctor/available-slots", {
+        params: {
+          doctorId: selectedDoctor,
+          appointmentType: appointmentType,
+          date: formattedDate,
+          ...(appointmentType === "inclinic" && {
+            locationId: selectedHospital?.id,
+          }),
+        },
+      });
+
+      if (resp.data && resp.data.success && resp.data.data) {
+        const slots = resp.data.data;
+        setAvailableTimeSlots(slots);
+
+        // Auto-select first available slot if any (normalize to Uppercase AM/PM)
+        const firstAvailable =
+          slots.morning?.[0]?.time ||
+          slots.afternoon?.[0]?.time ||
+          slots.evening?.[0]?.time ||
+          "";
+        setSelectedTime(firstAvailable.toUpperCase());
+      } else {
+        setAvailableTimeSlots({ morning: [], afternoon: [], evening: [] });
+        setSelectedTime("");
+      }
+    } catch (error) {
+      console.error("Error fetching time slots:", error);
+      showToast(
+        error.response?.data?.message || "Failed to fetch available time slots",
+        "error",
+      );
+      setAvailableTimeSlots({ morning: [], afternoon: [], evening: [] });
+      setSelectedTime("");
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
+  // Helper function to convert 12-hour format to 24-hour format
+  const convertTo24Hour = (time12h) => {
+    const [time, modifier] = time12h.split(" ");
+    let [hours, minutes] = time.split(":");
+
+    if (hours === "12") {
+      hours = "00";
+    }
+
+    if (modifier === "PM") {
+      hours = parseInt(hours, 10) + 12;
+    }
+
+    return `${hours.toString().padStart(2, "0")}:${minutes}`;
+  };
+
   useEffect(() => {
     if (visible && initialDoctor) {
       setValue("doctor", initialDoctor.doctorId || initialDoctor._id);
@@ -115,7 +186,6 @@ export default function AppointmentModal({
   const fetchDoctors = async () => {
     try {
       const res = await api.get("/doctor");
-      // console.log(res.data.data, "res.data");
       setDoctors(res.data?.data || []);
     } catch {
       showToast("Failed to fetch doctors", "error");
@@ -126,7 +196,6 @@ export default function AppointmentModal({
   const isAdmin = user?.role === "admin";
 
   useEffect(() => {
-    // fetchTimeSlote("6979757088632d451d729d23");
     if (visible && isAdmin) {
       fetchPatients();
     }
@@ -188,12 +257,110 @@ export default function AppointmentModal({
     }
   }, [selectedDoctor, selectedDepartment, doctors, setValue]);
 
+  // Update dynamic hospitals when selected doctor changes
+  useEffect(() => {
+    const updateHospitals = async () => {
+      if (!selectedDoctor) {
+        setDynamicHospitals([]);
+        setSelectedHospital(null);
+        return;
+      }
+
+      const doc = doctors.find(
+        (d) => d._id === selectedDoctor || d.doctorId === selectedDoctor,
+      );
+
+      if (doc && doc.locations && doc.locations.length > 0) {
+        // Step 1: Initialize with coordinates/names immediately to avoid blank screen
+        const initialHospitals = doc.locations.map((loc) => {
+          // Find matching availability for this specific clinic location
+          const inclinicAvail = (doc.availability || []).filter(
+            (a) =>
+              a.appointmentType === "inclinic" &&
+              (a.locationId === loc.hospitalId || a.locationId === loc._id),
+          );
+          const timingStr =
+            inclinicAvail
+              .map(
+                (a) => `${a.day.substring(0, 3)}: ${a.startTime}-${a.endTime}`,
+              )
+              .join(", ") || "Check Availability";
+
+          return {
+            id: loc.hospitalId || loc._id,
+            name: loc.name || "Clinic",
+            location:
+              loc.address ||
+              `Lat: ${loc.coordinates?.lat}, Lng: ${loc.coordinates?.lng}`,
+            addressResolved: !!loc.address,
+            timing: timingStr,
+            coordinates: loc.coordinates,
+          };
+        });
+
+        setDynamicHospitals(initialHospitals);
+        setSelectedHospital(initialHospitals[0]);
+
+        // Step 2: Resolve addresses in the background if needed
+        const needsResolving = initialHospitals.some(
+          (h) => !h.addressResolved && h.coordinates?.lat && h.coordinates?.lng,
+        );
+
+        if (needsResolving) {
+          setLoadingHospitals(true);
+          try {
+            const resolvedHospitals = await Promise.all(
+              initialHospitals.map(async (h) => {
+                if (
+                  !h.addressResolved &&
+                  h.coordinates?.lat &&
+                  h.coordinates?.lng
+                ) {
+                  const resolvedAddress = await getAddressFromCoords(
+                    h.coordinates.lat,
+                    h.coordinates.lng,
+                  );
+                  return {
+                    ...h,
+                    location: resolvedAddress,
+                    addressResolved: true,
+                  };
+                }
+                return h;
+              }),
+            );
+            setDynamicHospitals(resolvedHospitals);
+            // Update timing if it changed (though timing is from doc.availability, not resolved address)
+            // But we need to keep the consistency
+            setSelectedHospital((prev) => {
+              const updated = resolvedHospitals.find(
+                (rh) => rh.id === prev?.id,
+              );
+              return updated || prev;
+            });
+          } catch (error) {
+            console.error("Error resolving hospital addresses:", error);
+          } finally {
+            setLoadingHospitals(false);
+          }
+        }
+      } else {
+        setDynamicHospitals([]);
+        setSelectedHospital(null);
+      }
+    };
+
+    updateHospitals();
+  }, [selectedDoctor, doctors]);
+
   /* ---------------- Reset Flow ---------------- */
   useEffect(() => {
     if (!visible) {
       setBookingStep("form");
       setPendingData(null);
       reset({ department: "", doctor: "", reason: "" }); // Reset form on close
+      setAvailableTimeSlots({ morning: [], afternoon: [], evening: [] });
+      setSelectedTime("");
     }
   }, [visible, reset]);
 
@@ -209,73 +376,69 @@ export default function AppointmentModal({
     });
   };
 
-  /* ---------------- Calendar Helpers ---------------- */
-  const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
-  const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay();
-
-  const handlePrevMonth = () => {
-    if (currentMonth === 1) {
-      setCurrentMonth(12);
-      setCurrentYear((y) => y - 1);
-    } else setCurrentMonth((m) => m - 1);
-  };
-
-  const handleNextMonth = () => {
-    if (currentMonth === 12) {
-      setCurrentMonth(1);
-      setCurrentYear((y) => y + 1);
-    } else setCurrentMonth((m) => m + 1);
-  };
-
   /* ---------------- Submit ---------------- */
   const onSubmit = async (data) => {
-    console.log(data, "dcotor data");
     if (!appointmentType || !data.doctor) {
       showToast("Please select a doctor", "warning");
       return;
     }
 
+    if (!selectedTime) {
+      showToast("Please select a time slot", "warning");
+      return;
+    }
+
     console.log("Doctor value:", data.doctor, "Type:", typeof data.doctor);
-    // Guest/Admin Validation
-    if (!user && (!data.patientName || !data.patientPhone)) {
-      showToast("Please provide your name and WhatsApp number", "warning");
-      return;
-    }
+    const doc = doctors.find(
+      (d) => d._id === data.doctor || d.doctorId === data.doctor,
+    );
+    const fee =
+      doc?.fees?.[appointmentType] ||
+      (appointmentType === "online" ? 1500 : 2500);
 
-    if (isAdmin && !data.patient) {
-      showToast("Please select a patient", "warning");
-      return;
-    }
-
-    // Prepare Payload
+    // Prepare Payload strictly matching the requested schema
     const payload = {
-      doctorId: data.doctor, //docotor id
-      speciality: data.department || "General", // Default if blank
-      // patientId: isAdmin ? data.patient : user?.id || null, // Allow null for guests
-      date: `${monthNames[currentMonth - 1]} ${selectedDate}, ${currentYear}`,
+      doctorId: data.doctor,
+      date: formatDateForAPI(data.date),
       timeSlot: selectedTime,
       appointmentType,
-      // bookedBy: isAdmin ? "admin" : "patient",
       reason: data.reason,
+      // Only include locationId for in-clinic
+      ...(appointmentType === "inclinic" && {
+        locationId: selectedHospital?.id,
+      }),
       // Guest fields
       ...(!user && {
         patientName: data.patientName,
         patientPhone: data.patientPhone,
-        reason: data.reason,
-        // isGuest: true,
       }),
     };
 
     // If User -> Direct Book
     if (user) {
       processBooking(payload);
-      console.log(payload, "authentic user");
+      console.log("Authenticated User Payload:", payload);
     } else {
-      // If Guest -> Open Payment
-      setPendingData(payload);
-      await api.post("/appointments", payload);
-      console.log(payload, "noon authentic user");
-      setBookingStep("payment");
+      // If Guest -> Submit to capture and open payment
+      setPendingData({ ...payload, amount: fee }); // Keep fee locally for payment step
+      try {
+        setLoading(true);
+        // Payload for /appointments is lean as requested
+        const res = await api.post("/appointments", payload);
+        if (res.data?.success) {
+          // Merge API response with our local amount tracker
+          setPendingData({ ...res.data.data, amount: fee });
+          setBookingStep("payment");
+        }
+      } catch (error) {
+        showToast(
+          error.response?.data?.message || "Failed to initiate booking",
+          "error",
+        );
+      } finally {
+        setLoading(false);
+      }
+      console.log("Guest User Payload:", payload);
     }
   };
 
@@ -296,13 +459,65 @@ export default function AppointmentModal({
   };
 
   const handlePaymentProceed = async (method) => {
-    const payload = {
-      appointmentId: pendingData._id,
-      paymentMethod: method,
-      amount: 500,
+    // Map internal IDs to user-friendly titles if needed
+    const methodMap = {
+      easypaisa: "Easypaisa",
+      jazzcash: "JazzCash",
+      card: "Visa / Mastercard",
     };
-    await api.post("/payments/start", payload);
-    // setBookingStep("otp");
+
+    const startPayload = {
+      appointmentId: pendingData._id || pendingData.appointmentId,
+      paymentMethod: methodMap[method] || method,
+      amount: pendingData.amount || 500,
+    };
+
+    try {
+      setPaymentLoading(true);
+
+      // 1. Start Payment
+      const startRes = await api.post("/payments/start", startPayload);
+
+      if (startRes.data?.success) {
+        const paymentData = startRes.data.data;
+
+        // 2. Immediate Callback (Synthetic for now as requested)
+        const callbackPayload = {
+          appointmentId: pendingData._id || pendingData.appointmentId,
+          paymentId: paymentData.paymentId || "PAYMENT_ID_HERE",
+          transactionId:
+            "TXN_" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+          status: "paid",
+        };
+
+        const callbackRes = await api.post(
+          "/payments/callback",
+          callbackPayload,
+        );
+
+        if (callbackRes.data?.success) {
+          showToast("Payment successful and appointment booked!", "success");
+          onOk?.(callbackRes.data.data || pendingData);
+          reset();
+          onCancel();
+        } else {
+          showToast(
+            callbackRes.data?.message || "Payment verification failed",
+            "error",
+          );
+        }
+      } else {
+        showToast(startRes.data?.message || "Failed to start payment", "error");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      showToast(
+        error.response?.data?.message || "An error occurred during payment",
+        "error",
+      );
+    } finally {
+      setPaymentLoading(false);
+    }
   };
 
   const handleOTPVerify = async (otp) => {
@@ -379,130 +594,216 @@ export default function AppointmentModal({
               </div>
             </div>
             {/* BODY */}
-            <div className="p-0 mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-              {/* LEFT SIDE */}
-              <div className="space-y-4 sm:space-y-5">
-                <div className="border border-neutral-medium rounded-lg p-3 sm:p-4">
-                  <div className="flex justify-between items-center mb-2 sm:mb-3">
-                    <div>
-                      <p className="text-sm sm:text-base font-semibold text-primary">
-                        {monthNames[currentMonth - 1]}
-                      </p>
-                      <p className="text-[10px] sm:text-xs text-gray-500">
-                        {currentYear}
-                      </p>
-                    </div>
-                    <div className="flex gap-1 sm:gap-2">
-                      <button
-                        type="button"
-                        onClick={handlePrevMonth}
-                        className="p-1 sm:p-2 hover:bg-gray-100 rounded"
-                      >
-                        ‹
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleNextMonth}
-                        className="p-1 sm:p-2 hover:bg-gray-100 rounded"
-                      >
-                        ›
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-7 gap-0.5 sm:gap-1 text-xs sm:text-sm">
-                    {Array.from({ length: firstDay }).map((_, i) => (
-                      <div key={i} />
-                    ))}
-                    {Array.from({ length: daysInMonth }).map((_, i) => (
-                      <button
-                        type="button"
-                        key={i}
-                        onClick={() => setSelectedDate(i + 1)}
-                        className={`h-7 sm:h-8 rounded-md text-xs sm:text-sm
-                  ${
-                    selectedDate === i + 1
-                      ? "bg-primary text-white"
-                      : "hover:bg-gray-100"
-                  }`}
-                      >
-                        {i + 1}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* RIGHT SIDE */}
-              <div className="space-y-4 sm:space-y-5">
-                {/* Available Slots */}
-                <div>
-                  <p className="text-xs sm:text-sm font-semibold mb-2 flex items-center gap-2">
-                    <ClockCircleOutlined /> Available Slots
+            <div className="p-0 mt-6 space-y-6">
+              {/* 1. Hospital Selection (if In-clinic) - Moved below type of booking */}
+              {appointmentType === "inclinic" && (
+                <div className="space-y-4">
+                  <p className="text-xs sm:text-sm font-semibold flex items-center gap-2">
+                    <HomeOutlined /> Hospital / Clinic
+                    {loadingHospitals && (
+                      <span className="text-xs text-gray-500 ml-2 animate-pulse">
+                        Updating locations...
+                      </span>
+                    )}
                   </p>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
-                    {timeSlots.map((slot) => (
-                      <button
-                        type="button"
-                        key={slot}
-                        onClick={() => setSelectedTime(slot)}
-                        className={`py-1.5 sm:py-2 rounded-md text-xs sm:text-sm border
-                  ${
-                    selectedTime === slot
-                      ? "bg-primary text-white border-primary"
-                      : "border-neutral-medium hover:bg-gray-50"
-                  }`}
-                      >
-                        {formatTo12Hour(slot)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                  {dynamicHospitals.length === 0 && !loadingHospitals ? (
+                    <div className="text-center py-4 border border-dashed border-gray-300 rounded-lg">
+                      <p className="text-gray-500 text-sm">
+                        No clinic locations available for this doctor.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {dynamicHospitals.map((hospital) => {
+                        const isActive = selectedHospital?.id === hospital.id;
 
-                {/* Department & Doctor */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <CustomSelect
-                    name="department"
-                    label="Speciality"
-                    options={specialities.map((s) => ({
-                      label: s.speciality || s.name,
-                      value: s.speciality || s.name, // matching by string name
-                    }))}
-                    // Removed required rule
-                  />
+                        return (
+                          <button
+                            type="button"
+                            key={hospital.id}
+                            onClick={() => setSelectedHospital(hospital)}
+                            className={`relative border rounded-lg p-4 text-left transition-all
+            ${
+              isActive
+                ? "border-primary bg-primary/5 ring-1 ring-primary"
+                : "border-neutral-medium hover:bg-gray-50 bg-white"
+            }`}
+                          >
+                            {/* Check icon */}
+                            {isActive && (
+                              <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-xs">
+                                ✓
+                              </span>
+                            )}
 
-                  <CustomSelect
-                    name="doctor"
-                    label="Doctor"
-                    options={filteredDoctors.map((d) => ({
-                      label: `${d.name}`,
-                      value: d.doctorId,
-                    }))}
-                  />
+                            {/* Icon */}
+                            <div className="flex items-start gap-4">
+                              <div className="text-primary text-2xl pt-1">
+                                <HomeOutlined />
+                              </div>
 
-                  {isAdmin && (
-                    <div className="sm:col-span-2">
-                      <CustomSelect
-                        name="patient"
-                        label="Select Patient"
-                        options={patients.map((p) => ({
-                          label: `${p.name} (${p.email})`,
-                          value: p._id,
-                        }))}
-                        rules={{ required: "Patient is required" }}
-                      />
+                              <div className="flex-1">
+                                <p className="text-sm font-bold text-gray-800">
+                                  {hospital.name}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+                                  {hospital.location}
+                                </p>
+
+                                <div className="flex items-center gap-2 mt-3">
+                                  <span className="text-[10px] bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-semibold">
+                                    Available
+                                  </span>
+                                  <p className="text-[11px] flex items-center gap-1.5 text-gray-600">
+                                    <ClockCircleOutlined className="text-[12px]" />
+                                    {hospital.timing}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
+                </div>
+              )}
 
+              {/* 2. Specialty & Doctor Selection (Side-by-side) - Moved up */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <CustomSelect
+                  name="department"
+                  label="Speciality"
+                  options={specialities.map((s) => ({
+                    label: s.speciality || s.name,
+                    value: s.speciality || s.name,
+                  }))}
+                />
+
+                <CustomSelect
+                  name="doctor"
+                  label="Doctor"
+                  options={filteredDoctors.map((d) => ({
+                    label: `${d.name}`,
+                    value: d.doctorId,
+                  }))}
+                />
+
+                {isAdmin && (
                   <div className="sm:col-span-2">
-                    <CustomTextField
-                      name="reason"
-                      label="Reason for Visit"
-                      placeholder="Briefly describe the reason for your visit"
+                    <CustomSelect
+                      name="patient"
+                      label="Select Patient"
+                      options={patients.map((p) => ({
+                        label: `${p.name} (${p.email})`,
+                        value: p._id,
+                      }))}
+                      rules={{ required: "Patient is required" }}
                     />
                   </div>
-                </div>
+                )}
+              </div>
+
+              {/* 3. Appointment Date Dropdown */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <CustomSelect
+                  name="date"
+                  label="Appointment Date"
+                  options={availableDates.map((date) => ({
+                    label: date.toLocaleDateString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    }),
+                    value: date.toISOString(),
+                  }))}
+                />
+                <div className="hidden sm:block"></div>
+              </div>
+
+              {/* 4. Available Slots */}
+              <div className="space-y-6">
+                <p className="text-xs sm:text-sm font-semibold flex items-center gap-2">
+                  <ClockCircleOutlined /> Available Slots
+                  {loadingSlots && (
+                    <span className="text-xs text-gray-500 ml-2 animate-pulse">
+                      Updating...
+                    </span>
+                  )}
+                  {!selectedDoctor && (
+                    <span className="text-xs text-amber-500 ml-2">
+                      (Select a doctor first)
+                    </span>
+                  )}
+                </p>
+
+                {Object.values(availableTimeSlots).every(
+                  (list) => list.length === 0,
+                ) ? (
+                  !loadingSlots && (
+                    <div className="text-center py-6 border border-dashed border-gray-300 rounded-lg">
+                      <p className="text-gray-500 text-sm">
+                        No available slots for selected date
+                      </p>
+                    </div>
+                  )
+                ) : (
+                  <div className="space-y-6">
+                    {/* Render Categories */}
+                    {[
+                      { id: "morning", label: "Morning" },
+                      { id: "afternoon", label: "Afternoon" },
+                      { id: "evening", label: "Evening" },
+                    ].map(
+                      (category) =>
+                        availableTimeSlots[category.id]?.length > 0 && (
+                          <div key={category.id} className="space-y-3">
+                            <h5 className="text-[11px] font-bold uppercase tracking-wider text-primary/70 flex items-center gap-2">
+                              {category.label}
+                              <div className="flex-1 h-px bg-primary/10"></div>
+                            </h5>
+                            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
+                              {availableTimeSlots[category.id].map((slot) => {
+                                const isSelected =
+                                  selectedTime === slot.time.toUpperCase();
+                                return (
+                                  <button
+                                    key={slot.time}
+                                    type="button"
+                                    disabled={slot.isBooked}
+                                    onClick={() =>
+                                      setSelectedTime(slot.time.toUpperCase())
+                                    }
+                                    className={`py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border-2 text-center
+                                      ${
+                                        isSelected
+                                          ? "bg-primary border-primary text-white shadow-md shadow-primary/20 scale-[1.02]"
+                                          : slot.isBooked
+                                            ? "bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed"
+                                            : "bg-white border-slate-100 dark:border-slate-800 text-gray-700 dark:text-gray-300 hover:border-primary/50 hover:bg-primary/5"
+                                      }`}
+                                  >
+                                    {slot.time.toUpperCase()}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ),
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* 5. Reason for Visit (Bottom) */}
+              <div>
+                <CustomTextField
+                  name="reason"
+                  label="Reason for Visit"
+                  placeholder="Briefly describe the reason for your visit"
+                />
               </div>
             </div>
             {!user && (
@@ -540,10 +841,8 @@ export default function AppointmentModal({
       {bookingStep === "payment" && (
         <PaymentMethodModal
           visible={true}
-          price={
-            doctors.find((d) => d._id === methods.getValues("doctor"))
-              ?.consultationFee || 1500
-          }
+          price={pendingData?.amount || 1500}
+          loading={paymentLoading}
           onClose={() => setBookingStep("form")}
           onProceed={handlePaymentProceed}
         />

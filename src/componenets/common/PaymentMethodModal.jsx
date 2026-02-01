@@ -11,6 +11,7 @@ export default function PaymentMethodModal({
   onClose,
   onProceed,
   price,
+  loading = false,
 }) {
   // separate states for each payment method
   const [easypaisaActive, setEasypaisaActive] = useState(true);
@@ -30,14 +31,14 @@ export default function PaymentMethodModal({
 
   // update form value whenever selection changes
   useEffect(() => {
-    if (easypaisaActive) setValue("paymentMethod", "easypaisa");
-    else if (jazzcashActive) setValue("paymentMethod", "jazzcash");
-    else if (cardActive) setValue("paymentMethod", "card");
+    if (easypaisaActive) setValue("method", "easypaisa");
+    else if (jazzcashActive) setValue("method", "jazzcash");
+    else if (cardActive) setValue("method", "card");
   }, [easypaisaActive, jazzcashActive, cardActive, setValue]);
 
   const submitPayment = (data) => {
-    console.log("Payment Data:", data);
-    onProceed?.(data);
+    console.log("Payment Data processed:", data);
+    onProceed?.(data.method); // Pass only the method string
     reset();
   };
 
@@ -60,6 +61,7 @@ export default function PaymentMethodModal({
       onCancel={onClose}
       onSubmit={handleSubmit(submitPayment)}
       submitText={`Proceed`}
+      loading={loading}
       width={600}
     >
       <FormProvider {...methods}>

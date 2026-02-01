@@ -59,45 +59,70 @@ export default function CustomModal({
       >
         <div className="rounded-xl overflow-hidden bg-white dark:bg-neutral-medium shadow-lg flex flex-col">
           {/* HEADER */}
-          <div className="bg-primary px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between text-white">
-            {/* Close Button on Left */}
-            <button
-              type="button"
-              onClick={onCancel}
-              className="text-lg sm:text-xl hover:opacity-80 transition-opacity"
-            >
-              <CloseOutlined />
-            </button>
+          <div className="bg-primary text-white border-b border-primary/10 flex flex-col">
+            {/* Top Row: Close Button and Submit Button (on small screens) */}
+            <div className="flex justify-between items-center px-1 py-1.5 border-b border-white/5">
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={onCancel}
+                className="text-lg sm:text-xl hover:opacity-80 transition-all p-1 flex items-center justify-center rounded-full hover:bg-white/10"
+              >
+                <CloseOutlined />
+              </button>
 
-            {/* Title and Subtitle in Middle */}
-            <div className="flex-1 px-4">
-              <h3 className="text-base sm:text-xl font-semibold m-0 leading-tight">
-                {title}
-              </h3>
-              {subtitle && (
-                <p className="text-[10px] sm:text-xs opacity-90 m-0 mt-0.5">
-                  {subtitle}
-                </p>
+              {/* Submit Button (Visible only on small screens) */}
+              {showSubmit && (
+                <div className="sm:hidden shrink-0">
+                  <button
+                    type="button"
+                    onClick={onSubmit}
+                    disabled={loading}
+                    className="bg-white text-primary px-3 py-1.5 rounded-lg text-[11px] font-bold hover:shadow-lg active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center min-w-[65px]"
+                  >
+                    {loading ? (
+                      <span className="animate-pulse">...</span>
+                    ) : (
+                      submitText
+                    )}
+                  </button>
+                </div>
               )}
             </div>
 
-            {/* Submit Button on Right */}
-            <div className="min-w-[80px] flex justify-end">
+            {/* Bottom Row: Title and Submit Button (hidden on small screens) */}
+            <div className="px-2 sm:px-4 md:px-5 py-2 sm:py-3 flex items-center justify-between gap-1 sm:gap-2 md:gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="whitespace-nowrap ">{title}</h3>
+                {subtitle && (
+                  <p className="text-[10px] sm:text-xs opacity-85 m-0 mt-1 font-medium leading-normal">
+                    {subtitle}
+                  </p>
+                )}
+              </div>
+
+              {/* Submit Button (Hidden on small screens) */}
               {showSubmit && (
-                <button
-                  type="button"
-                  onClick={onSubmit}
-                  disabled={loading}
-                  className="bg-white text-primary px-3 py-1 sm:px-4 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-all"
-                >
-                  {loading ? "..." : submitText}
-                </button>
+                <div className="hidden sm:block shrink-0">
+                  <button
+                    type="button"
+                    onClick={onSubmit}
+                    disabled={loading}
+                    className="bg-white text-primary px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg text-[11px] sm:text-sm font-bold hover:shadow-lg active:scale-95 disabled:opacity-50 transition-all flex items-end justify-end min-w-[65px] sm:min-w-[90px]"
+                  >
+                    {loading ? (
+                      <span className="animate-pulse">...</span>
+                    ) : (
+                      submitText
+                    )}
+                  </button>
+                </div>
               )}
             </div>
           </div>
 
           {/* BODY */}
-          <div className="p-4 sm:p-6 overflow-y-auto max-h-[80vh]">
+          <div className="px-3 py-4 sm:p-6 overflow-y-auto max-h-[70vh] sm:max-h-[75vh] scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-neutral-dark">
             {children}
           </div>
         </div>
