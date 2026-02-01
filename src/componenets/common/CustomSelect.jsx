@@ -11,7 +11,12 @@ export default function CustomSelect({
 
   return (
     <div className="flex flex-col">
-      <label className="mb-1 text-sm font-medium text-gray-700">{label}</label>
+      {label && (
+        <label className="mb-1 text-sm font-medium text-gray-700">
+          {label}
+        </label>
+      )}
+
       <Controller
         name={name}
         control={control}
@@ -19,24 +24,27 @@ export default function CustomSelect({
         render={({ field, fieldState }) => (
           <>
             <select
-              {...field}
+              value={field.value || ""}
               onChange={(e) => {
-                field.onChange(e); // Update react-hook-form state
+                field.onChange(e.target.value);
+
                 if (rules.onChange) {
-                  rules.onChange(e); // Trigger custom handler
+                  rules.onChange(e.target.value);
                 }
               }}
               className={`border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary ${
                 fieldState.error ? "border-red-500" : "border-gray-300"
               }`}
             >
-              <option value="">Select {label.toLowerCase()}</option>
+              <option value="">Select {label?.toLowerCase()}</option>
+
               {options.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
+
             {fieldState.error && (
               <p className="text-red-500 text-xs mt-1">
                 {fieldState.error.message}

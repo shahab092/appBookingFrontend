@@ -8,6 +8,7 @@ import AppointmentModal from "../../componenets/dashboard/AppointmentModal";
 import { FaStar, FaClock, FaPhone } from "react-icons/fa";
 import { Video, MapPin } from "lucide-react";
 import api from "../../libs/api";
+import { getAddressFromCoords } from "../../libs/locationUtils";
 
 export default function DocterDetails() {
   const navigate = useNavigate();
@@ -76,6 +77,48 @@ export default function DocterDetails() {
     fetchDoctorDetails();
   }, [location.state?.doctor]);
 
+  // Resolve clinic addresses if they are missing
+  useEffect(() => {
+    const resolveAddresses = async () => {
+      if (doctor?.locations && doctor.locations.length > 0) {
+        // Step 1: Identify which locations need resolving
+        const indicesToResolve = doctor.locations
+          .map((loc, idx) =>
+            !loc.address && loc.coordinates?.lat && loc.coordinates?.lng
+              ? idx
+              : -1,
+          )
+          .filter((idx) => idx !== -1);
+
+        if (indicesToResolve.length > 0) {
+          // Step 2: Resolve them in parallel
+          const resolvedData = await Promise.all(
+            indicesToResolve.map(async (idx) => {
+              const loc = doctor.locations[idx];
+              const address = await getAddressFromCoords(
+                loc.coordinates.lat,
+                loc.coordinates.lng,
+              );
+              return { index: idx, address };
+            }),
+          );
+
+          // Step 3: Update state with all resolved addresses at once
+          setDoctor((prev) => {
+            if (!prev || !prev.locations) return prev;
+            const newLocations = [...prev.locations];
+            resolvedData.forEach(({ index, address }) => {
+              newLocations[index] = { ...newLocations[index], address };
+            });
+            return { ...prev, locations: newLocations };
+          });
+        }
+      }
+    };
+
+    resolveAddresses();
+  }, [doctor?.locations?.length]); // Only trigger when the number of locations changes or doctor is first loaded
+
   const handleProceed = (type) => {
     if (type && typeof type === "string") setBookingType(type);
     setShowAppointmentModal(true);
@@ -124,22 +167,29 @@ export default function DocterDetails() {
 
   // Get consultation fee based on booking type
   const getConsultationFee = () => {
-    if (doctor?.consultationFee) {
-      return `Rs. ${doctor.consultationFee}`;
+    if (doctor?.fees?.[bookingType]) {
+      return `Rs. ${doctor.fees[bookingType].toLocaleString()}`;
     }
-    return bookingType === "online" ? "Rs. 1,500" : "Rs. 2,000";
+    if (doctor?.consultationFee) {
+      return `Rs. ${doctor.consultationFee.toLocaleString()}`;
+    }
+    return bookingType === "online" ? "Rs. 1,500" : "Rs. 2,500";
   };
 
   // Format availability for display
-  const formatAvailability = (clinic) => {
-    if (doctor?.availability && doctor.availability.length > 0) {
-      const avail = doctor.availability[0];
-      return `${avail.day} (${avail.startTime} - ${avail.endTime})`;
+  const formatAvailability = (clinicId) => {
+    const inclinicAvail = (doctor?.availability || []).filter(
+      (a) =>
+        a.appointmentType === "inclinic" &&
+        (!clinicId || a.locationId === clinicId),
+    );
+
+    if (inclinicAvail.length > 0) {
+      return inclinicAvail
+        .map((a) => `${a.day.substring(0, 3)}: ${a.startTime}-${a.endTime}`)
+        .join(", ");
     }
-    if (clinic?.availability?.[0]) {
-      const avail = clinic.availability[0];
-      return `${avail.day} (${avail.startTime} - ${avail.endTime})`;
-    }
+
     return "Mon-Sat (09:00 - 20:00)";
   };
 
@@ -209,11 +259,26 @@ export default function DocterDetails() {
                     {doctor?.speciality || "Senior Dermatologist"}
                   </p>
                   <p className="text-typegray">{formatEducation()}</p>
-                  {doctor?.consultationTime && (
-                    <p className="text-typegray text-sm">
-                      Consultation Time: {doctor.consultationTime} minutes
-                    </p>
-                  )}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-500 dark:text-slate-400 text-sm py-1">
+                    {doctor?.gender && (
+                      <span className="flex items-center gap-1.5">
+                        <span className="text-blue-500 font-bold">⚤</span>
+                        {doctor.gender}
+                      </span>
+                    )}
+                    {doctor?.languages && doctor.languages.length > 0 && (
+                      <span className="flex items-center gap-1.5">
+                        <span className="text-blue-500">🌐</span>
+                        {doctor.languages.join(", ")}
+                      </span>
+                    )}
+                    {doctor?.consultationTime && (
+                      <span className="flex items-center gap-1.5 border-l border-slate-200 dark:border-slate-700 pl-4">
+                        <FaClock size={12} className="text-blue-500" />
+                        {doctor.consultationTime} mins
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3 sm:gap-4 py-5 sm:py-6 border-y border-slate-100 dark:border-slate-700">
                   <div className="text-center md:text-left">
@@ -311,42 +376,81 @@ export default function DocterDetails() {
                 About {doctor?.name || "Dr. Sarah Thompson"}
               </h2>
               <div className="prose dark:prose-invert max-w-none text-typegray">
-                <p>
-                  {doctor?.name || "Dr. Sarah Thompson"} is a highly skilled{" "}
-                  {doctor?.speciality || "Dermatologist"} with over{" "}
-                  {doctor?.experience || "12"} years of experience in clinical
-                  and cosmetic{" "}
-                  {doctor?.speciality?.toLowerCase().split(" ")[0] ||
-                    "dermatology"}
-                  .
-                  {doctor?.education && doctor.education.length > 0 ? (
-                    <>
-                      {" "}
-                      She holds{" "}
-                      {doctor.education.length > 1
-                        ? "qualifications including"
-                        : "a qualification in"}{" "}
-                      {doctor.education.map((edu, index) => (
-                        <span key={index}>
-                          {edu.degree} from{" "}
-                          {edu.institute || "a recognized institute"}
-                          {index < doctor.education.length - 1 ? ", " : "."}
-                        </span>
-                      ))}
-                    </>
-                  ) : (
-                    " She specializes in advanced treatments, ensuring tailored treatment plans that address both medical concerns and aesthetic goals."
+                {doctor?.about ? (
+                  <p className="whitespace-pre-line">{doctor.about}</p>
+                ) : (
+                  <p>
+                    {doctor?.name || "Dr. Sarah Thompson"} is a highly skilled{" "}
+                    {doctor?.speciality || "Dermatologist"} with over{" "}
+                    {doctor?.experience || "12"} years of experience in clinical
+                    and cosmetic{" "}
+                    {doctor?.speciality?.toLowerCase().split(" ")[0] ||
+                      "dermatology"}
+                    .
+                    {doctor?.education && doctor.education.length > 0 ? (
+                      <>
+                        {" "}
+                        She holds{" "}
+                        {doctor.education.length > 1
+                          ? "qualifications including"
+                          : "a qualification in"}{" "}
+                        {doctor.education.map((edu, index) => (
+                          <span key={index}>
+                            {edu.degree} from{" "}
+                            {edu.institute || "a recognized institute"}
+                            {index < doctor.education.length - 1 ? ", " : "."}
+                          </span>
+                        ))}
+                      </>
+                    ) : (
+                      " She specializes in advanced treatments, ensuring tailored treatment plans that address both medical concerns and aesthetic goals."
+                    )}
+                  </p>
+                )}
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {doctor?.awards && doctor.awards.length > 0 && (
+                    <div>
+                      <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white mb-3">
+                        <span className="text-lg">🏆</span> Awards & Recognition
+                      </h4>
+                      <ul className="space-y-2">
+                        {doctor.awards.map((award, idx) => (
+                          <li
+                            key={idx}
+                            className="flex items-start gap-2 text-sm"
+                          >
+                            <span className="text-primary mt-1">•</span>
+                            <span>
+                              {award.name} ({award.year})
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
-                  {doctor?.pmdcRegistrationNumber && (
-                    <>
-                      {" "}
-                      She is PMDC registered ({doctor.pmdcRegistrationNumber}).
-                    </>
+                  {doctor?.memberships && doctor.memberships.length > 0 && (
+                    <div>
+                      <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white mb-3">
+                        <span className="text-lg">🤝</span> Professional
+                        Memberships
+                      </h4>
+                      <ul className="space-y-2">
+                        {doctor.memberships.map((membership, idx) => (
+                          <li
+                            key={idx}
+                            className="flex items-start gap-2 text-sm"
+                          >
+                            <span className="text-primary mt-1">•</span>
+                            <span>{membership}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
-                </p>
+                </div>
                 {doctor?.registrationDate && (
-                  <p className="mt-3 text-sm">
-                    <strong>Registration Date:</strong>{" "}
+                  <p className="mt-6 text-xs opacity-60">
+                    <strong>Joined HealthConnect:</strong>{" "}
                     {new Date(doctor.registrationDate).toLocaleDateString()}
                   </p>
                 )}
@@ -408,23 +512,28 @@ export default function DocterDetails() {
                                 : "Address not available")}
                           </p>
                           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-2 text-typegray">
-                            <div className="flex items-center gap-1 sm:gap-1.5">
-                              <FaClock size={12} className="flex-shrink-0" />{" "}
-                              <span className="line-clamp-1">
-                                {formatAvailability(clinic)}
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <FaClock size={12} className="flex-shrink-0" />
+                              <span className="text-xs truncate">
+                                {formatAvailability(clinic.hospitalId)}
                               </span>
                             </div>
-                            <div className="flex items-center gap-1 sm:gap-1.5">
-                              <FaPhone size={12} className="flex-shrink-0" />{" "}
-                              {getPhoneNumber(clinic)}
+                            <div className="flex items-center gap-1.5">
+                              <FaPhone size={12} className="flex-shrink-0" />
+                              <span className="text-xs">
+                                {getPhoneNumber(clinic)}
+                              </span>
                             </div>
                           </div>
                         </div>
-                        <div className="bg-linear-to-r from-primary/20 to-blue-500/20 text-primary px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold flex-shrink-0">
+                        <div className="bg-linear-to-r from-primary/20 to-blue-500/20 text-primary px-3 py-1 rounded-full text-xs font-bold flex-shrink-0">
                           Rs.{" "}
-                          {doctor?.consultationFee ||
+                          {(
+                            doctor?.fees?.inclinic ||
+                            doctor?.consultationFee ||
                             clinic.consultationFee ||
-                            "2,500"}
+                            2500
+                          ).toLocaleString()}
                         </div>
                       </label>
                     </div>
@@ -684,7 +793,7 @@ export default function DocterDetails() {
                       Fee:
                     </span>
                     <span className="text-lg sm:text-xl font-bold text-green-600">
-                      {getConsultationFee()}
+                      Rs. {(doctor?.fees?.online || 1500).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -758,7 +867,7 @@ export default function DocterDetails() {
                       Avg Fee:
                     </span>
                     <span className="text-lg sm:text-xl font-bold text-primary">
-                      {getConsultationFee()}
+                      Rs. {(doctor?.fees?.inclinic || 2500).toLocaleString()}
                     </span>
                   </div>
                 </div>

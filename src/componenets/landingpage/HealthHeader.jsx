@@ -274,7 +274,7 @@ const HealthHero = () => {
         }
       `}</style>
 
-      <div className="mt-12 sm:absolute left-0 right-0 -bottom-24 sm:-bottom-25 md:-bottom-20 lg:-bottom-18 z-0 w-full">
+      <div className="mt-12 sm:absolute left-0 right-0 -bottom-24 sm:-bottom-25 md:-bottom-15 lg:-bottom-10 z-0 w-full">
         <ServiceCards />
       </div>
     </div>
