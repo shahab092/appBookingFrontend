@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Search as SearchIcon, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Search as SearchIcon,
+  Loader2,
+  ChevronDown,
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import DoctorCard from "../../componenets/DoctorSearch/DoctorCard";
 import { SearchComponent } from "../../componenets/landingpage/HealthHeader";
+import CustomModal from "../../componenets/common/CustomModal";
+import { FaStethoscope } from "react-icons/fa";
 import api from "../../libs/api";
 import { searchDoctors } from "../../features/DoctorSlice";
 
@@ -12,6 +19,8 @@ const DoctorSearch = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const searchState = location.state || {};
+
+  const [showSpecialitiesModal, setShowSpecialitiesModal] = useState(false);
 
   // Redux state
   const { doctors, loading, error } = useSelector((state) => state.doctor);
@@ -44,19 +53,33 @@ const DoctorSearch = () => {
   });
 
   const [cities, setCities] = useState([]);
+  const [specialities, setSpecialities] = useState([]);
 
   useEffect(() => {
-    const fetchCities = async () => {
+    const fetchData = async () => {
       try {
-        const res = await api.get("/doctor/cities");
-        if (res.data?.success) {
-          setCities(res.data.data.cities || []);
+        const [citiesRes, specialitiesRes] = await Promise.all([
+          api.get("/doctor/cities"),
+          api.get("/specialities"),
+        ]);
+
+        if (citiesRes.data?.success) {
+          setCities(citiesRes.data.data.cities || []);
+        }
+
+        if (specialitiesRes.data?.success) {
+          const specialityData =
+            specialitiesRes.data.data?.speciality ||
+            specialitiesRes.data.data?.specialities ||
+            specialitiesRes.data.data ||
+            [];
+          setSpecialities(Array.isArray(specialityData) ? specialityData : []);
         }
       } catch (error) {
-        console.error("Error fetching cities:", error);
+        console.error("Error fetching initial data:", error);
       }
     };
-    fetchCities();
+    fetchData();
   }, []);
 
   // Fetch doctors whenever search params change
@@ -89,9 +112,9 @@ const DoctorSearch = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-neutral-light">
       {/* Hero Search Section - Full Width */}
-      <div className="bg-primary py-10 px-4 mb-8 relative overflow-hidden">
+      <div className="bg-primary py-6 px-4 mb-4 relative overflow-hidden">
         {/* Background Decorations */}
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/10 rounded-full blur-3xl"></div>
@@ -100,7 +123,7 @@ const DoctorSearch = () => {
 
         <div className="container mx-auto relative z-10">
           {/* Back Button and Title */}
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-4 mb-4">
             <button
               onClick={() => navigate("/")}
               className="p-2.5 bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-md transition-all active:scale-95 group"
@@ -111,15 +134,97 @@ const DoctorSearch = () => {
                 className="group-hover:-translate-x-1 transition-transform"
               />
             </button>
-            <h1 className="text-white font-bold">Search Results</h1>
+            <h2 className="text-white ">Search Results</h2>
           </div>
 
           {/* Search Bar - Full Width within Container */}
-          <div className="w-full search-component-container">
+          <div className="w-full search-component-container mb-3">
             <SearchComponent cities={cities} />
+          </div>
+
+          {/* Speciality Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 max-w-5xl mx-auto px-2">
+            <button
+              onClick={() => {
+                setCurrentSpecialityId("");
+                setCurrentQuery("");
+              }}
+              className={`px-4 py-2 rounded-full transition-all duration-300 text-xs shadow-lg backdrop-blur-md border ${
+                !currentSpecialityId
+                  ? "bg-white text-primary border-white scale-105 font-bold"
+                  : "bg-white/10 text-white border-white/20 hover:bg-white/20"
+              }`}
+            >
+              All
+            </button>
+
+            {specialities?.slice(0, 6).map((spec) => (
+              <button
+                key={spec._id || spec.id}
+                onClick={() => {
+                  setCurrentSpecialityId(spec._id || spec.id);
+                  setCurrentQuery(spec.speciality || spec.name);
+                }}
+                className={`px-4 py-2 rounded-full transition-all duration-300 text-xs shadow-lg backdrop-blur-md border ${
+                  currentSpecialityId === (spec._id || spec.id)
+                    ? "bg-white text-primary border-white scale-105 font-bold"
+                    : "bg-white/10 text-white border-white/20 hover:bg-white/20"
+                }`}
+              >
+                <span>{spec.speciality || spec.name}</span>
+              </button>
+            ))}
+
+            {specialities.length > 6 && (
+              <button
+                onClick={() => setShowSpecialitiesModal(true)}
+                className="flex items-center space-x-1.5 px-4 py-2 rounded-full transition-all duration-300 text-xs bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md"
+              >
+                <span>View All</span>
+                <ChevronDown size={14} />
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Specialities Modal */}
+      <CustomModal
+        visible={showSpecialitiesModal}
+        title="Select Specialty"
+        subtitle="Choose a category to find specialized doctors"
+        onCancel={() => setShowSpecialitiesModal(false)}
+        showSubmit={false}
+        width={600}
+      >
+        <div className="flex flex-col gap-2 p-2">
+          {specialities.map((speciality, idx) => (
+            <button
+              key={speciality._id || speciality.id || idx}
+              onClick={() => {
+                setCurrentSpecialityId(speciality._id || speciality.id);
+                setCurrentQuery(speciality.speciality || speciality.name);
+                setShowSpecialitiesModal(false);
+              }}
+              className="w-full flex items-center justify-between p-2 hover:bg-primary/5 rounded-xl transition-all duration-200 text-left group border border-transparent hover:border-primary/10"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all transform group-hover:scale-110">
+                  <FaStethoscope size={16} />
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-800 text-sm sm:text-base group-hover:text-primary transition-colors">
+                    {speciality.speciality || speciality.name}
+                  </span>
+                  <p className="text-[10px] text-gray-400 mt-0.5">
+                    Professional Medical Care
+                  </p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </CustomModal>
 
       <style>{`
         .search-component-container select {

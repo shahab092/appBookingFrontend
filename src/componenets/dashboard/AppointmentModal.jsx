@@ -113,6 +113,14 @@ export default function AppointmentModal({
   const fetchAvailableTimeSlots = async () => {
     if (!selectedDoctor || !selectedDate) return;
 
+    // Fix: Guard against fetching in-clinic slots without a locationId
+    if (appointmentType === "inclinic" && !selectedHospital?.id) {
+      console.log(
+        "--- Guard: Waiting for selectedHospital for in-clinic slots ---",
+      );
+      return;
+    }
+
     try {
       setLoadingSlots(true);
       const formattedDate = formatDateForAPI(selectedDate);

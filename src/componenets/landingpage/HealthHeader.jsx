@@ -404,7 +404,7 @@ const SearchComponent = ({ cities = [] }) => {
     <div className="w-full relative" ref={dropdownRef}>
       {/* Search Form */}
       <form onSubmit={handleSearch} className="w-full relative z-50">
-        <div className="flex flex-col sm:flex-row items-stretch gap-2 sm:gap-1 bg-white/10 backdrop-blur-xl rounded-lg sm:rounded-xl shadow-2xl p-2 sm:p-3 md:p-4 border border-white/20">
+        <div className="flex flex-col sm:flex-row items-stretch gap-2 sm:gap-1 bg-white/10 backdrop-blur-xl rounded-lg sm:rounded-xl shadow-2xl p-2 border border-white/20">
           {/* Location Selector */}
           <div className="w-full sm:w-1/4 order-2 sm:order-1">
             {show && <PaymentMethodModal onClose={() => setShow(false)} />}

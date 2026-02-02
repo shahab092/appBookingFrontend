@@ -156,7 +156,7 @@ const BookingCard = ({
       onClick={onClick}
       className={`relative border rounded-xl p-4 transition-all cursor-pointer hover:-translate-y-1 hover:shadow-lg ${
         highlight
-          ? "border-blue-500 bg-linear-to-br from-blue-50 to-white"
+          ? "border-primary bg-linear-to-br from-primary/5 to-white"
           : "bg-white"
       }`}
     >
@@ -167,7 +167,7 @@ const BookingCard = ({
       )}
 
       <div className="flex gap-3">
-        <div className="text-blue-600">{icon}</div>
+        <div className="text-primary">{icon}</div>
         <div>
           <p className="text-sm font-semibold text-gray-800 leading-tight">
             {title}
@@ -178,7 +178,7 @@ const BookingCard = ({
 
       <div className="mt-3 flex items-center justify-between">
         <p className="text-lg font-bold text-gray-900">{price}</p>
-        <span className="text-xs text-blue-600 font-medium">Book Now →</span>
+        <span className="text-xs text-primary font-medium">Book Now →</span>
       </div>
     </div>
   );

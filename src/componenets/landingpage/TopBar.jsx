@@ -127,8 +127,10 @@ const TopBar = () => {
                 <NavLink
                   to="/profile"
                   className={({ isActive }) =>
-                    `flex items-center space-x-2 px-3 py-1.5 rounded-lg transition-all duration-200 hover:bg-blue-50 ${
-                      isActive ? "bg-blue-50 border-b-[2px] border-primary" : ""
+                    `flex items-center space-x-2 px-3 py-1.5 rounded-lg transition-all duration-200 hover:bg-primary/5 ${
+                      isActive
+                        ? "bg-primary/5 border-b-[2px] border-primary"
+                        : ""
                     }`
                   }
                 >
@@ -148,7 +150,7 @@ const TopBar = () => {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setShowDoctorModal(true)}
-                    className="text-xs font-medium text-primary hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors duration-200 border border-primary/20"
+                    className="text-xs font-medium text-primary hover:bg-primary/5 px-3 py-1.5 rounded-lg transition-colors duration-200 border border-primary/20"
                   >
                     Join as Doctor
                   </button>
@@ -174,7 +176,7 @@ const TopBar = () => {
                         <div className="p-1.5">
                           <button
                             onClick={() => handleRoleSelect("patient")}
-                            className="w-full flex items-center gap-2 p-2 rounded hover:bg-blue-50 transition-colors duration-200 group"
+                            className="w-full flex items-center gap-2 p-2 rounded hover:bg-primary/5 transition-colors duration-200 group"
                           >
                             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                               <FaUser className="text-blue-600" size={14} />
@@ -263,7 +265,7 @@ const TopBar = () => {
                 <div className="pt-2 mt-1 border-t border-gray-200">
                   {user.isLoggedIn ? (
                     <>
-                      <div className="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 rounded-lg">
+                      <div className="flex items-center space-x-2 px-3 py-1.5 bg-primary/5 rounded-lg">
                         <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0">
                           {user.name.charAt(0)}
                         </div>
@@ -305,7 +307,7 @@ const TopBar = () => {
                           setShowDoctorModal(true);
                           setIsMenuOpen(false);
                         }}
-                        className="text-xs font-medium text-primary hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors duration-200 border border-primary/20"
+                        className="text-xs font-medium text-primary hover:bg-primary/5 px-3 py-1.5 rounded-lg transition-colors duration-200 border border-primary/20"
                       >
                         Join as Doctor
                       </button>

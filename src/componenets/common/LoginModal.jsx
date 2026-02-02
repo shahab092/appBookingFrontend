@@ -103,6 +103,11 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
   const dispatch = useDispatch();
   const { showToast } = useToast();
 
+  // Log validation errors for debugging
+  if (Object.keys(errors).length > 0) {
+    console.log("Validation Errors:", errors);
+  }
+
   // Watch values
   const formValues = watch();
 

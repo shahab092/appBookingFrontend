@@ -218,7 +218,7 @@ export default function DocterDetails() {
   };
 
   return (
-    <div className="bg-gradient-to-b from-blue-50/50 to-white dark:from-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-300 flex flex-col">
+    <div className="bg-gradient-to-b from-primary/5 to-white dark:from-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-300 flex flex-col">
       {/* Navigation */}
       <TopBar />
 
@@ -252,7 +252,7 @@ export default function DocterDetails() {
                   >
                     {doctor?.name || "Dr. Sarah Thompson"}
                   </h3>
-                  <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold bg-linear-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700 shadow-sm">
+                  <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold bg-linear-to-r from-primary/5 to-primary/10 dark:from-primary/20 dark:to-primary/30 text-primary dark:text-primary border border-primary/20 dark:border-primary/40 shadow-sm">
                     <span className="text-2xl sm:text-lg mr-1">✓</span>
                     {doctor?.pmdcRegistrationNumber
                       ? `PMDC Verified (${doctor.pmdcRegistrationNumber})`
@@ -274,7 +274,7 @@ export default function DocterDetails() {
                 <div className="space-y-1">
                   <p
                     onClick={() => handleProceed(bookingType)}
-                    className="text-lg sm:text-xl font-bold text-primary bg-linear-to-r from-primary to-blue-600 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+                    className="text-lg sm:text-xl font-bold text-primary bg-linear-to-r from-primary to-primary/80 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
                   >
                     {doctor?.speciality || "Senior Dermatologist"}
                     {doctor?.superSpeciality && (
@@ -287,19 +287,19 @@ export default function DocterDetails() {
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-500 dark:text-slate-400 text-sm py-1">
                     {doctor?.gender && (
                       <span className="flex items-center gap-1.5">
-                        <span className="text-blue-500 font-bold">⚤</span>
+                        <span className="text-primary font-bold">⚤</span>
                         {doctor.gender}
                       </span>
                     )}
                     {doctor?.languages && doctor.languages.length > 0 && (
                       <span className="flex items-center gap-1.5">
-                        <span className="text-blue-500">🌐</span>
+                        <span className="text-primary">🌐</span>
                         {doctor.languages.join(", ")}
                       </span>
                     )}
                     {doctor?.consultationTime && (
                       <span className="flex items-center gap-1.5 border-l border-slate-200 dark:border-slate-700 pl-4">
-                        <FaClock size={12} className="text-blue-500" />
+                        <FaClock size={12} className="text-primary" />
                         {doctor.consultationTime} mins
                       </span>
                     )}

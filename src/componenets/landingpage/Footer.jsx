@@ -13,6 +13,7 @@ import {
   FaStethoscope,
   FaUserMd,
   FaCalendarCheck,
+  FaHeartbeat,
 } from "react-icons/fa";
 
 const Footer = () => {
@@ -35,19 +36,19 @@ const Footer = () => {
 
   const contactInfo = [
     {
-      icon: <FaMapMarkerAlt className="text-[#2e76ad]" />,
+      icon: <FaMapMarkerAlt className="text-primary" />,
       text: "123 Healthcare Avenue, Medical District, City 12345",
     },
     {
-      icon: <FaPhone className="text-[#2e76ad]" />,
+      icon: <FaPhone className="text-primary" />,
       text: "+1 (555) 123-HELP (4357)",
     },
     {
-      icon: <FaEnvelope className="text-[#2e76ad]" />,
-      text: "info@psychecare.com",
+      icon: <FaEnvelope className="text-primary" />,
+      text: "info@medicare.com",
     },
     {
-      icon: <FaClock className="text-[#2e76ad]" />,
+      icon: <FaClock className="text-primary" />,
       text: "24/7 Emergency Services Available",
     },
   ];
@@ -60,19 +61,21 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="sm:col-span-2 lg:col-span-1 mb-6 sm:mb-0">
             <div className="flex items-center space-x-2 sm:space-x-3 mb-4 sm:mb-6">
-              <div className="bg-primary text-white p-2.5 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0">
-                <FaStethoscope className="text-lg sm:text-2xl" />
+              <div className="bg-primary text-white p-2.5 sm:p-3 rounded-lg sm:rounded-xl shrink-0">
+                <FaHeartbeat className="text-lg sm:text-2xl" />
               </div>
               <div>
-                <h2 className="text-white text-lg sm:text-xl font-bold">PsycheCare</h2>
+                <h2 className="text-white text-lg sm:text-xl font-bold">
+                  MediCare
+                </h2>
                 <p className="text-gray-400 text-xs sm:text-sm font-medium">
-                  Mental Wellness Center
+                  Trusted Healthcare Platform
                 </p>
               </div>
             </div>
             <p className="text-gray-400 mb-4 sm:mb-6 leading-relaxed font-medium text-xs sm:text-sm">
-              Providing compassionate mental healthcare with expertise and
-              understanding. Your journey to better mental health starts here.
+              Connecting you with the best healthcare professionals. Your
+              journey to better health starts here.
             </p>
 
             {/* Book Now Button */}
@@ -102,7 +105,9 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white mb-4 sm:mb-6 font-bold text-sm sm:text-base">Quick Links</h3>
+            <h3 className="text-white mb-4 sm:mb-6 font-bold text-sm sm:text-base">
+              Quick Links
+            </h3>
             <ul className="space-y-2 sm:space-y-3">
               {quickLinks.map((link, index) => (
                 <li key={index}>
@@ -120,7 +125,9 @@ const Footer = () => {
 
           {/* Services */}
           <div>
-            <h3 className="text-white mb-4 sm:mb-6 font-bold text-sm sm:text-base">Our Services</h3>
+            <h3 className="text-white mb-4 sm:mb-6 font-bold text-sm sm:text-base">
+              Our Services
+            </h3>
             <ul className="space-y-2 sm:space-y-3">
               {services.map((service, index) => (
                 <li key={index}>
@@ -138,7 +145,9 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-white mb-4 sm:mb-6 font-bold text-sm sm:text-base">Contact Info</h3>
+            <h3 className="text-white mb-4 sm:mb-6 font-bold text-sm sm:text-base">
+              Contact Info
+            </h3>
             <div className="space-y-3 sm:space-y-4">
               {contactInfo.map((item, index) => (
                 <div key={index} className="flex items-start space-x-3">
@@ -165,7 +174,9 @@ const Footer = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-7 md:gap-8">
             {/* Location Details */}
             <div className="lg:col-span-1">
-              <h3 className="text-white mb-4 sm:mb-6 font-bold text-sm sm:text-base">Our Location</h3>
+              <h3 className="text-white mb-4 sm:mb-6 font-bold text-sm sm:text-base">
+                Our Location
+              </h3>
               <div className="space-y-3 sm:space-y-4">
                 <div className="bg-gray-700 rounded-lg p-4 shadow-inner">
                   <h4 className="text-white mb-2">Main Hospital</h4>
@@ -213,7 +224,7 @@ const Footer = () => {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center text-white">
                     <FaMapMarkerAlt className="text-4xl mx-auto mb-4" />
-                    <h3 className="text-white mb-2">PsycheCare Hospital</h3>
+                    <h3 className="text-white mb-2">MediCare Hospital</h3>
                     <p className="text-blue-100 font-medium">
                       123 Healthcare Avenue, Medical District
                     </p>
@@ -258,7 +269,7 @@ const Footer = () => {
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0 text-center sm:text-left">
             {/* Copyright */}
             <div className="text-gray-400 text-xs sm:text-sm font-medium order-3 sm:order-1 w-full sm:w-auto">
-              © 2024 PsycheCare Mental Wellness Center. All rights reserved.
+              © 2024 MediCare Healthcare Platform. All rights reserved.
             </div>
 
             {/* Additional Links */}
@@ -293,7 +304,7 @@ const Footer = () => {
             <div className="flex items-center space-x-2 text-gray-400 text-sm font-medium">
               <span>Made with</span>
               <FaHeart className="text-red-500" />
-              <span>for better mental health</span>
+              <span>for better health</span>
             </div>
           </div>
         </div>

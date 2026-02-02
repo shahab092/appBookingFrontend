@@ -44,8 +44,8 @@ export const loginSchema = yup.object().shape({
     .string()
     .required("Password is required")
     .min(6, "Password must be at least 6 characters"),
-  confirmPassword: yup.string().when("password", {
-    is: (password) => password && password.length > 0,
+  confirmPassword: yup.string().when("$isSignup", {
+    is: true,
     then: (schema) =>
       schema
         .required("Please confirm your password")
