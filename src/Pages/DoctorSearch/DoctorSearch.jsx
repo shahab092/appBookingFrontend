@@ -242,9 +242,7 @@ const DoctorSearch = () => {
         {/* Results Info and Filter Pills */}
         <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4 px-2">
           <div>
-            <h2 className="text-gray-800">
-              Found {doctors.length} Specialists
-            </h2>
+            <h2 className="text-gray-800">Found {doctors.length} Doctor</h2>
             <p className="text-typegray font-medium">
               Top rated doctors available for you
             </p>
