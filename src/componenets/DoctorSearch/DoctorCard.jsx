@@ -27,7 +27,7 @@ const DoctorCard = ({ doctor }) => {
   return (
     <div className="w-full max-w-6xl bg-white/80 backdrop-blur border border-gray-200 rounded-2xl p-5 flex flex-col md:flex-row gap-5 shadow-lg hover:shadow-xl transition-all duration-300 mb-6">
       {/* Left: Doctor Image */}
-      <div className="relative flex-shrink-0 flex flex-col items-center">
+      <div className="relative shrink-0 flex flex-col items-center">
         <img
           src={doctor.image || "https://via.placeholder.com/140"}
           alt={doctor.name}
@@ -86,6 +86,7 @@ const DoctorCard = ({ doctor }) => {
               subtitle={loc.subtitle}
               price={loc.price}
               fast={loc.fast}
+              onClick={(e) => handleBookClick(loc.type, e)}
               icon={
                 loc.type === "video" ? (
                   <Video size={20} />
@@ -141,12 +142,21 @@ const Stat = ({ value, label, color = "text-gray-800" }) => (
 
 /* Booking Card */
 
-const BookingCard = ({ title, subtitle, price, fast, icon, highlight }) => {
+const BookingCard = ({
+  title,
+  subtitle,
+  price,
+  fast,
+  icon,
+  highlight,
+  onClick,
+}) => {
   return (
     <div
+      onClick={onClick}
       className={`relative border rounded-xl p-4 transition-all cursor-pointer hover:-translate-y-1 hover:shadow-lg ${
         highlight
-          ? "border-blue-500 bg-gradient-to-br from-blue-50 to-white"
+          ? "border-blue-500 bg-linear-to-br from-blue-50 to-white"
           : "bg-white"
       }`}
     >

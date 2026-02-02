@@ -146,7 +146,7 @@ const PatientDashboard = () => {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`appointments/patient/${user.id}`);
+      const res = await api.get("appointments");
       setAppointments(res.data.data || []);
       console.log(res, "resp");
     } catch (error) {
@@ -233,7 +233,7 @@ const PatientDashboard = () => {
     } catch (error) {
       showToast(
         error.response?.data?.message || "Failed to cancel appointment",
-        "error"
+        "error",
       );
     }
   };

@@ -117,13 +117,19 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
           role: selectedRole || data.role, // Send role with login
         });
 
-        if (res.data?.data?.accessToken) {
-          finalizeLogin(res.data.data);
+        if (
+          res.data?.success ||
+          res.data?.data?.accessToken ||
+          res.data?.accessToken
+        ) {
+          const loginData = res.data.data || res.data;
+          if (loginData.accessToken) {
+            finalizeLogin(loginData);
+          } else {
+            showToast("Login failed: Access token missing.", "error");
+          }
         } else {
-          showToast(
-            res.data?.message || "Login failed: No access token received.",
-            "error",
-          );
+          showToast(res.data?.message || "Login failed.", "error");
         }
       } else {
         const { confirmPassword, ...registerData } = data;
@@ -208,8 +214,9 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
       });
 
       if (res.data?.success) {
-        if (res.data.data?.accessToken) {
-          finalizeLogin(res.data.data);
+        const loginData = res.data.data || res.data;
+        if (loginData?.accessToken) {
+          finalizeLogin(loginData);
         } else {
           showToast("Verification successful! Logging you in...", "success");
 
@@ -219,8 +226,9 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
             password: registrationData?.password || formValues.password,
           });
 
-          if (loginRes.data?.data?.accessToken) {
-            finalizeLogin(loginRes.data.data);
+          const autoLoginData = loginRes.data.data || loginRes.data;
+          if (autoLoginData?.accessToken) {
+            finalizeLogin(autoLoginData);
           } else {
             setIsLogin(true);
             showToast("Registration complete! Please sign in.", "info");

@@ -27,6 +27,7 @@ export default function AppointmentModal({
   initialType = "online",
   initialDoctor,
   initialSpecialty = null,
+  initialLocationId = null,
 }) {
   const { user } = useSelector((state) => state.auth);
   const { showToast } = useToast();
@@ -72,6 +73,7 @@ export default function AppointmentModal({
       department: "",
       doctor: "",
       reason: "",
+      // Pre-select the first available date by default
       date: availableDates[0].toISOString(),
     },
   });
@@ -171,17 +173,41 @@ export default function AppointmentModal({
   };
 
   useEffect(() => {
-    if (visible && initialDoctor) {
-      setValue("doctor", initialDoctor.doctorId || initialDoctor._id);
-      // Auto-select specialty if available in doctor object
-      const spec = initialDoctor.speciality || initialDoctor.specialty;
-      if (spec) {
-        setValue("department", spec);
+    if (visible) {
+      // Ensure date is reset to today whenever modal opens
+      if (availableDates?.[0]) {
+        setValue("date", availableDates[0].toISOString());
       }
-    } else if (visible && initialSpecialty) {
-      setValue("department", initialSpecialty);
+
+      if (initialDoctor) {
+        // PRE-SELECT DOCTOR: Ensure we use doctorId consistently for select value
+        const targetDoctorId =
+          initialDoctor.doctorId || initialDoctor.id || initialDoctor._id;
+        setValue("doctor", targetDoctorId);
+
+        // Auto-select specialty if available in doctor object
+        const spec = initialDoctor.speciality || initialDoctor.specialty;
+        if (spec) {
+          setValue("department", spec);
+        }
+
+        // Auto-select location/hospital if initialLocationId is provided
+        if (initialLocationId) {
+          // We'll wait for dynamicHospitals to be populated in its own useEffect
+          // and then handle selection there if it hasn't happened yet
+        }
+      } else if (initialSpecialty) {
+        setValue("department", initialSpecialty);
+      }
     }
-  }, [visible, initialDoctor, initialSpecialty, setValue]);
+  }, [
+    visible,
+    initialDoctor,
+    initialSpecialty,
+    setValue,
+    initialLocationId,
+    availableDates,
+  ]);
 
   const fetchDoctors = async () => {
     try {
@@ -247,6 +273,7 @@ export default function AppointmentModal({
     return list;
   }, [doctors, selectedDepartment, selectedDoctor]);
 
+  console.log(filteredDoctors, "docotttttttttttt");
   // Auto-set specialty if doctor is selected manually and no specialty is selected
   useEffect(() => {
     if (selectedDoctor && !selectedDepartment) {
@@ -299,7 +326,14 @@ export default function AppointmentModal({
         });
 
         setDynamicHospitals(initialHospitals);
-        setSelectedHospital(initialHospitals[0]);
+
+        // Step 1.1: Pre-select hospital based on initialLocationId or default to first
+        const preSelected = initialLocationId
+          ? initialHospitals.find((h) => h.id === initialLocationId) ||
+            initialHospitals[0]
+          : initialHospitals[0];
+
+        setSelectedHospital(preSelected);
 
         // Step 2: Resolve addresses in the background if needed
         const needsResolving = initialHospitals.some(
@@ -358,7 +392,12 @@ export default function AppointmentModal({
     if (!visible) {
       setBookingStep("form");
       setPendingData(null);
-      reset({ department: "", doctor: "", reason: "" }); // Reset form on close
+      reset({
+        department: "",
+        doctor: "",
+        reason: "",
+        date: availableDates[0].toISOString(),
+      }); // Reset form on close with default date
       setAvailableTimeSlots({ morning: [], afternoon: [], evening: [] });
       setSelectedTime("");
     }
@@ -414,32 +453,30 @@ export default function AppointmentModal({
       }),
     };
 
-    // If User -> Direct Book
-    if (user) {
-      processBooking(payload);
-      console.log("Authenticated User Payload:", payload);
-    } else {
-      // If Guest -> Submit to capture and open payment
-      setPendingData({ ...payload, amount: fee }); // Keep fee locally for payment step
-      try {
-        setLoading(true);
-        // Payload for /appointments is lean as requested
-        const res = await api.post("/appointments", payload);
-        if (res.data?.success) {
-          // Merge API response with our local amount tracker
-          setPendingData({ ...res.data.data, amount: fee });
-          setBookingStep("payment");
-        }
-      } catch (error) {
-        showToast(
-          error.response?.data?.message || "Failed to initiate booking",
-          "error",
-        );
-      } finally {
-        setLoading(false);
+    // UNIFIED FLOW: Use /appointments for everyone as requested
+    try {
+      setLoading(true);
+      const res = await api.post("/appointments", payload);
+      if (res.data?.success) {
+        // Store fee/pending data
+        setPendingData({ ...res.data.data, amount: fee });
+
+        // Decide next step: authenticated users might book directly or go to payment
+        // For now, let's keep it consistent: go to payment step.
+        // If they should book directly without payment, we'd call processBooking instead.
+        // User said "for booking appioiment hit this api /appointments",
+        // which matches the guest initiation flow.
+        setBookingStep("payment");
       }
-      console.log("Guest User Payload:", payload);
+    } catch (error) {
+      showToast(
+        error.response?.data?.message || "Failed to initiate booking",
+        "error",
+      );
+    } finally {
+      setLoading(false);
     }
+    console.log("Unified Booking Payload:", payload);
   };
 
   const processBooking = async (payload) => {
@@ -479,14 +516,13 @@ export default function AppointmentModal({
       const startRes = await api.post("/payments/start", startPayload);
 
       if (startRes.data?.success) {
-        const paymentData = startRes.data.data;
+        const paymentData = startRes.data;
 
         // 2. Immediate Callback (Synthetic for now as requested)
         const callbackPayload = {
           appointmentId: pendingData._id || pendingData.appointmentId,
-          paymentId: paymentData.paymentId || "PAYMENT_ID_HERE",
-          transactionId:
-            "TXN_" + Math.random().toString(36).substr(2, 9).toUpperCase(),
+          paymentId: paymentData.paymentId,
+          transactionId: paymentData.transactionId,
           status: "paid",
         };
 
@@ -675,6 +711,7 @@ export default function AppointmentModal({
                 <CustomSelect
                   name="department"
                   label="Speciality"
+                  disabled={!!initialDoctor}
                   options={specialities.map((s) => ({
                     label: s.speciality || s.name,
                     value: s.speciality || s.name,
@@ -684,6 +721,7 @@ export default function AppointmentModal({
                 <CustomSelect
                   name="doctor"
                   label="Doctor"
+                  disabled={!!initialDoctor}
                   options={filteredDoctors.map((d) => ({
                     label: `${d.name}`,
                     value: d.doctorId,

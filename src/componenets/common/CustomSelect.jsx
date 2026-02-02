@@ -6,6 +6,7 @@ export default function CustomSelect({
   label,
   options = [],
   rules = {},
+  disabled = false,
 }) {
   const { control } = useFormContext();
 
@@ -25,6 +26,7 @@ export default function CustomSelect({
           <>
             <select
               value={field.value || ""}
+              disabled={disabled}
               onChange={(e) => {
                 field.onChange(e.target.value);
 
@@ -34,7 +36,7 @@ export default function CustomSelect({
               }}
               className={`border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary ${
                 fieldState.error ? "border-red-500" : "border-gray-300"
-              }`}
+              } ${disabled ? "bg-gray-100 cursor-not-allowed opacity-75" : "bg-white"}`}
             >
               <option value="">Select {label?.toLowerCase()}</option>
 

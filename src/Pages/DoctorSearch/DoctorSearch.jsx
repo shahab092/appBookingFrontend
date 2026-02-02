@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Search as SearchIcon, Loader2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import DoctorCard from "../../componenets/DoctorSearch/DoctorCard";
-import DoctorSearchBar from "../../componenets/DoctorSearch/DoctorSearchBar";
+import { SearchComponent } from "../../componenets/landingpage/HealthHeader";
+import api from "../../libs/api";
 import { searchDoctors } from "../../features/DoctorSlice";
 
 const DoctorSearch = () => {
@@ -41,6 +42,22 @@ const DoctorSearch = () => {
     );
     return val;
   });
+
+  const [cities, setCities] = useState([]);
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const res = await api.get("/doctor/cities");
+        if (res.data?.success) {
+          setCities(res.data.data.cities || []);
+        }
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+      }
+    };
+    fetchCities();
+  }, []);
 
   // Fetch doctors whenever search params change
   useEffect(() => {
@@ -98,16 +115,23 @@ const DoctorSearch = () => {
           </div>
 
           {/* Search Bar - Full Width within Container */}
-          <div className="w-full">
-            <DoctorSearchBar
-              initialQuery={currentQuery}
-              initialCity={currentCity}
-              onSearch={handleSearchUpdate}
-              onCityChange={handleCityUpdate}
-            />
+          <div className="w-full search-component-container">
+            <SearchComponent cities={cities} />
           </div>
         </div>
       </div>
+
+      <style>{`
+        .search-component-container select {
+          height: 100% !important;
+        }
+        .search-component-container input {
+          height: 100% !important;
+        }
+        .search-component-container button {
+          height: 100% !important;
+        }
+      `}</style>
 
       <div className="container mx-auto px-4 pb-20">
         {/* Results Info and Filter Pills */}

@@ -17,6 +17,14 @@ export default function DocterDetails() {
   const [bookingType, setBookingType] = useState("online");
   const [doctor, setDoctor] = useState(location.state?.doctor || null);
   const [loading, setLoading] = useState(false);
+  const [preSelectedLocationId, setPreSelectedLocationId] = useState(null);
+  const [sideBarLocationId, setSideBarLocationId] = useState(null);
+
+  useEffect(() => {
+    if (doctor?.locations?.length > 0 && !sideBarLocationId) {
+      setSideBarLocationId(doctor.locations[0].hospitalId);
+    }
+  }, [doctor]);
 
   useEffect(() => {
     const fetchDoctorDetails = async () => {
@@ -119,8 +127,9 @@ export default function DocterDetails() {
     resolveAddresses();
   }, [doctor?.locations?.length]); // Only trigger when the number of locations changes or doctor is first loaded
 
-  const handleProceed = (type) => {
+  const handleProceed = (type, locationId = null) => {
     if (type && typeof type === "string") setBookingType(type);
+    setPreSelectedLocationId(locationId);
     setShowAppointmentModal(true);
   };
 
@@ -131,7 +140,12 @@ export default function DocterDetails() {
     },
     {
       title: "Find Doctors",
-      onClick: () => navigate("/doctorSearch"),
+      onClick: () =>
+        navigate("/doctorSearch", {
+          state: {
+            search: doctor?.name,
+          },
+        }),
     },
     {
       title: doctor?.name || "Doctor Details",
@@ -232,7 +246,10 @@ export default function DocterDetails() {
               </div>
               <div className="flex-1 space-y-3 sm:space-y-4 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                  <h3 className="text-neutral-dark cursor-pointer hover:text-primary transition-colors text-2xl font-bold">
+                  <h3
+                    onClick={() => handleProceed(bookingType)}
+                    className="text-neutral-dark cursor-pointer hover:text-primary transition-colors text-2xl font-bold"
+                  >
                     {doctor?.name || "Dr. Sarah Thompson"}
                   </h3>
                   <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold bg-linear-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700 shadow-sm">
@@ -255,8 +272,16 @@ export default function DocterDetails() {
                   )}
                 </div>
                 <div className="space-y-1">
-                  <p className="text-lg sm:text-xl font-bold text-primary bg-linear-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                  <p
+                    onClick={() => handleProceed(bookingType)}
+                    className="text-lg sm:text-xl font-bold text-primary bg-linear-to-r from-primary to-blue-600 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+                  >
                     {doctor?.speciality || "Senior Dermatologist"}
+                    {doctor?.superSpeciality && (
+                      <span className="text-sm font-medium text-typegray ml-2">
+                        • {doctor.superSpeciality}
+                      </span>
+                    )}
                   </p>
                   <p className="text-typegray">{formatEducation()}</p>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-500 dark:text-slate-400 text-sm py-1">
@@ -491,15 +516,19 @@ export default function DocterDetails() {
                         name="clinic_choice"
                         className="sr-only"
                         defaultChecked={index === 0}
+                        onChange={() =>
+                          handleProceed("inclinic", clinic.hospitalId)
+                        }
                       />
                       <label
                         htmlFor={clinic.hospitalId || `clinic_${index}`}
-                        className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-4 sm:p-5 border-2 rounded-xl sm:rounded-2xl cursor-pointer transition-all border-slate-100 dark:border-slate-700 hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/10`}
+                        onClick={() =>
+                          handleProceed("inclinic", clinic.hospitalId)
+                        }
+                        className="group flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-4 sm:p-5 border-2 rounded-xl sm:rounded-2xl cursor-pointer transition-all border-slate-100 dark:border-slate-700 hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/10"
                       >
-                        <div
-                          className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 border-slate-300 dark:border-slate-600`}
-                        >
-                          <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-white"></div>
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center shrink-0 border-slate-300 dark:border-slate-600">
+                          <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-primary opacity-0 group-has-checked:opacity-100 transition-opacity"></div>
                         </div>
                         <div className="flex-1 space-y-1 min-w-0">
                           <h4 className="text-gray-900 dark:text-white">
@@ -750,14 +779,20 @@ export default function DocterDetails() {
           </div>
 
           <div className="space-y-5 sm:space-y-6">
-            <h2 className="px-2 flex items-center gap-2 text-gray-800 dark:text-white">
+            <h2
+              onClick={() => handleProceed(bookingType)}
+              className="px-2 flex items-center gap-2 text-gray-800 dark:text-white cursor-pointer hover:text-primary transition-colors"
+            >
               <span className="text-xl sm:text-2xl">📅</span>
               Select Booking Option
             </h2>
             <div className="space-y-3 sm:space-y-4">
               <div
-                onClick={() => setBookingType("online")}
-                className={`group cursor-pointer p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 transition-all relative shadow-lg hover:shadow-xl transform hover:scale-105 duration-200 ${
+                onClick={() => {
+                  setBookingType("online");
+                  handleProceed("online");
+                }}
+                className={`group cursor-pointer p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 transition-all relative shadow-lg hover:shadow-xl transform hover:scale-[1.03] duration-200 ${
                   bookingType === "online"
                     ? "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-800 border-green-500"
                     : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-green-300"
@@ -800,8 +835,12 @@ export default function DocterDetails() {
               </div>
 
               <div
-                onClick={() => setBookingType("inclinic")}
-                className={`group cursor-pointer p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 transition-all relative shadow-lg hover:shadow-xl transform hover:scale-105 duration-200 ${
+                onClick={() => {
+                  setBookingType("inclinic");
+                  // Fallback to sideBarLocationId if nothing else is selected
+                  handleProceed("inclinic", sideBarLocationId);
+                }}
+                className={`group cursor-pointer p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border-2 transition-all relative shadow-lg hover:shadow-xl transform hover:scale-[1.03] duration-200 ${
                   bookingType === "inclinic"
                     ? "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800 border-primary"
                     : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-blue-300"
@@ -828,8 +867,9 @@ export default function DocterDetails() {
                     <div className="relative mb-3">
                       <select
                         onClick={(e) => e.stopPropagation()}
+                        value={sideBarLocationId || ""}
+                        onChange={(e) => setSideBarLocationId(e.target.value)}
                         className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm focus:ring-2 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
-                        defaultValue={doctor?.locations?.[0]?.hospitalId || "1"}
                       >
                         {(doctor?.locations && doctor.locations.length > 0
                           ? doctor.locations
@@ -887,8 +927,13 @@ export default function DocterDetails() {
                 </span>
               </div>
               <button
-                onClick={handleProceed}
-                className="w-full bg-linear-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-700 text-white py-3 sm:py-4 rounded-lg sm:rounded-2xl font-bold text-sm sm:text-base transition-all shadow-lg shadow-primary/30 hover:shadow-xl transform hover:scale-105 duration-200"
+                onClick={() =>
+                  handleProceed(
+                    bookingType,
+                    bookingType === "inclinic" ? sideBarLocationId : null,
+                  )
+                }
+                className="w-full bg-linear-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-700 text-white py-3 sm:py-4 rounded-lg sm:rounded-2xl font-bold text-sm sm:text-base transition-all shadow-lg shadow-primary/30 hover:shadow-xl transform hover:scale-[1.02] duration-200"
               >
                 Proceed to Booking
               </button>
@@ -906,9 +951,13 @@ export default function DocterDetails() {
 
       <AppointmentModal
         visible={showAppointmentModal}
-        onCancel={() => setShowAppointmentModal(false)}
+        onCancel={() => {
+          setShowAppointmentModal(false);
+          setPreSelectedLocationId(null);
+        }}
         initialType={bookingType}
         initialDoctor={doctor}
+        initialLocationId={preSelectedLocationId}
       />
     </div>
   );
