@@ -97,16 +97,31 @@ export const SIDEBAR_MENU = {
       path: "/admin/dashboard",
     },
     {
-      label: "Users",
+      label: "Approve Doctors",
       icon: Users,
-      path: "/admin/users",
+      path: "/admin/approve-doctors",
     },
-    // Removed "Reports" link that pointed to deleted appointment page
     {
-      label: "Settings",
-      icon: Settings,
-      path: "/admin/settings",
+      label: "Doctors",
+      icon: Users,
+      path: "/admin/doctors",
     },
+    {
+      label: "Billing",
+      icon: CreditCard,
+      path: "/admin/billing",
+    },
+    // {
+    //   label: "Users",
+    //   icon: Users,
+    //   path: "/admin/users",
+    // },
+    // Removed "Reports" link that pointed to deleted appointment page
+    // {
+    //   label: "Settings",
+    //   icon: Settings,
+    //   path: "/admin/settings",
+    // },
   ],
 
   doctor: [

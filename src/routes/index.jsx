@@ -6,6 +6,9 @@ import DashboardLayout from "../componenets/dashboard/DashboardLayout";
 import AdminDashboard from "../componenets/dashboard/AdminDashboard";
 import PatientDashboard from "../componenets/dashboard/PatientDashboard";
 import DoctorDashboard from "../Pages/Dashboard/DoctersDashboard";
+import ApproveDoctors from "../componenets/dashboard/ApproveDoctors";
+import DoctorsList from "../componenets/dashboard/DoctorsList";
+import AdminBilling from "../componenets/dashboard/AdminBilling";
 import PublicRoute from "../hoc/PublicRoute";
 import ProtectedRoute from "../hoc/ProtectedRoute";
 
@@ -32,6 +35,9 @@ export default function AppRoutes() {
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
           <Route path="/admin" element={<DashboardLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="approve-doctors" element={<ApproveDoctors />} />
+            <Route path="doctors" element={<DoctorsList />} />
+            <Route path="billing" element={<AdminBilling />} />
             {/* <Route path="users" element={<Users />} /> */}
           </Route>
         </Route>

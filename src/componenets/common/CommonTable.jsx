@@ -1,6 +1,5 @@
 import React from "react";
 import { Table } from "antd";
-import "../../styles/colors.css";
 
 const CommonTable = ({
   columns,
@@ -9,24 +8,27 @@ const CommonTable = ({
   bordered = true,
   ...props
 }) => {
-  const defaultPagination = pagination === true 
-    ? {
-        pageSize: 10,
-        showSizeChanger: true,
-        showTotal: (total, range) => (
-          <span className="text-sm text-gray-600 font-medium">
-            Showing <span className="font-semibold text-gray-900">{range[0]}</span> to{" "}
-            <span className="font-semibold text-gray-900">{range[1]}</span> of{" "}
-            <span className="font-semibold text-gray-900">{total}</span> entries
-          </span>
-        ),
-        showQuickJumper: true,
-        pageSizeOptions: ['10', '20', '50', '100'],
-        size: 'default',
-      }
-    : pagination === false
-    ? false
-    : pagination;
+  const defaultPagination =
+    pagination === true
+      ? {
+          pageSize: 10,
+          showSizeChanger: true,
+          showTotal: (total, range) => (
+            <span className="text-sm text-gray-600 font-medium">
+              Showing{" "}
+              <span className="font-semibold text-gray-900">{range[0]}</span> to{" "}
+              <span className="font-semibold text-gray-900">{range[1]}</span> of{" "}
+              <span className="font-semibold text-gray-900">{total}</span>{" "}
+              entries
+            </span>
+          ),
+          showQuickJumper: true,
+          pageSizeOptions: ["10", "20", "50", "100"],
+          size: "default",
+        }
+      : pagination === false
+        ? false
+        : pagination;
 
   return (
     <div className="common-table-wrapper bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -36,7 +38,7 @@ const CommonTable = ({
         pagination={defaultPagination}
         bordered={bordered}
         className="common-table"
-        scroll={{ x: 'max-content' }}
+        scroll={{ x: "max-content" }}
         {...props}
       />
       <style>{`
@@ -55,14 +57,14 @@ const CommonTable = ({
         }
 
         .common-table .ant-table-thead > tr > th {
-          background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important;
-          color: var(--table-header-text) !important;
+          background: linear-gradient(135deg, #2e76ad 0%, #1e5a8a 100%) !important;
+          color: #ffffff !important;
           font-weight: 700 !important;
           font-size: 13px;
           text-transform: uppercase;
           letter-spacing: 0.5px;
           padding: 14px 16px;
-          border-bottom: 2px solid var(--color-primary-300);
+          border-bottom: 2px solid #2e76ad;
           border-radius: 0;
         }
 
@@ -76,15 +78,15 @@ const CommonTable = ({
 
         .common-table .ant-table-tbody > tr > td {
           padding: 14px 16px;
-          border-bottom: 1px solid var(--table-border);
-          color: var(--color-gray-800);
+          border-bottom: 1px solid #e5e7eb;
+          color: #374151;
           font-size: 13px;
           transition: all 0.2s ease;
         }
 
         .common-table .ant-table-tbody > tr:hover > td {
-          background-color: var(--table-row-hover) !important;
-          transform: scale(1.01);
+          background-color: #e0f2fe !important;
+          cursor: pointer;
         }
 
         .common-table .ant-table-tbody > tr {
@@ -104,16 +106,16 @@ const CommonTable = ({
         }
 
         .common-table.ant-table-bordered .ant-table-container {
-          border: 1px solid var(--table-border);
+          border: 1px solid #e5e7eb;
           border-radius: var(--table-border-radius);
         }
 
         .common-table.ant-table-bordered .ant-table-thead > tr > th {
-          border-right: 1px solid var(--color-primary-200);
+          border-right: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .common-table.ant-table-bordered .ant-table-tbody > tr > td {
-          border-right: 1px solid var(--table-border);
+          border-right: 1px solid #e5e7eb;
         }
 
         .common-table .ant-pagination {
@@ -128,7 +130,7 @@ const CommonTable = ({
 
         .common-table .ant-pagination-item {
           border-radius: 8px;
-          border-color: var(--color-gray-300);
+          border-color: #d1d5db;
           transition: all 0.2s ease;
           min-width: 32px;
           height: 32px;
@@ -136,19 +138,19 @@ const CommonTable = ({
         }
 
         .common-table .ant-pagination-item:hover {
-          border-color: var(--color-primary-500);
+          border-color: #2e76ad;
           transform: translateY(-2px);
-          box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+          box-shadow: 0 2px 8px rgba(46, 118, 173, 0.2);
         }
 
         .common-table .ant-pagination-item:hover a {
-          color: var(--color-primary-600);
+          color: #2e76ad;
         }
 
         .common-table .ant-pagination-item-active {
-          background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600)) !important;
-          border-color: var(--color-primary-500);
-          box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+          background: linear-gradient(135deg, #2e76ad, #1e5a8a) !important;
+          border-color: #2e76ad;
+          box-shadow: 0 2px 8px rgba(46, 118, 173, 0.3);
         }
 
         .common-table .ant-pagination-item-active a {
@@ -159,20 +161,20 @@ const CommonTable = ({
         .common-table .ant-pagination-prev,
         .common-table .ant-pagination-next {
           border-radius: 8px;
-          border-color: var(--color-gray-300);
+          border-color: #d1d5db;
           transition: all 0.2s ease;
         }
 
         .common-table .ant-pagination-prev:hover,
         .common-table .ant-pagination-next:hover {
-          border-color: var(--color-primary-500);
+          border-color: #2e76ad;
           transform: translateY(-2px);
-          box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+          box-shadow: 0 2px 8px rgba(46, 118, 173, 0.2);
         }
 
         .common-table .ant-pagination-prev:hover a,
         .common-table .ant-pagination-next:hover a {
-          color: var(--color-primary-500);
+          color: #2e76ad;
         }
 
         .common-table .ant-pagination-jump-prev,
@@ -190,23 +192,23 @@ const CommonTable = ({
 
         .common-table .ant-pagination-options .ant-select-selector {
           border-radius: 8px;
-          border-color: var(--color-gray-300);
+          border-color: #d1d5db;
           transition: all 0.2s ease;
         }
 
         .common-table .ant-pagination-options .ant-select:hover .ant-select-selector {
-          border-color: var(--color-primary-500);
-          box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+          border-color: #2e76ad;
+          box-shadow: 0 2px 8px rgba(46, 118, 173, 0.15);
         }
 
         .common-table .ant-pagination-options .ant-select-focused .ant-select-selector {
-          border-color: var(--color-primary-500);
-          box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+          border-color: #2e76ad;
+          box-shadow: 0 0 0 3px rgba(46, 118, 173, 0.1);
         }
 
         .common-table .ant-pagination-jump-prev .ant-pagination-item-container .ant-pagination-item-link-icon,
         .common-table .ant-pagination-jump-next .ant-pagination-item-container .ant-pagination-item-link-icon {
-          color: var(--color-primary-500);
+          color: #2e76ad;
         }
       `}</style>
     </div>
@@ -214,4 +216,3 @@ const CommonTable = ({
 };
 
 export default CommonTable;
-

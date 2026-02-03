@@ -8,6 +8,9 @@ import PharmacyDashboard from "../../componenets/dashboard/PharmacyDashboard";
 import LabDashboard from "../../componenets/dashboard/LabDashboard";
 import XRayDashboard from "../../componenets/dashboard/XRayDashboard";
 import UserManagement from "../../componenets/dashboard/UserManagement";
+import ApproveDoctors from "../../componenets/dashboard/ApproveDoctors";
+import DoctorsList from "../../componenets/dashboard/DoctorsList";
+import AdminBilling from "../../componenets/dashboard/AdminBilling";
 import AppointmentModal from "../../componenets/dashboard/AppointmentModal";
 import { useNavigate } from "react-router-dom";
 
@@ -85,6 +88,18 @@ export default function MultiRoleDashboard() {
       return <UserManagement />;
     }
 
+    if (activeItem === "approve-doctors" && user.role === "admin") {
+      return <ApproveDoctors />;
+    }
+
+    if (activeItem === "doctors" && user.role === "admin") {
+      return <DoctorsList />;
+    }
+
+    if (activeItem === "billing" && user.role === "admin") {
+      return <AdminBilling />;
+    }
+
     // Render role-specific dashboard
     switch (user.role) {
       case "patient":
@@ -96,6 +111,7 @@ export default function MultiRoleDashboard() {
       case "doctor":
         return <DoctorDashboard />;
       case "admin":
+        return <AdminDashboard onNavigate={handleNavigate} />;
       case "super_admin":
         return <AdminDashboard onNavigate={handleNavigate} />;
       case "pharmacy_salesperson":

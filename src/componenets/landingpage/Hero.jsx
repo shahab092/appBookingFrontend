@@ -8,6 +8,7 @@ import {
   FaLock,
   FaClock,
   FaAward,
+  FaWhatsapp,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -97,7 +98,7 @@ const Hero = () => {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-5 pt-4 sm:pt-6 md:pt-8 justify-center lg:justify-start">
               <button
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/doctorSearch")}
                 className="bg-primary text-white px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 rounded-xl sm:rounded-2xl transition-all duration-300 font-bold text-sm sm:text-base md:text-lg shadow-2xl hover:shadow-3xl transform hover:scale-105 flex items-center justify-center space-x-2 sm:space-x-3 group w-full sm:w-auto"
               >
                 <FaCalendarCheck
@@ -107,12 +108,17 @@ const Hero = () => {
                 <span>Book Your Appointment</span>
               </button>
 
-              <button className="border-2 border-white text-white px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 rounded-xl sm:rounded-2xl hover:bg-white/20 transition-all duration-300 font-bold text-sm sm:text-base md:text-lg backdrop-blur-sm flex items-center justify-center space-x-2 sm:space-x-3 group w-full sm:w-auto">
-                <FaPhone
+              <button
+                onClick={() =>
+                  window.open("https://wa.me/923000000000", "_blank")
+                }
+                className="border-2 border-white text-white px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 rounded-xl sm:rounded-2xl hover:bg-white/20 transition-all duration-300 font-bold text-sm sm:text-base md:text-lg backdrop-blur-sm flex items-center justify-center space-x-2 sm:space-x-3 group w-full sm:w-auto"
+              >
+                <FaWhatsapp
                   size={16}
                   className="sm:w-4 sm:h-4 md:w-5 md:h-5 group-hover:scale-125 transition-transform"
                 />
-                <span>Talk to an Expert</span>
+                <span>Chat on WhatsApp</span>
               </button>
             </div>
 
@@ -243,9 +249,14 @@ const Hero = () => {
                   </p>
                 </div>
               </div>
-              <button className="w-full mt-2 sm:mt-3 bg-red-500 hover:bg-red-600 text-white py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base transition-colors duration-200 flex items-center justify-center space-x-2">
-                <FaPhone size={14} className="sm:w-4 sm:h-4" />
-                <span>Call: 1-800-HELP-NOW</span>
+              <button
+                onClick={() =>
+                  window.open("https://wa.me/923000000000", "_blank")
+                }
+                className="w-full mt-2 sm:mt-3 bg-green-500 hover:bg-green-600 text-white py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base transition-colors duration-200 flex items-center justify-center space-x-2"
+              >
+                <FaWhatsapp size={14} className="sm:w-4 sm:h-4" />
+                <span>Message on WhatsApp</span>
               </button>
             </div>
 

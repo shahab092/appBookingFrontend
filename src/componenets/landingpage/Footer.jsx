@@ -14,9 +14,12 @@ import {
   FaUserMd,
   FaCalendarCheck,
   FaHeartbeat,
+  FaWhatsapp,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const Footer = () => {
+  const navigate = useNavigate();
   const quickLinks = [
     { name: "Home", href: "#home" },
     { name: "About Us", href: "#about" },
@@ -79,7 +82,10 @@ const Footer = () => {
             </p>
 
             {/* Book Now Button */}
-            <button className="w-full bg-primary text-white font-bold py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-lg mb-4 sm:mb-6 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transition-all hover:scale-105 text-sm sm:text-base">
+            <button
+              onClick={() => navigate("/doctorSearch")}
+              className="w-full bg-primary text-white font-bold py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-lg mb-4 sm:mb-6 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transition-all hover:scale-105 text-sm sm:text-base"
+            >
               <FaCalendarCheck size={16} className="sm:w-[18px] sm:h-[18px]" />
               <span>Book Now</span>
             </button>
@@ -210,7 +216,10 @@ const Footer = () => {
                 </div>
 
                 {/* Additional Book Now Button */}
-                <button className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg">
+                <button
+                  onClick={() => navigate("/doctorSearch")}
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg"
+                >
                   <FaCalendarCheck size={18} />
                   <span>Book Appointment</span>
                 </button>
@@ -313,13 +322,19 @@ const Footer = () => {
       {/* Floating Buttons */}
       <div className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50 flex flex-col space-y-2 sm:space-y-3">
         {/* Book Now Floating Button */}
-        <button className="bg-primary hover:bg-primary/90 text-white p-3 sm:p-4 rounded-full shadow-2xl transform hover:scale-110 transition-all duration-200 group flex items-center justify-center">
+        <button
+          onClick={() => navigate("/doctorSearch")}
+          className="bg-primary hover:bg-primary/90 text-white p-3 sm:p-4 rounded-full shadow-2xl transform hover:scale-110 transition-all duration-200 group flex items-center justify-center"
+        >
           <span className="font-bold text-xs sm:text-sm">BOOK</span>
         </button>
 
-        {/* Emergency Floating Button */}
-        <button className="bg-red-600 hover:bg-red-700 text-white p-3 sm:p-4 rounded-full shadow-2xl transform hover:scale-110 transition-all duration-200 group flex items-center justify-center">
-          <FaPhone className="animate-pulse text-sm sm:text-base" />
+        {/* WhatsApp Floating Button */}
+        <button
+          onClick={() => window.open("https://wa.me/923000000000", "_blank")}
+          className="bg-green-500 hover:bg-green-600 text-white p-3 sm:p-4 rounded-full shadow-2xl transform hover:scale-110 transition-all duration-200 group flex items-center justify-center"
+        >
+          <FaWhatsapp className="text-xl sm:text-2xl" />
         </button>
       </div>
     </footer>

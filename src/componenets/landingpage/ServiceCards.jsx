@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
 import { Video, Hospital, Stethoscope, Zap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import LoginModal from "../common/LoginModal";
-import AppointmentModal from "../dashboard/AppointmentModal";
 
 const services = [
   {
@@ -32,13 +31,11 @@ const services = [
 ];
 
 export default function ServiceCards() {
+  const navigate = useNavigate();
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
-  const [selectedType, setSelectedType] = useState("online");
 
   const handleCardClick = (type) => {
-    setSelectedType(type);
-    setShowAppointmentModal(true);
+    navigate("/doctorSearch", { state: { appointmentType: type } });
   };
 
   return (
@@ -73,10 +70,9 @@ export default function ServiceCards() {
         onCancel={() => setShowLoginModal(false)}
       />
 
-      <AppointmentModal
-        visible={showAppointmentModal}
-        onCancel={() => setShowAppointmentModal(false)}
-        initialType={selectedType}
+      <LoginModal
+        visible={showLoginModal}
+        onCancel={() => setShowLoginModal(false)}
       />
     </>
   );

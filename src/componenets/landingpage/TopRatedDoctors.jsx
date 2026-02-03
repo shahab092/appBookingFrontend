@@ -111,9 +111,12 @@ const TopRatedDoctors = () => {
   };
 
   const handleBookAppointment = (doctor, type) => {
-    setSelectedDoctor(doctor);
-    setSelectedType(type);
-    setShowAppointmentModal(true);
+    navigate("/doctorSearch", {
+      state: {
+        search: doctor.name,
+        appointmentType: type,
+      },
+    });
   };
 
   const handleViewProfile = (doctor) => {

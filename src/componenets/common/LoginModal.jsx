@@ -82,7 +82,7 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
       whatsappnumber: "",
       password: "",
       confirmPassword: "",
-      role: selectedRole || "",
+      role: "",
     },
   });
 
