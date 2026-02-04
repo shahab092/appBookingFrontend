@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { FiMenu, FiBell, FiChevronDown } from "react-icons/fi";
 import NotificationPanel from "./NotificationPanel";
 import UserDropdown from "./UserDropdown";
@@ -12,12 +13,28 @@ const Header = ({ toggleSidebar, user }) => {
   const userAvatar =
     user?.avatar ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      user?.name || "User"
+      user?.name || "User",
     )}&background=2F74AA&color=fff`;
   const userName = user?.name || "User";
   const userRole = user?.role
     ? user.role.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())
     : "";
+
+  const location = useLocation();
+
+  const getTitle = (pathname) => {
+    const titles = {
+      "/admin/dashboard": "Admin Dashboard",
+      "/admin/approve-doctors": "Approve Doctors",
+      "/admin/doctors": "Doctors Directory",
+      "/admin/billing": "Billing & Payouts",
+      "/admin/users": "User Management",
+      "/admin/settings": "System Settings",
+      "/doctor/dashboard": "Doctor Dashboard",
+      "/patient/dashboard": "Patient Dashboard",
+    };
+    return titles[pathname] || "Dashboard";
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 p-4 flex items-center justify-between sticky top-0 z-10">
@@ -38,7 +55,7 @@ const Header = ({ toggleSidebar, user }) => {
           <FiMenu size={24} />
         </button>
         <h1 className="text-xl font-bold text-[#2F74AA] hidden sm:block">
-          Dashboard
+          {getTitle(location.pathname)}
         </h1>
       </div>
 

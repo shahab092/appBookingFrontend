@@ -10,7 +10,10 @@ import {
   FiAward,
   FiStar,
   FiMoreVertical,
+  FiUsers,
+  FiUserCheck,
 } from "react-icons/fi";
+import StatCard from "../common/StatCard";
 import { useForm, FormProvider } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import CustomTextField from "../common/CustomTextField";
@@ -147,6 +150,49 @@ const DoctorsList = () => {
         </div>
       </div>
 
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Total Doctors"
+          value={doctors.length}
+          sub="Verified Members"
+          icon={<FiUsers />}
+          bg="bg-blue-50"
+          iconBg="bg-blue-600"
+          trend="neutral"
+        />
+        <StatCard
+          title="Active Doctors"
+          value={doctors.filter((d) => d.status === "approved").length}
+          sub="Fully Approved"
+          icon={<FiUserCheck />}
+          bg="bg-green-50"
+          iconBg="bg-green-600"
+          trend="up"
+        />
+        <StatCard
+          title="Avg. Experience"
+          value={`${Math.round(doctors.reduce((acc, d) => acc + (d.experience || 0), 0) / (doctors.length || 1))} Yrs`}
+          sub="Professional Depth"
+          icon={<FiAward />}
+          bg="bg-purple-50"
+          iconBg="bg-purple-600"
+          trend="neutral"
+        />
+        <StatCard
+          title="Avg. Rating"
+          value={(
+            doctors.reduce((acc, d) => acc + (d.averageRating || 0), 0) /
+            (doctors.length || 1)
+          ).toFixed(1)}
+          sub="Patient Trust"
+          icon={<FiStar />}
+          bg="bg-orange-50"
+          iconBg="bg-orange-600"
+          trend="up"
+        />
+      </div>
+
       {/* Filter Section - Glassy/Card Look */}
       <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200/60 transition-all hover:shadow-md">
         <div className="flex items-center gap-2 mb-4 text-[#2F74AA] font-semibold border-b border-gray-100 pb-2">
@@ -241,7 +287,7 @@ const DoctorsList = () => {
               key: "name",
               render: (text, record) => (
                 <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#2F74AA] to-blue-400 text-white flex items-center justify-center text-lg font-bold shadow-sm">
+                  <div className="h-12 w-12 rounded-full bg-linear-to-br from-[#2F74AA] to-blue-400 text-white flex items-center justify-center text-lg font-bold shadow-sm">
                     {record.image ? (
                       <img
                         src={record.image}
@@ -330,7 +376,7 @@ const DoctorsList = () => {
                       {record.averageRating || "0.0"}
                     </span>
                     <span className="text-xs text-gray-400">
-                      ({record.totalReviews})
+                      ({record.numReviews || 0})
                     </span>
                   </div>
                   <div className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded w-fit">

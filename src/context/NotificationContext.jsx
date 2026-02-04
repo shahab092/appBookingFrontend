@@ -15,6 +15,7 @@ const NotificationContext = createContext();
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pendingDoctorCount, setPendingDoctorCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const { user } = useSelector((state) => state.auth);
   const { socket } = useVideoCall();
@@ -37,12 +38,29 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [user]);
 
+  const fetchPendingDoctorCount = useCallback(async () => {
+    if (user?.role !== "admin") return;
+    try {
+      const res = await api.get("/doctor/pending-count");
+      if (res.data?.success) {
+        setPendingDoctorCount(res.data.count);
+      }
+    } catch (error) {
+      console.error("Error fetching pending doctor count:", error);
+    }
+  }, [user]);
+
   useEffect(() => {
     fetchNotifications();
+    fetchPendingDoctorCount();
 
     if (socket && user) {
       // Identify user to the socket server
-      socket.emit("identify", user.id || user._id);
+      if (user.role === "admin") {
+        socket.emit("identify-admin", user.id || user._id);
+      } else {
+        socket.emit("identify", user.id || user._id);
+      }
 
       const handleNewNotification = (notif) => {
         setNotifications((prev) => [notif, ...prev]);
@@ -50,20 +68,28 @@ export const NotificationProvider = ({ children }) => {
         showToast(notif.message, notif.type || "info");
       };
 
+      const handleAdminStatsUpdate = (stats) => {
+        if (stats.pendingDoctorCount !== undefined) {
+          setPendingDoctorCount(stats.pendingDoctorCount);
+        }
+      };
+
       socket.on("new-notification", handleNewNotification);
+      socket.on("admin-stats-update", handleAdminStatsUpdate);
 
       return () => {
         socket.off("new-notification", handleNewNotification);
+        socket.off("admin-stats-update", handleAdminStatsUpdate);
       };
     }
-  }, [fetchNotifications, socket, user, showToast]);
+  }, [fetchNotifications, fetchPendingDoctorCount, socket, user, showToast]);
 
   const markAsRead = async (id) => {
     try {
       const res = await api.patch(`notifications/${id}/read`);
       if (res.data?.success) {
         setNotifications((prev) =>
-          prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+          prev.map((n) => (n._id === id ? { ...n, isRead: true } : n)),
         );
         setUnreadCount((prev) => Math.max(0, prev - 1));
       }
@@ -108,6 +134,8 @@ export const NotificationProvider = ({ children }) => {
         markAllAsRead,
         deleteNotification,
         refreshNotifications: fetchNotifications,
+        pendingDoctorCount,
+        refreshPendingDoctorCount: fetchPendingDoctorCount,
       }}
     >
       {children}
@@ -119,7 +147,7 @@ export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (!context) {
     throw new Error(
-      "useNotifications must be used within a NotificationProvider"
+      "useNotifications must be used within a NotificationProvider",
     );
   }
   return context;

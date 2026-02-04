@@ -3,6 +3,7 @@ import { Check, X, User, Calendar, Clock, MoreHorizontal } from "lucide-react";
 import { Modal } from "antd";
 import api from "../../libs/api";
 import { useToast } from "../../context/ToastContext";
+import StatCard from "../common/StatCard";
 
 export default function AdminDashboard() {
   const [doctors, setDoctors] = useState([]);
@@ -63,37 +64,41 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#f7f9fb] p-4 md:p-6">
       {/* ================= STAT CARDS ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <Stat
+        <StatCard
           title="Total Doctors"
           value="248"
           sub="+12 this month"
           icon={<User />}
           bg="bg-blue-50"
           iconBg="bg-blue-500"
+          trend="up"
         />
-        <Stat
+        <StatCard
           title="Pending Approvals"
           value={doctors.length}
           sub="new today"
           icon={<User />}
           bg="bg-orange-50"
           iconBg="bg-orange-500"
+          trend="neutral"
         />
-        <Stat
+        <StatCard
           title="Total Appointments"
           value="1,429"
           sub="+18% from last week"
           icon={<Calendar />}
           bg="bg-green-50"
           iconBg="bg-green-500"
+          trend="up"
         />
-        <Stat
+        <StatCard
           title="Avg. Wait Time"
           value="12m"
           sub="-3m from last week"
           icon={<Clock />}
           bg="bg-gray-50"
           iconBg="bg-gray-400"
+          trend="down"
         />
       </div>
 
@@ -317,28 +322,6 @@ export default function AdminDashboard() {
           </div>
         )}
       </Modal>
-    </div>
-  );
-}
-
-/* STAT CARD */
-function Stat({ title, value, sub, icon, bg, iconBg }) {
-  return (
-    <div
-      className={`rounded-2xl border border-gray-200 bg-white p-4 flex justify-between items-center ${bg}`}
-    >
-      <div>
-        <p className="text-sm text-gray-500">{title}</p>
-        <h3 className="text-2xl font-bold">{value}</h3>
-        <span className="inline-block mt-2 px-3 py-1 text-xs bg-green-100 text-green-600 rounded-full">
-          {sub}
-        </span>
-      </div>
-      <div
-        className={`h-10 w-10 rounded-full flex items-center justify-center text-white ${iconBg}`}
-      >
-        {icon}
-      </div>
     </div>
   );
 }

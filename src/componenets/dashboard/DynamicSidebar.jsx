@@ -1,4 +1,5 @@
 import React from "react";
+import { useNotifications } from "../../context/NotificationContext";
 import {
   FiHome,
   FiCalendar,
@@ -26,6 +27,8 @@ const DynamicSidebar = ({
   onLogout,
   userRole,
 }) => {
+  const { pendingDoctorCount } = useNotifications();
+
   // Define menu items based on role
   const getMenuItems = () => {
     const roleMenus = {
@@ -85,7 +88,14 @@ const DynamicSidebar = ({
       ],
     };
 
-    return roleMenus[userRole] || roleMenus.patient;
+    const menu = roleMenus[userRole] || roleMenus.patient;
+
+    return menu.map((item) => {
+      if (item.id === "approve-doctors") {
+        return { ...item, badge: pendingDoctorCount };
+      }
+      return item;
+    });
   };
 
   const menuItems = getMenuItems();
@@ -108,7 +118,7 @@ const DynamicSidebar = ({
       )}
 
       <aside
-        className={`bg-gradient-to-b from-white via-blue-50 to-white border-r border-gray-200 shadow-lg flex flex-col transition-transform duration-300 ease-in-out 
+        className={`bg-linear-to-b from-white via-blue-50 to-white border-r border-gray-200 shadow-lg flex flex-col transition-transform duration-300 ease-in-out 
                    fixed lg:sticky top-0 h-screen z-30 
                    ${isSidebarOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0 lg:w-20"}`}
       >
@@ -116,7 +126,7 @@ const DynamicSidebar = ({
         <div
           className={`p-6 border-b border-gray-200 flex items-center gap-3 ${!isSidebarOpen && "justify-center"}`}
         >
-          <span className="text-3xl text-[#2e76ad] font-extrabold flex-shrink-0">
+          <span className="text-3xl text-[#2e76ad] font-extrabold shrink-0">
             🧠
           </span>
           <h1
@@ -151,15 +161,20 @@ const DynamicSidebar = ({
                   className={`w-full flex items-center py-3 rounded-lg transition-all duration-200 font-medium gap-3
                     ${
                       activeItem === item.id
-                        ? "bg-gradient-to-r from-[#2F74AA] to-[#3a8ccc] text-white shadow-lg"
+                        ? "bg-linear-to-r from-[#2F74AA] to-[#3a8ccc] text-white shadow-lg"
                         : "text-gray-700 hover:bg-blue-100 hover:text-blue-700"
                     }
                     ${isSidebarOpen ? "px-4 text-left" : "px-0 justify-center"}`}
                 >
                   <span
-                    className={`text-lg flex-shrink-0 ${activeItem === item.id ? "text-white" : "text-blue-600"}`}
+                    className={`text-lg shrink-0 relative ${activeItem === item.id ? "text-white" : "text-blue-600"}`}
                   >
                     {item.icon}
+                    {item.badge > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white shadow-sm z-10">
+                        {item.badge > 99 ? "99+" : item.badge}
+                      </span>
+                    )}
                   </span>
                   <span
                     className={`whitespace-nowrap overflow-hidden transition-opacity duration-200 ${!isSidebarOpen && "opacity-0 w-0"}`}
@@ -182,7 +197,7 @@ const DynamicSidebar = ({
             onClick={onLogout}
             className={`w-full flex items-center gap-3 py-3 text-gray-700 rounded-lg bg-red-50 hover:bg-red-100 hover:text-red-700 font-semibold shadow transition-all ${isSidebarOpen ? "px-4" : "justify-center"}`}
           >
-            <span className="text-xl flex-shrink-0">🚪</span>
+            <span className="text-xl shrink-0">🚪</span>
             <span
               className={`whitespace-nowrap overflow-hidden transition-opacity duration-200 ${!isSidebarOpen && "opacity-0 w-0"}`}
             >

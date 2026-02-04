@@ -6,6 +6,7 @@ import { LogOut, HeartPulse } from "lucide-react";
 import { SIDEBAR_MENU } from "../../constant/data";
 import { logout } from "../../features/AuthSlice"; // import your logout action
 import { message } from "antd/lib";
+import { useNotifications } from "../../context/NotificationContext";
 
 const SidebarLink = memo(({ item, isExpanded }) => {
   const { label, icon: Icon, path } = item;
@@ -30,6 +31,11 @@ const SidebarLink = memo(({ item, isExpanded }) => {
             strokeWidth={isActive ? 2 : 1.75}
             className="transition-all duration-200 group-hover:scale-110"
           />
+          {item.badge > 0 && (
+            <span className="absolute top-1.5 left-7 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border border-white shadow-sm z-10">
+              {item.badge > 99 ? "99+" : item.badge}
+            </span>
+          )}
           {isExpanded && (
             <span className="text-sm transition-all duration-200 truncate">
               {label}
@@ -67,8 +73,14 @@ UserProfile.displayName = "UserProfile";
 const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const menu = SIDEBAR_MENU[user.role] || [];
+  const { pendingDoctorCount } = useNotifications();
+  console.log(pendingDoctorCount, "notihng");
+  const menu = (SIDEBAR_MENU[user.role] || []).map((item) => {
+    if (item.label === "Approve Doctors") {
+      return { ...item, badge: pendingDoctorCount };
+    }
+    return item;
+  });
 
   // Logout handler
   const handleLogout = () => {
@@ -119,10 +131,10 @@ const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
 
           {/* Navigation Menu */}
           <nav className="flex-1 px-3 py-4 space-y-1.5">
-            {menu.map(({ label, icon: Icon, path }) => (
+            {menu.map((item) => (
               <SidebarLink
-                key={label}
-                item={{ label, icon: Icon, path }}
+                key={item.label}
+                item={item}
                 isExpanded={isExpanded}
               />
             ))}
