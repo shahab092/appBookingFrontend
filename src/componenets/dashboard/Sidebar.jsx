@@ -74,7 +74,7 @@ const Sidebar = ({ user, isExpanded, isMobileOpen, setIsMobileOpen }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { pendingDoctorCount } = useNotifications();
-  console.log(pendingDoctorCount, "notihng");
+
   const menu = (SIDEBAR_MENU[user.role] || []).map((item) => {
     if (item.label === "Approve Doctors") {
       return { ...item, badge: pendingDoctorCount };

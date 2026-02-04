@@ -6,6 +6,7 @@ import {
   FiCalendar,
   FiUser,
   FiActivity,
+  FiCheck,
 } from "react-icons/fi";
 import CommonTable from "../common/CommonTable";
 import CustomModal from "../common/CustomModal";
@@ -16,6 +17,7 @@ const AdminBilling = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [modalMode, setModalMode] = useState("view"); // 'view' or 'payout'
 
   // Expanded placeholder data to reflect the new requirements
   const billingData = [
@@ -68,6 +70,13 @@ const AdminBilling = () => {
 
   const handleView = (record) => {
     setSelectedRecord(record);
+    setModalMode("view");
+    setIsModalVisible(true);
+  };
+
+  const handlePayoutInitiate = (record) => {
+    setSelectedRecord(record);
+    setModalMode("payout");
     setIsModalVisible(true);
   };
 
@@ -165,20 +174,28 @@ const AdminBilling = () => {
       ),
     },
     {
-      title: "Action",
+      title: "Actions",
       key: "action",
       align: "right",
       render: (_, record) => (
-        <button
-          onClick={() => handleView(record)}
-          className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all flex items-center gap-2 group"
-        >
-          <FiEye
-            size={18}
-            className="group-hover:scale-110 transition-transform"
-          />
-          <span className="text-sm font-semibold">View</span>
-        </button>
+        <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={() => handleView(record)}
+            className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-full transition-colors"
+            title="View Details"
+          >
+            <FiEye size={18} />
+          </button>
+          {record.status !== "Paid" && (
+            <button
+              onClick={() => handlePayoutInitiate(record)}
+              className="text-green-600 hover:text-green-900 p-2 hover:bg-green-50 rounded-full transition-colors"
+              title="Confirm Payout"
+            >
+              <FiCheck size={18} />
+            </button>
+          )}
+        </div>
       ),
     },
   ];
@@ -256,8 +273,8 @@ const AdminBilling = () => {
         subtitle={`Transaction ID: #TXN-2023-${selectedRecord?.id}`}
         onCancel={() => setIsModalVisible(false)}
         onSubmit={handleConfirmPayout}
-        submitText="Confirm Payout"
-        showSubmit={selectedRecord?.status !== "Paid"}
+        submitText="Proceed to Payout"
+        showSubmit={modalMode === "payout" && selectedRecord?.status !== "Paid"}
         width={600}
       >
         {selectedRecord && (
