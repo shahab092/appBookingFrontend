@@ -50,6 +50,7 @@ export default function AppointmentModal({
   });
   const [selectedTime, setSelectedTime] = useState("");
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [lockTimer, setLockTimer] = useState(0);
 
   // Custom Date Selector State
   const generateDates = () => {
@@ -408,8 +409,25 @@ export default function AppointmentModal({
       }); // Reset form on close with default date
       setAvailableTimeSlots({ morning: [], afternoon: [], evening: [] });
       setSelectedTime("");
+      setLockTimer(0);
     }
   }, [visible, reset]);
+
+  // Lock Timer Effect
+  useEffect(() => {
+    let interval;
+    if (lockTimer > 0) {
+      interval = setInterval(() => {
+        setLockTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (lockTimer === 0 && bookingStep !== "form") {
+      // Lock expired while in payment/otp flow
+      setBookingStep("form");
+      setPendingData(null);
+      showToast("Reservation expired. Please try booking again.", "warning");
+    }
+    return () => clearInterval(interval);
+  }, [lockTimer, bookingStep]);
 
   /* ---------------- Time Formatter (DISPLAY ONLY) ---------------- */
   const formatTo12Hour = (time24) => {
@@ -469,11 +487,10 @@ export default function AppointmentModal({
         // Store fee/pending data
         setPendingData({ ...res.data.data, amount: fee });
 
-        // Decide next step: authenticated users might book directly or go to payment
-        // For now, let's keep it consistent: go to payment step.
-        // If they should book directly without payment, we'd call processBooking instead.
-        // User said "for booking appioiment hit this api /appointments",
-        // which matches the guest initiation flow.
+        // Start the 5-minute reservation timer
+        setLockTimer(300); 
+        showToast("Slot reserved for 5 minutes. Please complete payment.", "info");
+
         setBookingStep("payment");
       }
     } catch (error) {
@@ -889,8 +906,12 @@ export default function AppointmentModal({
           visible={true}
           price={pendingData?.amount || 1500}
           loading={paymentLoading}
-          onClose={() => setBookingStep("form")}
+          onClose={() => {
+            setBookingStep("form");
+            setLockTimer(0);
+          }}
           onProceed={handlePaymentProceed}
+          lockTimer={lockTimer}
         />
       )}
 
@@ -901,6 +922,7 @@ export default function AppointmentModal({
           onVerify={handleOTPVerify}
           mobileNumber={pendingData?.guestWhatsapp}
           loading={loading}
+          lockTimer={lockTimer}
         />
       )}
     </>

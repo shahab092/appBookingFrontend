@@ -64,9 +64,11 @@ const UpcomingAppointments = ({ appointments = [] }) => {
                   {appointment.date} - {appointment.timeSlot}
                 </p>
                 <p className="text-sm text-gray-600 mb-1">
-                  {appointment.doctorId?.name
-                    ? `Dr. ${appointment.doctorId.name}`
-                    : appointment.doctor || "Doctor Name Not Available"}
+                  {(() => {
+                    const name = appointment.doctorId?.name || appointment.doctor;
+                    if (!name) return "Doctor Name Not Available";
+                    return name.startsWith("Dr.") ? name : `Dr. ${name}`;
+                  })()}
                 </p>
                 {appointment.locationName && (
                   <p className="text-sm text-gray-500">

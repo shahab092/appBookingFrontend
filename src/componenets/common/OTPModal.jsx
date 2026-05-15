@@ -9,10 +9,17 @@ export default function OTPModal({
   mobileNumber,
   loading = false,
   autoOtp = "", // Added autoOtp prop
+  lockTimer = 0,
 }) {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const inputRefs = useRef([]);
+
+  const formatTimer = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
   useEffect(() => {
     if (visible) {
@@ -89,7 +96,18 @@ export default function OTPModal({
     <CustomModal
       visible={visible}
       title="Verify OTP"
-      subtitle={`Enter the code sent to ${mobileNumber || "your WhatsApp number"}`}
+      subtitle={
+        <div className="flex flex-col gap-1 items-center">
+          <p>
+            {`Enter the code sent to ${mobileNumber || "your WhatsApp number"}`}
+          </p>
+          {lockTimer > 0 && (
+            <p className="text-blue-600 font-mono text-[10px] flex items-center gap-1 bg-blue-50 w-fit px-2 py-0.5 rounded">
+              Reservation expires in: {formatTimer(lockTimer)}
+            </p>
+          )}
+        </div>
+      }
       onCancel={onClose}
       onSubmit={handleVerify}
       submitText="Verify OTP"

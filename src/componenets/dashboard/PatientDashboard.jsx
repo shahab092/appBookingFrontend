@@ -165,9 +165,12 @@ const PatientDashboard = () => {
 
   // Format appointment data securely
   const formatAppointmentData = (appt) => {
-    const doctorName = appt.doctorId?.fullName
-      ? `Dr. ${appt.doctorId.fullName}`
-      : "Dr. Name not available";
+    let doctorName = appt.doctorId?.name || "Dr. Name not available";
+    
+    // Ensure "Dr." prefix is not duplicated
+    if (doctorName !== "Dr. Name not available" && !doctorName.startsWith("Dr.")) {
+      doctorName = `Dr. ${doctorName}`;
+    }
 
     const appointmentType = appt.appointmentType || "in-clinic";
     const appointmentIcon =
@@ -267,7 +270,18 @@ const PatientDashboard = () => {
             <AppointmentModal
               visible={modalVisible}
               onCancel={handleCloseModal}
-              onRefresh={fetchAppointments}
+              onOk={(newAppt) => {
+                handleCloseModal();
+                if (newAppt && newAppt._id) {
+                  // Optimistically add to list if not already there
+                  setAppointments((prev) => {
+                    const exists = prev.some((a) => a._id === newAppt._id);
+                    if (exists) return prev;
+                    return [newAppt, ...prev];
+                  });
+                }
+                fetchAppointments();
+              }}
             />
           </div>
 

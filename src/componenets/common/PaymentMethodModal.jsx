@@ -12,11 +12,18 @@ export default function PaymentMethodModal({
   onProceed,
   price,
   loading = false,
+  lockTimer = 0,
 }) {
   // separate states for each payment method
   const [easypaisaActive, setEasypaisaActive] = useState(true);
   const [jazzcashActive, setJazzcashActive] = useState(false);
   const [cardActive, setCardActive] = useState(false);
+
+  const formatTimer = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
   const methods = useForm({
     resolver: yupResolver(paymentSchema),
@@ -54,9 +61,18 @@ export default function PaymentMethodModal({
       visible={visible}
       title="Choose payment method"
       subtitle={
-        price
-          ? `Amount to pay: PKR ${price}`
-          : "Select your preferred way to pay"
+        <div className="flex flex-col gap-1">
+          <p>
+            {price
+              ? `Amount to pay: PKR ${price}`
+              : "Select your preferred way to pay"}
+          </p>
+          {lockTimer > 0 && (
+            <p className="text-blue-600 font-mono text-xs flex items-center gap-1 bg-blue-50 w-fit px-2 py-0.5 rounded">
+              Slot reserved for: {formatTimer(lockTimer)}
+            </p>
+          )}
+        </div>
       }
       onCancel={onClose}
       onSubmit={handleSubmit(submitPayment)}
