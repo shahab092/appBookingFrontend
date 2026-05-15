@@ -1,7 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiCalendar, FiUsers, FiClock, FiTrendingUp } from 'react-icons/fi';
+import api from "../../libs/api";
+import { useSelector } from "react-redux";
 
 const DoctorDashboard = () => {
+  const { user } = useSelector((state) => state.auth);
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState({
+    today: 0,
+    totalPatients: 0,
+    pending: 0,
+    thisMonth: 0
+  });
+
+  const fetchDoctorData = async () => {
+    setLoading(true);
+    try {
+      // Fetch upcoming appointments
+      const res = await api.get("appointments/doctor?upcoming=true");
+      setAppointments(res.data.data || []);
+      
+      // In a real app, you might have a dedicated stats endpoint
+      // For now, let's derive some basic stats or use placeholders if endpoint doesn't exist
+      setStats(prev => ({
+        ...prev,
+        today: res.data.data?.length || 0,
+        totalPatients: 245, // Placeholder if no endpoint
+        pending: res.data.data?.filter(a => a.status === 'booked').length || 0,
+        thisMonth: 156 // Placeholder
+      }));
+    } catch (error) {
+      console.error("Error fetching doctor data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchDoctorData();
+    }
+  }, [user?.id]);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Stats Cards */}
@@ -9,8 +50,8 @@ const DoctorDashboard = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Today's Appointments</p>
-              <p className="text-3xl font-bold text-[#2F74AA]">12</p>
+              <p className="text-sm text-gray-600 mb-1">Upcoming Appointments</p>
+              <p className="text-3xl font-bold text-[#2F74AA]">{stats.today}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <FiCalendar className="text-[#2F74AA] text-xl" />
@@ -22,7 +63,7 @@ const DoctorDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Total Patients</p>
-              <p className="text-3xl font-bold text-green-600">245</p>
+              <p className="text-3xl font-bold text-green-600">{stats.totalPatients}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
               <FiUsers className="text-green-600 text-xl" />
@@ -34,7 +75,7 @@ const DoctorDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Pending Consultations</p>
-              <p className="text-3xl font-bold text-yellow-600">8</p>
+              <p className="text-3xl font-bold text-yellow-600">{stats.pending}</p>
             </div>
             <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
               <FiClock className="text-yellow-600 text-xl" />
@@ -46,7 +87,7 @@ const DoctorDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">This Month</p>
-              <p className="text-3xl font-bold text-purple-600">156</p>
+              <p className="text-3xl font-bold text-purple-600">{stats.thisMonth}</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
               <FiTrendingUp className="text-purple-600 text-xl" />
@@ -57,22 +98,30 @@ const DoctorDashboard = () => {
 
       {/* Today's Schedule */}
       <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-2xl font-bold text-[#2F74AA] mb-6">Today's Schedule</h2>
+        <h2 className="text-2xl font-bold text-[#2F74AA] mb-6">Upcoming Schedule</h2>
         <div className="space-y-4">
-          {[1, 2, 3].map((item) => (
-            <div key={item} className="border-l-4 border-l-blue-400 rounded-lg p-4 bg-blue-50">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold text-gray-900">Patient Name {item}</h3>
-                  <p className="text-sm text-gray-600 mt-1">10:00 AM - 10:30 AM</p>
-                  <p className="text-sm text-gray-500">Follow-up Consultation</p>
+          {loading ? (
+            <p className="text-gray-500 text-center py-4">Loading schedule...</p>
+          ) : appointments.length > 0 ? (
+            appointments.map((appt) => (
+              <div key={appt._id} className="border-l-4 border-l-blue-400 rounded-lg p-4 bg-blue-50">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-gray-900">{appt.patientName || "Guest Patient"}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{appt.date} - {appt.timeSlot}</p>
+                    <p className="text-sm text-gray-500">{appt.reason || "Consultation"}</p>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    appt.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
+                  </span>
                 </div>
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                  Confirmed
-                </span>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-gray-500 text-center py-4">No upcoming appointments</p>
+          )}
         </div>
       </div>
 

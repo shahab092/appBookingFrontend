@@ -146,7 +146,8 @@ const PatientDashboard = () => {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const res = await api.get("appointments");
+      const res = await api.get("appointments?upcoming=true");
+      console.log(res,'appoiment res')
       setAppointments(res.data.data || []);
       console.log(res, "resp");
     } catch (error) {
