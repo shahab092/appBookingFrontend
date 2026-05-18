@@ -262,7 +262,6 @@ const AdminBilling = () => {
           columns={columns}
           dataSource={billingData}
           rowKey="id"
-          pagination={{ pageSize: 10 }}
         />
       </div>
 

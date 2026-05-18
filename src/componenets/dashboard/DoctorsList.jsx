@@ -418,7 +418,6 @@ const DoctorsList = () => {
           ]}
           dataSource={filteredDoctors}
           rowKey="doctorId"
-          pagination={{ pageSize: 10 }}
         />
       </div>
     </div>

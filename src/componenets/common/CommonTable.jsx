@@ -8,30 +8,32 @@ const CommonTable = ({
   bordered = true,
   ...props
 }) => {
+  const basePagination = {
+    pageSize: 10,
+    showSizeChanger: true,
+    showTotal: (total, range) => (
+      <span className="text-sm text-gray-600 font-medium mr-auto">
+        Showing{" "}
+        <span className="font-semibold text-gray-900">{range[0]}</span> to{" "}
+        <span className="font-semibold text-gray-900">{range[1]}</span> of{" "}
+        <span className="font-semibold text-gray-900">{total}</span>{" "}
+        entries
+      </span>
+    ),
+    showQuickJumper: true,
+    pageSizeOptions: ["10", "20", "50", "100"],
+    size: "default",
+  };
+
   const defaultPagination =
-    pagination === true
-      ? {
-          pageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total, range) => (
-            <span className="text-sm text-gray-600 font-medium">
-              Showing{" "}
-              <span className="font-semibold text-gray-900">{range[0]}</span> to{" "}
-              <span className="font-semibold text-gray-900">{range[1]}</span> of{" "}
-              <span className="font-semibold text-gray-900">{total}</span>{" "}
-              entries
-            </span>
-          ),
-          showQuickJumper: true,
-          pageSizeOptions: ["10", "20", "50", "100"],
-          size: "default",
-        }
-      : pagination === false
-        ? false
-        : pagination;
+    pagination === false
+      ? false
+      : typeof pagination === "object"
+        ? { ...basePagination, ...pagination }
+        : basePagination;
 
   return (
-    <div className="common-table-wrapper bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div className="common-table-wrapper bg-white rounded-[4px] shadow-sm border border-gray-200 overflow-hidden">
       <Table
         columns={columns}
         dataSource={dataSource}
@@ -119,17 +121,16 @@ const CommonTable = ({
         }
 
         .common-table .ant-pagination {
-          margin: 20px 0;
-          padding: 0 20px;
+          margin: 16px 20px;
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          justify-content: flex-end;
           flex-wrap: wrap;
           gap: 12px;
         }
 
         .common-table .ant-pagination-item {
-          border-radius: 8px;
+          border-radius: 4px;
           border-color: #d1d5db;
           transition: all 0.2s ease;
           min-width: 32px;
@@ -160,7 +161,7 @@ const CommonTable = ({
 
         .common-table .ant-pagination-prev,
         .common-table .ant-pagination-next {
-          border-radius: 8px;
+          border-radius: 4px;
           border-color: #d1d5db;
           transition: all 0.2s ease;
         }
@@ -187,11 +188,11 @@ const CommonTable = ({
         }
 
         .common-table .ant-pagination-options .ant-select {
-          border-radius: 8px;
+          border-radius: 4px;
         }
 
         .common-table .ant-pagination-options .ant-select-selector {
-          border-radius: 8px;
+          border-radius: 4px;
           border-color: #d1d5db;
           transition: all 0.2s ease;
         }
