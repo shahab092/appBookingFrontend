@@ -82,10 +82,10 @@ const ApproveDoctors = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <h2 className="text-2xl font-bold text-[#2F74AA]">Approve Doctors</h2>
+        {/* <h2 className="text-2xl font-bold text-[#2F74AA]">Approve Doctors</h2> */}
 
         {/* Search Bar */}
-        <div className="w-full sm:w-96">
+        <div className="w-full sm:w-96 ">
           <FormProvider {...methods}>
             <CustomTextField
               name="search"
