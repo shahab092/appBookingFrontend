@@ -16,7 +16,7 @@ import {
   FaHeartbeat,
   FaWhatsapp,
 } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -278,35 +278,35 @@ const Footer = () => {
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0 text-center sm:text-left">
             {/* Copyright */}
             <div className="text-gray-400 text-xs sm:text-sm font-medium order-3 sm:order-1 w-full sm:w-auto">
-              © 2024 MediCare Healthcare Platform. All rights reserved.
+              © 2026 AshfqHospital Telemedicine Services. All rights reserved.
             </div>
 
             {/* Additional Links */}
             <div className="flex flex-wrap justify-center gap-3 sm:gap-6 text-xs sm:text-sm order-2 sm:order-2">
-              <a
-                href="#"
+              <Link
+                to="#"
                 className="text-gray-400 hover:text-primary transition-colors duration-200 font-medium"
               >
                 Privacy Policy
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                to="/terms-and-conditions"
                 className="text-gray-400 hover:text-primary transition-colors duration-200 font-medium"
               >
-                Terms of Service
-              </a>
-              <a
-                href="#"
+                Terms & Conditions
+              </Link>
+              <Link
+                to="/return-refund-policy"
+                className="text-gray-400 hover:text-primary transition-colors duration-200 font-medium"
+              >
+                Return & Refund Policy
+              </Link>
+              <Link
+                to="#"
                 className="text-gray-400 hover:text-primary transition-colors duration-200 font-medium"
               >
                 Sitemap
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-primary transition-colors duration-200 font-medium"
-              >
-                Careers
-              </a>
+              </Link>
             </div>
 
             {/* Made with love */}

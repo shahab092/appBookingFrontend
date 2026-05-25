@@ -15,6 +15,8 @@ import ProtectedRoute from "../hoc/ProtectedRoute";
 import Calling from "../componenets/dashboard/Calling";
 import DoctorSearch from "../Pages/DoctorSearch/DoctorSearch";
 import UnderConstruction from "../Pages/UnderConstruction/UnderConstruction";
+import TermsConditions from "../Pages/TermsConditions/TermsConditions";
+import ReturnRefundPolicy from "../Pages/ReturnRefundPolicy/ReturnRefundPolicy";
 
 export default function AppRoutes() {
   return (
@@ -29,6 +31,8 @@ export default function AppRoutes() {
           <Route path="//tests" element={<UnderConstruction />} />
           <Route path="/doctorDetail" element={<DocterDetails />} />
           <Route path="/doctorSearch" element={<DoctorSearch />} />
+          <Route path="/terms-and-conditions" element={<TermsConditions />} />
+          <Route path="/return-refund-policy" element={<ReturnRefundPolicy />} />
         </Route>
 
         {/* Admin routes */}
