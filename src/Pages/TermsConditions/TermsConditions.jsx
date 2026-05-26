@@ -137,16 +137,16 @@ const TermsConditions = () => {
       <TopBar />
       <div className="min-h-screen bg-background-light flex flex-col font-sans">
         {/* Header Hero Section using solid color bg-accent */}
-        <div className="relative bg-accent py-16 text-white text-center px-4 overflow-hidden">
+        <div className="relative bg-accent py-16 text-center px-4 overflow-hidden">
           <div className="relative max-w-4xl mx-auto z-10">
-            <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-1.5 rounded-full border border-white/20 text-xs font-semibold uppercase tracking-wider mb-4">
+            <div className="inline-flex items-center gap-2 bg-white/10  px-4 py-1.5 rounded-full border border-white/20 text-xs font-semibold uppercase tracking-wider mb-4">
               <FaFileContract size={14} />
               Legal Documents
             </div>
             <h1 className="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight leading-tight">
               Terms & Conditions
             </h1>
-            <p className="text-white/95 text-sm md:text-base max-w-2xl mx-auto font-medium">
+            <p className=" text-sm md:text-base max-w-2xl mx-auto font-medium">
               AshfqHospital Telemedicine Services • Last Updated: May 2026
             </p>
           </div>
