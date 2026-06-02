@@ -103,7 +103,7 @@ const ReturnRefundPolicy = () => {
         {/* Header Hero Section using solid bg-accent */}
         <div className="relative bg-primary py-16  text-white text-center px-4 overflow-hidden">
           <div className="relative max-w-4xl mx-auto z-10">
-            <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-1.5 rounded-full border border-white/20 text-xs font-semibold uppercase tracking-wider mb-4">
+            <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-1.5 rounded-[4px] border border-white/20 text-xs font-semibold uppercase tracking-wider mb-4">
               <FaUndo size={12} />
               Billing & Refunds
             </div>
@@ -120,7 +120,7 @@ const ReturnRefundPolicy = () => {
         <div className="max-w-7xl mx-auto px-4 py-12 flex-1 w-full grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Navigation Sidebar */}
           <div className="hidden lg:block lg:col-span-1">
-            <div className="sticky top-24 bg-white rounded-xl border border-gray-100 p-5 shadow-sm space-y-4 max-h-[calc(100vh-140px)] overflow-y-auto">
+            <div className="sticky top-24 bg-white rounded-[4px] border border-gray-100 p-5 shadow-sm space-y-4 max-h-[calc(100vh-140px)] overflow-y-auto">
               <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider border-b border-gray-100 pb-3">
                 Policy Sections
               </h2>
@@ -129,7 +129,7 @@ const ReturnRefundPolicy = () => {
                   <button
                     key={section.id}
                     onClick={() => scrollToSection(section.id)}
-                    className={`flex items-center text-left px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${activeSection === section.id
+                    className={`flex items-center text-left px-3 py-2.5 rounded-[4px] text-xs font-semibold transition-all ${activeSection === section.id
                       ? "bg-primary/10 text-primary border-l-4 border-primary pl-2"
                       : "text-typegray hover:bg-gray-55 hover:text-gray-900 border-l-4 border-transparent"
                       }`}
@@ -147,7 +147,7 @@ const ReturnRefundPolicy = () => {
           {/* Policy Text & Search */}
           <div className="col-span-1 lg:col-span-3 space-y-6">
             {/* Search Box */}
-            <div className="bg-white rounded-xl border border-gray-150 p-4 shadow-sm flex items-center gap-3">
+            <div className="bg-white rounded-[4px] border border-gray-150 p-4 shadow-sm flex items-center gap-3">
               <FaSearch className="text-typegray shrink-0" size={16} />
               <input
                 type="text"
@@ -159,7 +159,7 @@ const ReturnRefundPolicy = () => {
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
-                  className="text-xs text-typegray hover:text-gray-800 font-bold px-2 py-1 bg-gray-100 rounded-lg"
+                  className="text-xs text-typegray hover:text-gray-800 font-bold px-2 py-1 bg-gray-100 rounded-[4px]"
                 >
                   Clear
                 </button>
@@ -169,14 +169,14 @@ const ReturnRefundPolicy = () => {
             {/* Quick Overview Cards - Custom Premium Element */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Eligible Card */}
-              <div className="bg-white rounded-xl border border-secondary/20 p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-[4px] border border-secondary/20 p-6 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-9 h-9 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+                  <div className="w-9 h-9 rounded-[4px] bg-secondary/10 flex items-center justify-center text-secondary">
                     <FaCheckCircle size={18} />
                   </div>
                   <h3 className="font-bold text-gray-800 text-base">Refund Eligible</h3>
                 </div>
-                <ul className="space-y-2 text-xs text-gray-650 font-semibold">
+                <ul className="space-y-2 text-xs text-gray-655 font-semibold">
                   <li className="flex items-start gap-2">
                     <span className="text-secondary mt-0.5">•</span>
                     Unconfirmed appointments (after payment)
@@ -197,9 +197,9 @@ const ReturnRefundPolicy = () => {
               </div>
 
               {/* Non-Refundable Card */}
-              <div className="bg-white rounded-xl border border-rose-100 p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-[4px] border border-rose-100 p-6 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-9 h-9 rounded-lg bg-rose-100 flex items-center justify-center text-rose-600">
+                  <div className="w-9 h-9 rounded-[4px] bg-rose-100 flex items-center justify-center text-rose-600">
                     <FaTimesCircle size={18} />
                   </div>
                   <h3 className="font-bold text-gray-800 text-base">Non-Refundable</h3>
@@ -232,14 +232,14 @@ const ReturnRefundPolicy = () => {
                   <div
                     key={section.id}
                     id={section.id}
-                    className={`bg-white rounded-xl border transition-all duration-300 p-6 md:p-8 shadow-sm hover:shadow-md ${activeSection === section.id
+                    className={`bg-white rounded-[4px] border transition-all duration-300 p-6 md:p-8 shadow-sm hover:shadow-md ${activeSection === section.id
                       ? "border-primary ring-2 ring-primary/10"
                       : "border-gray-200"
                       }`}
                   >
                     <div className="flex items-start gap-4 mb-4">
                       {/* solid bg-primary */}
-                      <div className="w-10 h-10 rounded-lg bg-primary text-white font-bold flex items-center justify-center shrink-0 shadow-md text-sm md:text-base">
+                      <div className="w-10 h-10 rounded-[4px] bg-primary text-white font-bold flex items-center justify-center shrink-0 shadow-md text-sm md:text-base">
                         {section.number}
                       </div>
                       <div>
@@ -257,7 +257,7 @@ const ReturnRefundPolicy = () => {
                   </div>
                 ))
               ) : (
-                <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                <div className="bg-white rounded-[4px] border border-gray-200 p-12 text-center">
                   <div className="text-5xl mb-4">🔍</div>
                   <h3 className="text-lg font-bold text-gray-800 mb-1">No Matching Sections</h3>
                   <p className="text-sm text-typegray max-w-sm mx-auto">
@@ -278,15 +278,15 @@ const ReturnRefundPolicy = () => {
                   Our dedicated billing team is here to assist you with payment status, duplicate charge resolutions, or refund inquiries.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex items-center gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/15">
+                  <div className="flex items-center gap-3 bg-white/10 rounded-[4px] p-3 backdrop-blur-sm border border-white/15">
                     <FaPhone className="text-white" size={14} />
                     <span className="text-xs md:text-sm font-semibold truncate">+92-XXXXXXXXXX</span>
                   </div>
-                  <div className="flex items-center gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/15">
+                  <div className="flex items-center gap-3 bg-white/10 rounded-[4px] p-3 backdrop-blur-sm border border-white/15">
                     <FaEnvelope className="text-white" size={14} />
                     <span className="text-xs md:text-sm font-semibold truncate">billing@ashfqhospital.com</span>
                   </div>
-                  <div className="flex items-center gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/15">
+                  <div className="flex items-center gap-3 bg-white/10 rounded-[4px] p-3 backdrop-blur-sm border border-white/15">
                     <FaMapMarkerAlt className="text-white" size={14} />
                     <span className="text-xs md:text-sm font-semibold truncate">Hospital Address, PK</span>
                   </div>
