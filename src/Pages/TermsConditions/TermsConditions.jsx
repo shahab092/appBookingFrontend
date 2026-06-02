@@ -137,7 +137,7 @@ const TermsConditions = () => {
       <TopBar />
       <div className="min-h-screen bg-background-light flex flex-col font-sans">
         {/* Header Hero Section using solid color bg-accent */}
-        <div className="relative bg-accent py-16 text-white text-center px-4 overflow-hidden">
+        <div className="relative bg-primary py-16 text-white text-center px-4 overflow-hidden">
           <div className="relative max-w-4xl mx-auto z-10">
             <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-1.5 rounded-full border border-white/20 text-xs font-semibold uppercase tracking-wider mb-4">
               <FaFileContract size={14} />
@@ -165,11 +165,10 @@ const TermsConditions = () => {
                   <button
                     key={section.id}
                     onClick={() => scrollToSection(section.id)}
-                    className={`flex items-center text-left px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
-                      activeSection === section.id
-                        ? "bg-primary/10 text-primary border-l-4 border-primary pl-2"
-                        : "text-typegray hover:bg-gray-55 hover:text-gray-900 border-l-4 border-transparent"
-                    }`}
+                    className={`flex items-center text-left px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${activeSection === section.id
+                      ? "bg-primary/10 text-primary border-l-4 border-primary pl-2"
+                      : "text-typegray hover:bg-gray-55 hover:text-gray-900 border-l-4 border-transparent"
+                      }`}
                   >
                     <span className="w-6 shrink-0 text-[10px] text-typegray/80">
                       {section.number}.
@@ -210,11 +209,10 @@ const TermsConditions = () => {
                   <div
                     key={section.id}
                     id={section.id}
-                    className={`bg-white rounded-xl border transition-all duration-300 p-6 md:p-8 shadow-sm hover:shadow-md ${
-                      activeSection === section.id
-                        ? "border-primary ring-2 ring-primary/10"
-                        : "border-gray-200"
-                    }`}
+                    className={`bg-white rounded-xl border transition-all duration-300 p-6 md:p-8 shadow-sm hover:shadow-md ${activeSection === section.id
+                      ? "border-primary ring-2 ring-primary/10"
+                      : "border-gray-200"
+                      }`}
                   >
                     <div className="flex items-start gap-4 mb-4">
                       {/* solid bg-primary */}
