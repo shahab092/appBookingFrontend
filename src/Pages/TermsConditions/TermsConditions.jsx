@@ -86,7 +86,7 @@ const TERMS_SECTIONS = [
     id: "contact",
     number: "14",
     title: "Contact Information",
-    content: "AshfqHospital Telemedicine Services\n\n• Phone: +92-XXXXXXXXXX\n• Email: support@ashfqhospital.com\n• Address: Your Hospital Address, Pakistan"
+    content: "AshfqHospital Telemedicine Services\n\n• Phone: 0946 744760\n• Email: info@ashfaqhospitals.com\n• Address: Kotanai main Madyan GT Road Tehsil Khwaza Khela Swat, Khwazakhela, Pakistan"
   }
 ];
 
@@ -259,15 +259,15 @@ const TermsConditions = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/15">
                     <FaPhone className="text-white" size={14} />
-                    <span className="text-xs md:text-sm font-semibold truncate">+92-XXXXXXXXXX</span>
+                    <span className="text-xs md:text-sm font-semibold truncate">0946 744760</span>
                   </div>
                   <div className="flex items-center gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/15">
                     <FaEnvelope className="text-white" size={14} />
-                    <span className="text-xs md:text-sm font-semibold truncate">support@ashfqhospital.com</span>
+                    <span className="text-xs md:text-sm font-semibold truncate">info@ashfaqhospitals.com</span>
                   </div>
                   <div className="flex items-center gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/15">
                     <FaMapMarkerAlt className="text-white" size={14} />
-                    <span className="text-xs md:text-sm font-semibold truncate">Hospital Address, PK</span>
+                    <span className="text-xs md:text-sm font-semibold truncate">Kotanai main Madyan GT Road Tehsil Khwaza Khela Swat, Khwazakhela, Pakistan</span>
                   </div>
                 </div>
               </div>

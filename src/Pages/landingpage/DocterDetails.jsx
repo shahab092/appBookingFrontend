@@ -213,7 +213,7 @@ export default function DocterDetails() {
       clinic?.phone ||
       doctor?.emergencyContact ||
       doctor?.whatsappnumber ||
-      "+92 300 1234567"
+      "(0946) 744760"
     );
   };
 
@@ -504,7 +504,7 @@ export default function DocterDetails() {
                               endTime: "20:00",
                             },
                           ],
-                          phone: "+92 300 1234567",
+                          phone: "(0946) 744760",
                           consultationFee: "2,500",
                         },
                       ]

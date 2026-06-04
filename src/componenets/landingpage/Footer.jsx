@@ -40,15 +40,15 @@ const Footer = () => {
   const contactInfo = [
     {
       icon: <FaMapMarkerAlt className="text-primary" />,
-      text: "123 Healthcare Avenue, Medical District, City 12345",
+      text: "Kotanai main Madyan GT Road Tehsil Khwaza Khela Swat, Khwazakhela, Pakistan",
     },
     {
       icon: <FaPhone className="text-primary" />,
-      text: "+1 (555) 123-HELP (4357)",
+      text: "0946 744760",
     },
     {
       icon: <FaEnvelope className="text-primary" />,
-      text: "info@medicare.com",
+      text: "info@ashfaqhospitals.com",
     },
     {
       icon: <FaClock className="text-primary" />,
@@ -187,13 +187,12 @@ const Footer = () => {
                 <div className="bg-gray-700 rounded-lg p-4 shadow-inner">
                   <h4 className="text-white mb-2">Main Hospital</h4>
                   <p className="text-gray-400 text-sm font-medium">
-                    123 Healthcare Avenue
+                    Kotanai main Madyan GT Road
                     <br />
-                    Medical District
+                    Tehsil Khwaza Khela Swat
                     <br />
-                    City, State 12345
+                    Khwazakhela, Pakistan
                     <br />
-                    United States
                   </p>
                 </div>
 
@@ -331,7 +330,7 @@ const Footer = () => {
 
         {/* WhatsApp Floating Button */}
         <button
-          onClick={() => window.open("https://wa.me/923000000000", "_blank")}
+          onClick={() => window.open("https://wa.me/92300744760", "_blank")}
           className="bg-green-500 hover:bg-green-600 text-white p-3 sm:p-4 rounded-full shadow-2xl transform hover:scale-110 transition-all duration-200 group flex items-center justify-center"
         >
           <FaWhatsapp className="text-xl sm:text-2xl" />
