@@ -504,7 +504,7 @@ export default function DocterDetails() {
                               endTime: "20:00",
                             },
                           ],
-                          phone: "(0946) 744760",
+                          phone: "0946 744760",
                           consultationFee: "2,500",
                         },
                       ]
