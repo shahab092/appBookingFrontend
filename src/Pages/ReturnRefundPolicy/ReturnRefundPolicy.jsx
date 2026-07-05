@@ -8,13 +8,13 @@ const POLICY_SECTIONS = [
     id: "nature-of-services",
     number: "1",
     title: "Nature of Services",
-    content: "AshfqHospital provides digital healthcare and telemedicine services including online doctor consultations, follow-up consultations, digital prescriptions, and appointment booking. As these are service-based digital consultations, no physical products are shipped."
+    content: "AshfaqHospital provides digital healthcare and telemedicine services including online doctor consultations, follow-up consultations, digital prescriptions, and appointment booking. As these are service-based digital consultations, no physical products are shipped."
   },
   {
     id: "refund-eligibility",
     number: "2",
     title: "Refund Eligibility",
-    content: "Refunds may be considered in the following situations:\n\n• Payment was deducted but appointment was not confirmed\n• Duplicate payment was made by mistake\n• Doctor was unavailable for the scheduled consultation\n• Technical issues from AshfqHospital prevented the consultation\n• Appointment was cancelled by AshfqHospital\n\nApproved refunds will be processed through the original payment method."
+    content: "Refunds may be considered in the following situations:\n\n• Payment was deducted but appointment was not confirmed\n• Duplicate payment was made by mistake\n• Doctor was unavailable for the scheduled consultation\n• Technical issues from AshfaqHospital prevented the consultation\n• Appointment was cancelled by AshfaqHospital\n\nApproved refunds will be processed through the original payment method."
   },
   {
     id: "non-refundable",
@@ -44,7 +44,7 @@ const POLICY_SECTIONS = [
     id: "policy-changes",
     number: "7",
     title: "Changes to This Policy",
-    content: "AshfqHospital reserves the right to update or modify this Refund Policy at any time without prior notice."
+    content: "AshfaqHospital reserves the right to update or modify this Refund Policy at any time without prior notice."
   },
   {
     id: "contact",
@@ -111,7 +111,7 @@ const ReturnRefundPolicy = () => {
               Return & Refund Policy
             </h1>
             <p className="text-white/95 text-sm md:text-base max-w-2xl mx-auto font-medium">
-              AshfqHospital Telemedicine Services • Last Updated: May 2026
+              AshfaqHospital Telemedicine Services • Last Updated: May 2026
             </p>
           </div>
         </div>

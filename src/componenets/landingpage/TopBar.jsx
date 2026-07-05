@@ -81,7 +81,7 @@ const TopBar = () => {
                 className="min-w-0 hover:opacity-90 transition-opacity"
               >
                 <h1 className="text-base sm:text-lg md:text-xl font-bold text-primary truncate">
-                  MediCare
+                  AshfaqHospital
                 </h1>
                 <p className="text-[10px] sm:text-xs text-gray-500 font-medium hidden sm:block">
                   Trusted Healthcare

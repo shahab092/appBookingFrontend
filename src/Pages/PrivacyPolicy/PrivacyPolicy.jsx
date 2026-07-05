@@ -74,7 +74,7 @@ const PRIVACY_SECTIONS = [
     id: "contact",
     title: "Contact Us",
     content:
-      "For privacy questions or requests, contact AshfqHospital Telemedicine Services:\n\n• Phone: 0946 744760\n• Email: info@ashfaqhospitals.com\n• Address: Kotanai main Madyan GT Road, Tehsil Khwaza Khela, Swat, Khwazakhela, Pakistan",
+      "For privacy questions or requests, contact AshfaqHospital Telemedicine Services:\n\n• Phone: 0946 744760\n• Email: info@ashfaqhospitals.com\n• Address: Kotanai main Madyan GT Road, Tehsil Khwaza Khela, Swat, Khwazakhela, Pakistan",
   },
 ];
 
@@ -127,7 +127,7 @@ const PrivacyPolicy = () => {
               Privacy Policy
             </h1>
             <p className="mx-auto max-w-2xl text-sm font-medium md:text-base">
-              AshfqHospital Telemedicine Services • Last Updated: July 2026
+              AshfaqHospital Telemedicine Services • Last Updated: July 2026
             </p>
           </div>
         </section>

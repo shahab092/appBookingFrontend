@@ -8,13 +8,13 @@ const TERMS_SECTIONS = [
     id: "acceptance",
     number: "1",
     title: "Acceptance of Terms",
-    content: "By using our telemedicine platform, booking appointments, or accessing any healthcare services provided by AshfqHospital, you agree to these Terms & Conditions. If you do not agree with any part of these terms, please do not use our services."
+    content: "By using our telemedicine platform, booking appointments, or accessing any healthcare services provided by AshfaqHospital, you agree to these Terms & Conditions. If you do not agree with any part of these terms, please do not use our services."
   },
   {
     id: "services",
     number: "2",
     title: "Telemedicine Services",
-    content: "AshfqHospital provides online healthcare services including but not limited to:\n\n• Online doctor consultations\n• Medical advice and follow-ups\n• Digital prescriptions\n• Appointment booking\n• Health guidance services\n\nTelemedicine services are intended for non-emergency medical situations only."
+    content: "AshfaqHospital provides online healthcare services including but not limited to:\n\n• Online doctor consultations\n• Medical advice and follow-ups\n• Digital prescriptions\n• Appointment booking\n• Health guidance services\n\nTelemedicine services are intended for non-emergency medical situations only."
   },
   {
     id: "disclaimer",
@@ -26,7 +26,7 @@ const TERMS_SECTIONS = [
     id: "responsibilities",
     number: "4",
     title: "User Responsibilities",
-    content: "By using our platform, you agree to:\n\n• Provide accurate and complete information\n• Use the platform lawfully and respectfully\n• Maintain confidentiality of your login credentials\n• Follow the doctor's medical advice responsibly\n\nAshfqHospital is not responsible for issues caused by inaccurate patient information."
+    content: "By using our platform, you agree to:\n\n• Provide accurate and complete information\n• Use the platform lawfully and respectfully\n• Maintain confidentiality of your login credentials\n• Follow the doctor's medical advice responsibly\n\nAshfaqHospital is not responsible for issues caused by inaccurate patient information."
   },
   {
     id: "appointment-policy",
@@ -62,19 +62,19 @@ const TERMS_SECTIONS = [
     id: "liability",
     number: "10",
     title: "Limitation of Liability",
-    content: "AshfqHospital shall not be held responsible for:\n\n• Internet or technical disruptions\n• Delays caused by third-party services\n• User device failures\n• Misuse of medical advice\n• Incomplete information provided by users"
+    content: "AshfaqHospital shall not be held responsible for:\n\n• Internet or technical disruptions\n• Delays caused by third-party services\n• User device failures\n• Misuse of medical advice\n• Incomplete information provided by users"
   },
   {
     id: "intellectual-property",
     number: "11",
     title: "Intellectual Property",
-    content: "All website content including logos, text, graphics, and software are the property of AshfqHospital and may not be copied or reused without permission."
+    content: "All website content including logos, text, graphics, and software are the property of AshfaqHospital and may not be copied or reused without permission."
   },
   {
     id: "changes",
     number: "12",
     title: "Changes to Terms",
-    content: "AshfqHospital reserves the right to modify these Terms & Conditions at any time without prior notice. Continued use of the platform after updates means acceptance of revised terms."
+    content: "AshfaqHospital reserves the right to modify these Terms & Conditions at any time without prior notice. Continued use of the platform after updates means acceptance of revised terms."
   },
   {
     id: "governing-law",
@@ -86,7 +86,7 @@ const TERMS_SECTIONS = [
     id: "contact",
     number: "14",
     title: "Contact Information",
-    content: "AshfqHospital Telemedicine Services\n\n• Phone: 0946 744760\n• Email: info@ashfaqhospitals.com\n• Address: Kotanai main Madyan GT Road Tehsil Khwaza Khela Swat, Khwazakhela, Pakistan"
+    content: "AshfaqHospital Telemedicine Services\n\n• Phone: 0946 744760\n• Email: info@ashfaqhospitals.com\n• Address: Kotanai main Madyan GT Road Tehsil Khwaza Khela Swat, Khwazakhela, Pakistan"
   }
 ];
 
@@ -147,7 +147,7 @@ const TermsConditions = () => {
               Terms & Conditions
             </h1>
             <p className=" text-sm md:text-base max-w-2xl mx-auto font-medium">
-              AshfqHospital Telemedicine Services • Last Updated: May 2026
+              AshfaqHospital Telemedicine Services • Last Updated: May 2026
             </p>
           </div>
         </div>

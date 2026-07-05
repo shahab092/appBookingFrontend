@@ -66,7 +66,7 @@ const AppBanner = () => {
               <p className="text-base sm:text-lg md:text-xl lg:text-lg xl:text-xl text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-full lg:max-w-[90%] xl:max-w-[600px]">
                 Connect with certified doctors, track medical records securely,
                 and manage prescriptions—all from{" "}
-                <span className="font-bold text-primary">MediCare</span> in your
+                <span className="font-bold text-primary">AshfaqHospital</span> in your
                 pocket.
               </p>
             </div>
@@ -210,7 +210,7 @@ const AppBanner = () => {
                 <div className="w-1.5 h-1.5 xs:w-2 xs:h-2 bg-slate-700 rounded-full"></div>
                 <div className="w-12 xs:w-14 sm:w-16 h-3 xs:h-3.5 sm:h-4 bg-slate-800/80 rounded-full flex items-center justify-center">
                   <span className="text-[8px] xs:text-[9px] sm:text-[10px] text-slate-400">
-                    MediCare
+                    AshfaqHospital
                   </span>
                 </div>
                 <div className="w-1.5 h-1.5 xs:w-2 xs:h-2 bg-slate-700 rounded-full"></div>
@@ -258,7 +258,7 @@ const AppBanner = () => {
                     </div>
                     <div>
                       <h2 className="text-base xs:text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-                        MediCare
+                        AshfaqHospital
                       </h2>
                       <div className="flex items-center gap-1 xs:gap-2 mt-0.5 xs:mt-1">
                         <div className="flex">

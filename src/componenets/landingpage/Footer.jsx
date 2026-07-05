@@ -69,7 +69,7 @@ const Footer = () => {
               </div>
               <div>
                 <h2 className="text-white text-lg sm:text-xl font-bold">
-                  MediCare
+                  AshfaqHospital
                 </h2>
                 <p className="text-gray-400 text-xs sm:text-sm font-medium">
                   Trusted Healthcare Platform
@@ -229,24 +229,31 @@ const Footer = () => {
             <div className="lg:col-span-2">
               <div className="bg-linear-to-br from-primary to-primary/80 rounded-2xl h-80 relative overflow-hidden shadow-2xl">
                 {/* Map Content */}
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 z-10 flex items-center justify-center px-4">
                   <div className="text-center text-white">
                     <FaMapMarkerAlt className="text-4xl mx-auto mb-4" />
-                    <h3 className="text-white mb-2">MediCare Hospital</h3>
-                    <p className="text-blue-100 font-medium">
-                      123 Healthcare Avenue, Medical District
-                    </p>
-                    <p className="text-blue-100 font-medium">
-                      City, State 12345
+                    <h3 className="text-white mb-2">
+                      Ashfaq Neuropsychiatric and General Hospital
+                    </h3>
+                    <p className="text-blue-100 font-medium max-w-xl mx-auto">
+                      XFPC+V54, Kotanai, 19110, Pakistan
                     </p>
 
                     {/* Interactive Map Elements */}
                     <div className="mt-6 flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
-                      <button className="bg-white text-primary px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 transform hover:scale-105 flex items-center justify-center space-x-2">
+                      <a
+                        href="https://www.google.com/maps/search/?api=1&query=Ashfaq%20Neuropsychiatric%20and%20General%20Hospital%2C%20XFPC%2BV54%2C%20Kotanai%2C%2019110%2C%20Pakistan"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-white text-primary px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 transform hover:scale-105 flex items-center justify-center space-x-2"
+                      >
                         <FaMapMarkerAlt size={16} />
                         <span>Get Directions</span>
-                      </button>
-                      <button className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 flex items-center justify-center space-x-2 border border-white/50">
+                      </a>
+                      <button
+                        onClick={() => navigate("/doctorSearch")}
+                        className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 flex items-center justify-center space-x-2 border border-white/50"
+                      >
                         <FaCalendarCheck size={16} />
                         <span>Book Visit</span>
                       </button>
@@ -255,7 +262,7 @@ const Footer = () => {
                 </div>
 
                 {/* Map Grid Overlay */}
-                <div className="absolute inset-0 opacity-10">
+                <div className="pointer-events-none absolute inset-0 opacity-10">
                   <div className="grid grid-cols-4 gap-4 h-full">
                     {[...Array(8)].map((_, i) => (
                       <div
@@ -277,7 +284,7 @@ const Footer = () => {
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0 text-center sm:text-left">
             {/* Copyright */}
             <div className="text-gray-400 text-xs sm:text-sm font-medium order-3 sm:order-1 w-full sm:w-auto">
-              © 2026 AshfqHospital Telemedicine Services. All rights reserved.
+              © 2026 AshfaqHospital Telemedicine Services. All rights reserved.
             </div>
 
             {/* Additional Links */}
