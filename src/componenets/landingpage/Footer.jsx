@@ -283,7 +283,7 @@ const Footer = () => {
             {/* Additional Links */}
             <div className="flex flex-wrap justify-center gap-3 sm:gap-6 text-xs sm:text-sm order-2 sm:order-2">
               <Link
-                to="#"
+                to="/privacy-policy"
                 className="text-gray-400 hover:text-primary transition-colors duration-200 font-medium"
               >
                 Privacy Policy
