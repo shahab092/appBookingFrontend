@@ -2,9 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { Search, MapPin, ChevronDown, User } from "lucide-react";
 import api from "../../libs/api";
 
+const EMPTY_CITIES = [];
+
 const DoctorSearchBar = ({
   initialQuery = "",
   initialCity = "",
+  cities: providedCities = EMPTY_CITIES,
   onSearch,
   onCityChange,
 }) => {
@@ -40,6 +43,7 @@ const DoctorSearchBar = ({
 
   // Debounce suggestions
   useEffect(() => {
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
       console.log("--- DoctorSearchBar Suggestion Debounce Triggered ---");
       console.log("searchQuery:", searchQuery, "selectedCity:", selectedCity);
@@ -52,6 +56,7 @@ const DoctorSearchBar = ({
           });
           const res = await api.get("/doctor/search", {
             params: { search: searchQuery, city: selectedCity },
+            signal: controller.signal,
           });
           console.log(
             "Suggestions API Success Response (SearchBar):",
@@ -63,7 +68,9 @@ const DoctorSearchBar = ({
           setSuggestions(Array.isArray(docs) ? docs : []);
           setShowSuggestions(true);
         } catch (error) {
-          console.error("Suggestions API Error (SearchBar):", error);
+          if (error.name !== "CanceledError" && error.code !== "ERR_CANCELED") {
+            console.error("Suggestions API Error (SearchBar):", error);
+          }
         }
       } else {
         if (isUserTyping.current) {
@@ -72,9 +79,12 @@ const DoctorSearchBar = ({
         setSuggestions([]);
         setShowSuggestions(false);
       }
-    }, 2000);
+    }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [searchQuery, selectedCity]);
 
   const handleInputChange = (e) => {
@@ -105,7 +115,7 @@ const DoctorSearchBar = ({
     if (onCityChange) onCityChange(e.target.value);
   };
 
-  const [cities, setCities] = useState([]);
+  const [cities, setCities] = useState(providedCities);
 
   const getCity = async () => {
     try {
@@ -119,8 +129,12 @@ const DoctorSearchBar = ({
   };
 
   useEffect(() => {
+    if (providedCities.length > 0) {
+      setCities(providedCities);
+      return;
+    }
     getCity();
-  }, []);
+  }, [providedCities]);
 
   const pakistanCities = [
     "Karachi",

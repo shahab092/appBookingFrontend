@@ -29,12 +29,12 @@ const Footer = () => {
   ];
 
   const services = [
-    "Psychiatry Consultation",
-    "Psychological Testing",
-    "Medication Management",
-    "Therapy Sessions",
-    "Emergency Care",
-    "Rehabilitation",
+    "Online Doctor Consultations",
+    "Secure Video Appointments",
+    "Specialist Consultations",
+    "Digital Prescriptions",
+    "Remote Follow-up Care",
+    "Online Appointment Booking",
   ];
 
   const contactInfo = [
