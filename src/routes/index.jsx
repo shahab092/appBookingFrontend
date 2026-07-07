@@ -18,6 +18,7 @@ import UnderConstruction from "../Pages/UnderConstruction/UnderConstruction";
 import TermsConditions from "../Pages/TermsConditions/TermsConditions";
 import ReturnRefundPolicy from "../Pages/ReturnRefundPolicy/ReturnRefundPolicy";
 import PrivacyPolicy from "../Pages/PrivacyPolicy/PrivacyPolicy";
+import Hospitals from "../Pages/Hospitals/Hospitals";
 
 export default function AppRoutes() {
   return (
@@ -27,7 +28,7 @@ export default function AppRoutes() {
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Landing />} />
           <Route path="/medicines" element={<UnderConstruction />} />
-          <Route path="/hospitals" element={<UnderConstruction />} />
+          <Route path="/hospitals" element={<Hospitals />} />
           <Route path="/order-medicines" element={<UnderConstruction />} />
           <Route path="//tests" element={<UnderConstruction />} />
           <Route path="/doctorDetail" element={<DocterDetails />} />
