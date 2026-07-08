@@ -1,142 +1,126 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { jwtDecode } from "jwt-decode";
 import { setCredentials } from "../../features/AuthSlice";
 import api from "../../libs/api";
-import { jwtDecode } from "jwt-decode";
 import { useToast } from "../../context/ToastContext";
 import CustomModal from "./CustomModal";
 import CustomTextField from "./CustomTextField";
 import CountryCodeInput from "./CountryCodeInput";
-import { loginSchema } from "../../validation/validation";
 import OTPModal from "./OTPModal";
+import { loginSchema } from "../../validation/validation";
+import { getAuthErrorMessage } from "../../utils/authError";
+import {
+  isSuccessfulAuthResponse,
+  loginUser,
+  registerUser,
+  verifyOtp,
+} from "../../services/authService";
 
-const AUTH_REQUEST_CONFIG = { skipAuthRedirect: true };
+const DEFAULT_FORM_VALUES = {
+  whatsappnumber: "",
+  password: "",
+  confirmPassword: "",
+  role: "",
+};
 
-const getAuthErrorMessage = (error, fallbackMessage) => {
-  if (!error.response) {
-    return "We could not reach the server. Please check your connection and try again.";
+const ROLE_LABELS = {
+  doctor: "Doctor",
+  patient: "Patient",
+  pharmacy: "Pharmacy",
+  laboratory: "Laboratory",
+  admin: "Admin",
+};
+
+const getRoleLabel = (role) => {
+  if (!role) return "User";
+
+  const normalizedRole = role.toLowerCase();
+  return (
+    ROLE_LABELS[normalizedRole] || role.charAt(0).toUpperCase() + role.slice(1)
+  );
+};
+
+const getModalWidth = (role) => {
+  switch (role?.toLowerCase()) {
+    case "doctor":
+      return 500;
+    case "pharmacy":
+    case "laboratory":
+      return 480;
+    default:
+      return 450;
+  }
+};
+
+const getAuthCopy = ({ isLogin, selectedRole }) => {
+  if (!selectedRole) {
+    return {
+      title: "HealthCare Inc.",
+      subtitle: isLogin
+        ? "Welcome back! Please sign in to continue."
+        : "Create your account to get started.",
+    };
   }
 
-  const status = error.response.status;
-  const serverMessage = error.response.data?.message || error.response.data?.error;
+  const roleLabel = getRoleLabel(selectedRole);
 
-  if (status === 400) {
-    return serverMessage || "Please check the details you entered and try again.";
-  }
+  return {
+    title: isLogin ? `${roleLabel} Portal` : `Join as ${roleLabel}`,
+    subtitle: isLogin
+      ? `Sign in to your ${roleLabel} account`
+      : `Register as a ${roleLabel} on our platform`,
+  };
+};
 
-  if (status === 401) {
-    return "The WhatsApp number or password is incorrect.";
-  }
+const createUserFromToken = (loginData) => {
+  const { accessToken, user: responseUser } = loginData;
+  const decoded = jwtDecode(accessToken);
 
-  if (status === 403) {
-    return serverMessage || "Your account does not have permission to access this portal.";
-  }
-
-  if (status === 404) {
-    return serverMessage || "We could not find an account with these details.";
-  }
-
-  if (status >= 500) {
-    return "Something went wrong on our side. Please try again in a moment.";
-  }
-
-  return serverMessage || fallbackMessage;
+  return {
+    id: responseUser?._id || decoded.id || decoded._id || decoded.userId,
+    role: responseUser?.role || decoded.role,
+    name:
+      responseUser?.name ||
+      decoded.name ||
+      decoded.username ||
+      decoded.email?.split("@")[0] ||
+      "User",
+    whatsappnumber: responseUser?.whatsappnumber || decoded.whatsappnumber,
+    isVerified: responseUser?.isVerified ?? decoded.isVerified,
+    status: responseUser?.status || decoded.status,
+  };
 };
 
 export default function LoginModal({ visible, onCancel, selectedRole }) {
   const [isLogin, setIsLogin] = useState(true);
-
-  // Format role for display
-  const formatRoleName = (role) => {
-    if (!role) return "User";
-
-    // Handle special cases
-    if (role.toLowerCase() === "doctor") return "Doctor";
-    if (role.toLowerCase() === "patient") return "Patient";
-    if (role.toLowerCase() === "pharmacy") return "Pharmacy";
-    if (role.toLowerCase() === "laboratory") return "Laboratory";
-    if (role.toLowerCase() === "admin") return "Admin";
-
-    // Default: capitalize first letter
-    return role.charAt(0).toUpperCase() + role.slice(1);
-  };
-
-  // Get appropriate title and subtitle based on role and mode
-  const getTitle = () => {
-    if (!selectedRole) return "HealthCare Inc.";
-
-    const roleName = formatRoleName(selectedRole);
-
-    if (isLogin) {
-      return `${roleName} Portal`;
-    } else {
-      return `Join as ${roleName}`;
-    }
-  };
-
-  const getSubtitle = () => {
-    if (!selectedRole) {
-      return isLogin
-        ? "Welcome back! Please sign in to continue."
-        : "Create your account to get started.";
-    }
-
-    const roleName = formatRoleName(selectedRole);
-
-    if (isLogin) {
-      return `Sign in to your ${roleName} account`;
-    } else {
-      return `Register as a ${roleName} on our platform`;
-    }
-  };
-
-  const getModalWidth = () => {
-    // Adjust width based on role for better visual presentation
-    switch (selectedRole?.toLowerCase()) {
-      case "doctor":
-        return 500;
-      case "pharmacy":
-      case "laboratory":
-        return 480;
-      default:
-        return 450;
-    }
-  };
-
-  // Pass isSignup context to schema for conditional validation
-  const methods = useForm({
-    resolver: yupResolver(loginSchema),
-    mode: "onTouched",
-    context: { isSignup: !isLogin }, // Pass context to schema
-    defaultValues: {
-      whatsappnumber: "",
-      password: "",
-      confirmPassword: "",
-      role: "",
-    },
-  });
-
-  const {
-    handleSubmit,
-    reset,
-    watch,
-  } = methods;
-
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
   const [storeOtp, setStoreOtp] = useState(null);
-  const [registrationData, setRegistrationData] = useState(null); // To store signup data
+  const [registrationData, setRegistrationData] = useState(null);
   const [userId, setUserId] = useState(null);
   const [formError, setFormError] = useState("");
 
   const dispatch = useDispatch();
   const { showToast } = useToast();
 
-  // Watch values
+  const methods = useForm({
+    resolver: yupResolver(loginSchema),
+    mode: "onTouched",
+    context: { isSignup: !isLogin },
+    defaultValues: DEFAULT_FORM_VALUES,
+  });
+
+  const { handleSubmit, reset, watch } = methods;
   const formValues = watch();
+
+  const modalCopy = useMemo(
+    () => getAuthCopy({ isLogin, selectedRole }),
+    [isLogin, selectedRole],
+  );
 
   useEffect(() => {
     if (visible) {
@@ -144,211 +128,169 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
     }
   }, [visible, isLogin]);
 
-  const onSubmit = async (data) => {
-    setIsLoading(true);
-    setFormError("");
-    try {
-      if (isLogin) {
-        // LOGIN FLOW
-        const res = await api.post(
-          "/auth/login",
-          {
-            whatsappnumber: data.whatsappnumber,
-            password: data.password,
-            role: selectedRole || data.role, // Send role with login
-          },
-          AUTH_REQUEST_CONFIG,
-        );
-
-        if (
-          res.data?.success ||
-          res.data?.data?.accessToken ||
-          res.data?.accessToken
-        ) {
-          const loginData = res.data.data || res.data;
-          if (loginData.accessToken) {
-            finalizeLogin(loginData);
-          } else {
-            const message = "Login failed because the server did not return a session token.";
-            setFormError(message);
-            showToast(message, "error");
-          }
-        } else {
-          const message = res.data?.message || "Login failed. Please try again.";
-          setFormError(message);
-          showToast(message, "error");
-        }
-      } else {
-        const { confirmPassword, ...registerData } = data;
-
-        // Add selectedRole to registration data
-        const registrationPayload = {
-          ...registerData,
-          role: selectedRole || "patient", // Default to patient if no role selected
-        };
-
-        const res = await api.post(
-          "/auth/register",
-          registrationPayload,
-          AUTH_REQUEST_CONFIG,
-        );
-
-        if (res.data?.success) {
-          console.log(res.data, "registration user response");
-
-          const receivedOtp = res.data.otp || res.data.data?.otp;
-          if (receivedOtp) {
-            setStoreOtp(receivedOtp);
-          }
-
-          setRegistrationData(registerData); // Save data for possible login later
-          setUserId(res.data.userId || res.data.data?.userId);
-          showToast(res.data.message || "OTP sent for verification", "info");
-          setShowOTP(true);
-        } else {
-          const message = res.data?.message || "Registration failed. Please try again.";
-          setFormError(message);
-          showToast(message, "error");
-        }
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      const errorMessage = getAuthErrorMessage(
-        error,
-        isLogin ? "Login failed. Please try again." : "Registration failed. Please try again.",
-      );
-      setFormError(errorMessage);
-      showToast(errorMessage, "error");
-    } finally {
-      setIsLoading(false);
-    }
+  const showFormError = (message) => {
+    setFormError(message);
+    showToast(message, "error");
   };
 
   const finalizeLogin = (loginData) => {
     if (!loginData?.accessToken) {
-      console.error("finalizeLogin called without accessToken");
+      showFormError("Login failed because the server did not return a session token.");
       return;
     }
 
-    const { accessToken, refreshToken, user: responseUser } = loginData;
-    let decoded = {};
     try {
-      decoded = jwtDecode(accessToken);
+      const userData = createUserFromToken(loginData);
+
+      dispatch(
+        setCredentials({
+          token: loginData.accessToken,
+          refreshToken: loginData.refreshToken || null,
+          user: userData,
+        }),
+      );
+
+      setFormError("");
+      showToast("Login successful! Welcome back.", "success");
+      onCancel();
     } catch (error) {
       console.error("Token decode error:", error);
-      const message = "Login failed because the session token is invalid.";
-      setFormError(message);
-      showToast(message, "error");
+      showFormError("Login failed because the session token is invalid.");
+    }
+  };
+
+  const handleLogin = async (data) => {
+    const loginData = await loginUser({
+      whatsappnumber: data.whatsappnumber,
+      password: data.password,
+      role: selectedRole || data.role,
+    });
+
+    if (!isSuccessfulAuthResponse(loginData)) {
+      showFormError(loginData?.message || "Login failed. Please try again.");
       return;
     }
 
-    const userData = {
-      id: responseUser?._id || decoded.id || decoded._id || decoded.userId,
-      role: responseUser?.role || decoded.role,
-      name:
-        responseUser?.name ||
-        decoded.name ||
-        decoded.username ||
-        decoded.email?.split("@")[0] ||
-        "User",
-      whatsappnumber: responseUser?.whatsappnumber || decoded.whatsappnumber,
-      isVerified: responseUser?.isVerified ?? decoded.isVerified,
-      status: responseUser?.status || decoded.status,
+    finalizeLogin(loginData);
+  };
+
+  const handleRegister = async (data) => {
+    const registerData = {
+      whatsappnumber: data.whatsappnumber,
+      password: data.password,
+    };
+    const payload = {
+      ...registerData,
+      role: selectedRole || "patient",
     };
 
-    dispatch(
-      setCredentials({
-        token: accessToken,
-        refreshToken: refreshToken || null,
-        user: userData,
-      }),
-    );
+    const registerDataResponse = await registerUser(payload);
 
-    showToast("Login successful! Welcome back.", "success");
+    if (!registerDataResponse?.success) {
+      showFormError(
+        registerDataResponse?.message || "Registration failed. Please try again.",
+      );
+      return;
+    }
+
+    setStoreOtp(
+      registerDataResponse.otp || registerDataResponse.data?.otp || null,
+    );
+    setRegistrationData(registerData);
+    setUserId(registerDataResponse.userId || registerDataResponse.data?.userId);
+    showToast(registerDataResponse.message || "OTP sent for verification", "info");
+    setShowOTP(true);
+  };
+
+  const onSubmit = async (data) => {
+    setIsLoading(true);
     setFormError("");
-    onCancel();
+
+    try {
+      if (isLogin) {
+        await handleLogin(data);
+      } else {
+        await handleRegister(data);
+      }
+    } catch (error) {
+      console.error("Auth form error:", error);
+      showFormError(
+        getAuthErrorMessage(
+          error,
+          isLogin ? "Login failed. Please try again." : "Registration failed. Please try again.",
+        ),
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleOTPVerify = async (otp) => {
     setIsLoading(true);
+    setFormError("");
+
     try {
-      setFormError("");
-      const res = await api.post(
-        "/auth/verify-otp",
-        {
-          userId,
-          otp,
-        },
-        AUTH_REQUEST_CONFIG,
-      );
+      const verificationData = await verifyOtp({ userId, otp });
 
-      if (res.data?.success) {
-        const loginData = res.data.data || res.data;
-        if (loginData?.accessToken) {
-          finalizeLogin(loginData);
-        } else {
-          showToast("Verification successful! Logging you in...", "success");
-
-          const loginRes = await api.post(
-            "/auth/login",
-            {
-              whatsappnumber:
-                registrationData?.whatsappnumber || formValues.whatsappnumber,
-              password: registrationData?.password || formValues.password,
-            },
-            AUTH_REQUEST_CONFIG,
-          );
-
-          const autoLoginData = loginRes.data.data || loginRes.data;
-          if (autoLoginData?.accessToken) {
-            finalizeLogin(autoLoginData);
-          } else {
-            setIsLogin(true);
-            showToast("Registration complete! Please sign in.", "info");
-          }
-        }
-      } else {
-        showToast(
-          res.data?.message || "Invalid OTP. Please try again.",
-          "error",
-        );
+      if (!verificationData?.success) {
+        showFormError(verificationData?.message || "Invalid OTP. Please try again.");
+        return;
       }
+
+      if (verificationData?.accessToken) {
+        finalizeLogin(verificationData);
+        return;
+      }
+
+      showToast("Verification successful! Logging you in...", "success");
+
+      const loginData = await loginUser({
+        whatsappnumber:
+          registrationData?.whatsappnumber || formValues.whatsappnumber,
+        password: registrationData?.password || formValues.password,
+      });
+
+      if (loginData?.accessToken) {
+        finalizeLogin(loginData);
+        return;
+      }
+
+      setIsLogin(true);
+      showToast("Registration complete! Please sign in.", "info");
     } catch (error) {
-      console.error("OTP Error:", error);
-      const errorMessage = getAuthErrorMessage(
-        error,
-        "OTP verification failed. Please try again.",
+      console.error("OTP error:", error);
+      showFormError(
+        getAuthErrorMessage(error, "OTP verification failed. Please try again."),
       );
-      setFormError(errorMessage);
-      showToast(errorMessage, "error");
     } finally {
       setIsLoading(false);
       setShowOTP(false);
-      setStoreOtp(null); // Reset storeOtp after verification attempts
+      setStoreOtp(null);
     }
   };
 
   const handleToggleMode = () => {
-    setIsLogin(!isLogin);
+    const nextIsLogin = !isLogin;
+
+    setIsLogin(nextIsLogin);
     setFormError("");
-    // Reset form when switching modes
+    setStoreOtp(null);
+    setRegistrationData(null);
+    setUserId(null);
     reset({
-      whatsappnumber: "",
-      password: "",
-      confirmPassword: "",
+      ...DEFAULT_FORM_VALUES,
       role: selectedRole || "",
     });
-    setStoreOtp(null); // Reset OTP when switching modes
   };
 
   return (
     <CustomModal
       visible={visible}
       onCancel={onCancel}
-      title={getTitle()}
-      subtitle={getSubtitle()}
+      title={modalCopy.title}
+      subtitle={modalCopy.subtitle}
       showSubmit={false}
-      width={getModalWidth()}
+      width={getModalWidth(selectedRole)}
     >
       <div className="flex flex-col p-4 sm:p-6">
         <FormProvider {...methods}>
@@ -365,7 +307,7 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
             <CountryCodeInput
               name="whatsappnumber"
               label="WhatsApp Number"
-              country={"pk"}
+              country="pk"
               required
             />
 
@@ -377,25 +319,27 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
               required
             />
 
-            {/* Show confirm password only for signup */}
             {!isLogin && (
               <>
                 <CustomTextField
-                  name="confirmPassword" // Use camelCase to match schema
+                  name="confirmPassword"
                   label="Confirm Password"
                   placeholder="Confirm your password"
                   type="password"
                   required
                 />
 
-                {/* Optional: Show password match indicator */}
                 {formValues.password && formValues.confirmPassword && (
                   <div
-                    className={`text-xs ${formValues.password === formValues.confirmPassword ? "text-green-600" : "text-red-600"}`}
+                    className={`text-xs ${
+                      formValues.password === formValues.confirmPassword
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
                   >
                     {formValues.password === formValues.confirmPassword
-                      ? "✓ Passwords match"
-                      : "✗ Passwords do not match"}
+                      ? "Passwords match"
+                      : "Passwords do not match"}
                   </div>
                 )}
               </>
@@ -406,7 +350,7 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
                 <input
                   type="checkbox"
                   checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
+                  onChange={(event) => setRememberMe(event.target.checked)}
                   className="mr-2 rounded border-gray-300 text-primary focus:ring-primary"
                 />
                 Remember me
@@ -460,4 +404,5 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
     </CustomModal>
   );
 }
+
 
