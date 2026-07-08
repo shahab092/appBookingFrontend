@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -10,8 +10,40 @@ import CustomModal from "./CustomModal";
 import CustomTextField from "./CustomTextField";
 import CountryCodeInput from "./CountryCodeInput";
 import { loginSchema } from "../../validation/validation";
-import CustomSelect from "./CustomSelect";
 import OTPModal from "./OTPModal";
+
+const AUTH_REQUEST_CONFIG = { skipAuthRedirect: true };
+
+const getAuthErrorMessage = (error, fallbackMessage) => {
+  if (!error.response) {
+    return "We could not reach the server. Please check your connection and try again.";
+  }
+
+  const status = error.response.status;
+  const serverMessage = error.response.data?.message || error.response.data?.error;
+
+  if (status === 400) {
+    return serverMessage || "Please check the details you entered and try again.";
+  }
+
+  if (status === 401) {
+    return "The WhatsApp number or password is incorrect.";
+  }
+
+  if (status === 403) {
+    return serverMessage || "Your account does not have permission to access this portal.";
+  }
+
+  if (status === 404) {
+    return serverMessage || "We could not find an account with these details.";
+  }
+
+  if (status >= 500) {
+    return "Something went wrong on our side. Please try again in a moment.";
+  }
+
+  return serverMessage || fallbackMessage;
+};
 
 export default function LoginModal({ visible, onCancel, selectedRole }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -90,7 +122,6 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
     handleSubmit,
     reset,
     watch,
-    formState: { errors },
   } = methods;
 
   const [isLoading, setIsLoading] = useState(false);
@@ -99,28 +130,35 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
   const [storeOtp, setStoreOtp] = useState(null);
   const [registrationData, setRegistrationData] = useState(null); // To store signup data
   const [userId, setUserId] = useState(null);
+  const [formError, setFormError] = useState("");
 
   const dispatch = useDispatch();
   const { showToast } = useToast();
 
-  // Log validation errors for debugging
-  if (Object.keys(errors).length > 0) {
-    console.log("Validation Errors:", errors);
-  }
-
   // Watch values
   const formValues = watch();
 
+  useEffect(() => {
+    if (visible) {
+      setFormError("");
+    }
+  }, [visible, isLogin]);
+
   const onSubmit = async (data) => {
     setIsLoading(true);
+    setFormError("");
     try {
       if (isLogin) {
         // LOGIN FLOW
-        const res = await api.post("/auth/login", {
-          whatsappnumber: data.whatsappnumber,
-          password: data.password,
-          role: selectedRole || data.role, // Send role with login
-        });
+        const res = await api.post(
+          "/auth/login",
+          {
+            whatsappnumber: data.whatsappnumber,
+            password: data.password,
+            role: selectedRole || data.role, // Send role with login
+          },
+          AUTH_REQUEST_CONFIG,
+        );
 
         if (
           res.data?.success ||
@@ -131,10 +169,14 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
           if (loginData.accessToken) {
             finalizeLogin(loginData);
           } else {
-            showToast("Login failed: Access token missing.", "error");
+            const message = "Login failed because the server did not return a session token.";
+            setFormError(message);
+            showToast(message, "error");
           }
         } else {
-          showToast(res.data?.message || "Login failed.", "error");
+          const message = res.data?.message || "Login failed. Please try again.";
+          setFormError(message);
+          showToast(message, "error");
         }
       } else {
         const { confirmPassword, ...registerData } = data;
@@ -145,7 +187,11 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
           role: selectedRole || "patient", // Default to patient if no role selected
         };
 
-        const res = await api.post("/auth/register", registrationPayload);
+        const res = await api.post(
+          "/auth/register",
+          registrationPayload,
+          AUTH_REQUEST_CONFIG,
+        );
 
         if (res.data?.success) {
           console.log(res.data, "registration user response");
@@ -160,15 +206,18 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
           showToast(res.data.message || "OTP sent for verification", "info");
           setShowOTP(true);
         } else {
-          showToast(res.data?.message || "Registration failed", "error");
+          const message = res.data?.message || "Registration failed. Please try again.";
+          setFormError(message);
+          showToast(message, "error");
         }
       }
     } catch (error) {
       console.error("Login error:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Invalid email or password. Please try again.";
+      const errorMessage = getAuthErrorMessage(
+        error,
+        isLogin ? "Login failed. Please try again." : "Registration failed. Please try again.",
+      );
+      setFormError(errorMessage);
       showToast(errorMessage, "error");
     } finally {
       setIsLoading(false);
@@ -182,7 +231,16 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
     }
 
     const { accessToken, refreshToken, user: responseUser } = loginData;
-    const decoded = jwtDecode(accessToken);
+    let decoded = {};
+    try {
+      decoded = jwtDecode(accessToken);
+    } catch (error) {
+      console.error("Token decode error:", error);
+      const message = "Login failed because the session token is invalid.";
+      setFormError(message);
+      showToast(message, "error");
+      return;
+    }
 
     const userData = {
       id: responseUser?._id || decoded.id || decoded._id || decoded.userId,
@@ -207,16 +265,22 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
     );
 
     showToast("Login successful! Welcome back.", "success");
+    setFormError("");
     onCancel();
   };
 
   const handleOTPVerify = async (otp) => {
     setIsLoading(true);
     try {
-      const res = await api.post("/auth/verify-otp", {
-        userId,
-        otp,
-      });
+      setFormError("");
+      const res = await api.post(
+        "/auth/verify-otp",
+        {
+          userId,
+          otp,
+        },
+        AUTH_REQUEST_CONFIG,
+      );
 
       if (res.data?.success) {
         const loginData = res.data.data || res.data;
@@ -225,11 +289,15 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
         } else {
           showToast("Verification successful! Logging you in...", "success");
 
-          const loginRes = await api.post("/auth/login", {
-            whatsappnumber:
-              registrationData?.whatsappnumber || formValues.whatsappnumber,
-            password: registrationData?.password || formValues.password,
-          });
+          const loginRes = await api.post(
+            "/auth/login",
+            {
+              whatsappnumber:
+                registrationData?.whatsappnumber || formValues.whatsappnumber,
+              password: registrationData?.password || formValues.password,
+            },
+            AUTH_REQUEST_CONFIG,
+          );
 
           const autoLoginData = loginRes.data.data || loginRes.data;
           if (autoLoginData?.accessToken) {
@@ -247,10 +315,12 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
       }
     } catch (error) {
       console.error("OTP Error:", error);
-      showToast(
-        error.response?.data?.message || "OTP verification failed",
-        "error",
+      const errorMessage = getAuthErrorMessage(
+        error,
+        "OTP verification failed. Please try again.",
       );
+      setFormError(errorMessage);
+      showToast(errorMessage, "error");
     } finally {
       setIsLoading(false);
       setShowOTP(false);
@@ -260,6 +330,7 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
 
   const handleToggleMode = () => {
     setIsLogin(!isLogin);
+    setFormError("");
     // Reset form when switching modes
     reset({
       whatsappnumber: "",
@@ -282,6 +353,15 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
       <div className="flex flex-col p-4 sm:p-6">
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {formError && (
+              <div
+                role="alert"
+                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+              >
+                {formError}
+              </div>
+            )}
+
             <CountryCodeInput
               name="whatsappnumber"
               label="WhatsApp Number"
@@ -380,3 +460,4 @@ export default function LoginModal({ visible, onCancel, selectedRole }) {
     </CustomModal>
   );
 }
+
