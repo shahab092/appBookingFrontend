@@ -16,65 +16,7 @@ import { useSelector } from "react-redux";
 import LoginModal from "../common/LoginModal";
 import AppointmentModal from "../dashboard/AppointmentModal";
 import { MapPin, Video } from "lucide-react";
-
-const TOP_RATED_DOCTORS = [
-  {
-    id: 1,
-    name: "Dr. Sarah Johnson",
-    specialty: "Cardiologist",
-    experience: "15+ years",
-    rating: 4.9,
-    reviews: 1247,
-    image: "https://i.pravatar.cc/300?img=47",
-    isVerified: true,
-    consultationFee: 2500,
-    patients: "5000+",
-    availability: "Available Today",
-    tags: ["Heart Surgery", "ECG Expert"],
-  },
-  {
-    id: 2,
-    name: "Dr. Michael Chen",
-    specialty: "Neurologist",
-    experience: "12+ years",
-    rating: 4.8,
-    reviews: 982,
-    image: "https://i.pravatar.cc/300?img=12",
-    isVerified: true,
-    consultationFee: 2200,
-    patients: "4200+",
-    availability: "Tomorrow",
-    tags: ["Migraine Expert", "Stroke Care"],
-  },
-  {
-    id: 3,
-    name: "Dr. Emily Davis",
-    specialty: "Pediatrician",
-    experience: "10+ years",
-    rating: 4.9,
-    reviews: 1534,
-    image: "https://i.pravatar.cc/300?img=45",
-    isVerified: true,
-    consultationFee: 1800,
-    patients: "6500+",
-    availability: "Available Today",
-    tags: ["Vaccination", "Child Care"],
-  },
-  {
-    id: 4,
-    name: "Dr. Robert Wilson",
-    specialty: "Orthopedic Surgeon",
-    experience: "18+ years",
-    rating: 4.7,
-    reviews: 876,
-    image: "https://i.pravatar.cc/300?img=33",
-    isVerified: true,
-    consultationFee: 2800,
-    patients: "3800+",
-    availability: "Available Today",
-    tags: ["Joint Replacement", "Sports Injury"],
-  },
-];
+import { getDoctorAvatarUrl } from "../../utils/doctorAvatar";
 
 import api from "../../libs/api";
 import { useToast } from "../../context/ToastContext";
@@ -125,13 +67,6 @@ const TopRatedDoctors = () => {
 
   const displayedDoctors = showAll ? doctors : doctors.slice(0, 4);
 
-  if (loading)
-    return (
-      <div className="py-20 text-center text-gray-600">
-        Loading specialists...
-      </div>
-    );
-
   return (
     <section className="py-8 md:py-12 bg-gray-50">
       <div className="container mx-auto px-3 sm:px-4 md:px-6">
@@ -154,17 +89,33 @@ const TopRatedDoctors = () => {
 
         {/* Doctors Grid - Responsive */}
         <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 mb-8 md:mb-10">
-          {displayedDoctors.map((doctor) => (
-            <DoctorCard
-              key={doctor._id || doctor.id}
-              doctor={doctor}
-              onBook={handleBookAppointment}
-              onViewProfile={handleViewProfile}
-            />
-          ))}
+          {loading
+            ? Array.from({ length: 4 }).map((_, index) => (
+                <DoctorCardSkeleton key={index} />
+              ))
+            : displayedDoctors.map((doctor) => (
+                <DoctorCard
+                  key={doctor._id || doctor.id}
+                  doctor={doctor}
+                  onBook={handleBookAppointment}
+                  onViewProfile={handleViewProfile}
+                />
+              ))}
         </div>
 
+        {!loading && doctors.length === 0 && (
+          <div className="mb-8 rounded-2xl border border-blue-100 bg-white px-4 py-8 text-center shadow-sm">
+            <p className="text-sm font-semibold text-gray-800">
+              No top rated doctors available right now.
+            </p>
+            <p className="mt-1 text-xs text-gray-500">
+              Please check again later or search all doctors.
+            </p>
+          </div>
+        )}
+
         {/* View All Button */}
+        {!loading && doctors.length > 4 && (
         <div className="text-center px-2">
           <button
             onClick={() => setShowAll(!showAll)}
@@ -178,6 +129,7 @@ const TopRatedDoctors = () => {
             />
           </button>
         </div>
+        )}
       </div>
 
       {/* Modals */}
@@ -195,6 +147,31 @@ const TopRatedDoctors = () => {
   );
 };
 
+
+const DoctorCardSkeleton = () => (
+  <div className="bg-white rounded-2xl shadow-md overflow-hidden flex flex-col h-full animate-pulse">
+    <div className="h-48 sm:h-52 md:h-56 lg:h-60 bg-gray-200" />
+    <div className="p-4 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <div className="h-4 w-32 rounded bg-gray-200" />
+        <div className="h-4 w-14 rounded bg-gray-200" />
+      </div>
+      <div className="flex gap-2">
+        <div className="h-6 w-20 rounded-full bg-blue-100" />
+        <div className="h-6 w-24 rounded-full bg-blue-100" />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="h-12 rounded-lg bg-gray-100" />
+        <div className="h-12 rounded-lg bg-gray-100" />
+      </div>
+      <div className="mt-auto space-y-2">
+        <div className="h-10 rounded-xl bg-gray-200" />
+        <div className="h-10 rounded-xl bg-gray-100" />
+      </div>
+    </div>
+  </div>
+);
+
 // Responsive Doctor Card Component
 // TopRatedDoctors.jsx (unchanged main component except DoctorCard update)
 const DoctorCard = ({ doctor, onBook, onViewProfile }) => {
@@ -208,7 +185,7 @@ const DoctorCard = ({ doctor, onBook, onViewProfile }) => {
   const tags =
     doctor.services && doctor.services.length > 0
       ? doctor.services.slice(0, 2)
-      : [doctor.specialty || "Specialist", "General Care"];
+      : [doctor.specialty || doctor.speciality || "Specialist", "General Care"];
 
   return (
     <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col h-full">
@@ -218,10 +195,7 @@ const DoctorCard = ({ doctor, onBook, onViewProfile }) => {
         onClick={() => onViewProfile(doctor)}
       >
         <img
-          src={
-            doctor.image ||
-            "https://img.freepik.com/free-photo/doctor-smiling-with-stethoscope_1154-36.jpg"
-          }
+          src={getDoctorAvatarUrl(doctor)}
           alt={doctor.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
@@ -258,10 +232,10 @@ const DoctorCard = ({ doctor, onBook, onViewProfile }) => {
         {/* Name Overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 text-white bg-gradient-to-t from-black/60 to-transparent">
           <h3 className="font-bold text-sm sm:text-base md:text-lg truncate">
-            {doctor.name}
+            {doctor.name || "Doctor"}
           </h3>
           <p className="text-xs sm:text-sm text-blue-200 truncate">
-            {doctor.specialty}
+            {doctor.specialty || doctor.speciality || "Specialist"}
           </p>
         </div>
       </div>

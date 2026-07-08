@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, MapPin, ChevronDown, User } from "lucide-react";
 import api from "../../libs/api";
+import { getDoctorAvatarUrl } from "../../utils/doctorAvatar";
 
 const EMPTY_CITIES = [];
 
@@ -152,7 +153,7 @@ const DoctorSearchBar = ({
 
   return (
     <div
-      className="w-full bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl p-3 shadow-xl relative"
+      className="w-full bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl p-3 shadow-xl relative z-50"
       ref={dropdownRef}
     >
       <form
@@ -220,7 +221,7 @@ const DoctorSearchBar = ({
 
           {/* ✅ Suggestions Dropdown */}
           {showSuggestions && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 z-[9999] overflow-hidden max-h-72 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
               {suggestions.length > 0 ? (
                 suggestions.map((doctor) => (
                   <button
@@ -231,7 +232,7 @@ const DoctorSearchBar = ({
                   >
                     <div className="w-10 h-10 rounded-full overflow-hidden mr-3 border border-gray-100 shrink-0">
                       <img
-                        src={doctor.image}
+                        src={getDoctorAvatarUrl(doctor)}
                         alt={doctor.name}
                         className="w-full h-full object-cover"
                       />

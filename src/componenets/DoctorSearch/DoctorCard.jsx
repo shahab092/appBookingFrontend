@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import LoginModal from "../common/LoginModal";
 import AppointmentModal from "../dashboard/AppointmentModal";
+import { getDoctorAvatarUrl } from "../../utils/doctorAvatar";
 
 const DoctorCard = ({ doctor }) => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const DoctorCard = ({ doctor }) => {
       {/* Left: Doctor Image */}
       <div className="relative shrink-0 flex flex-col items-center">
         <img
-          src={doctor.image || "https://via.placeholder.com/140"}
+          src={getDoctorAvatarUrl(doctor)}
           alt={doctor.name}
           className="w-32 h-32 rounded-2xl object-cover border-2 border-primary cursor-pointer"
           onClick={handleProfileClick}

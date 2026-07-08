@@ -9,6 +9,7 @@ import { FaStar, FaClock, FaPhone } from "react-icons/fa";
 import { Video, MapPin } from "lucide-react";
 import api from "../../libs/api";
 import { getAddressFromCoords } from "../../libs/locationUtils";
+import { getDoctorAvatarUrl } from "../../utils/doctorAvatar";
 
 export default function DocterDetails() {
   const navigate = useNavigate();
@@ -69,9 +70,8 @@ export default function DocterDetails() {
               registrationDate: apiData.registrationDate,
               // Preserve existing UI fields if not in API
               consultationFee: doctor?.consultationFee || "2,500",
-              image:
-                doctor?.image ||
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuDdoH13EJEqwZH0P18HvVAgzWTukvstFy4E8ebiOLGIDGNdXkL40F49f3jhBpauls21KSeFMY93fWv_m9qJuzHroF3sEop-dUVjPsYYoPoUxMDKZZZTq2q9y_nisWG4UEgIVQeryhpb5YRY9drkvoG8mCOWZxsuR0ZILgMbKkzcSYMAKFoZwAomNmc0ARQmoXqnaLCpNrOEyn93kK0ZXOtsDXXwxTvaGq3CrvPUVkCHnjpflqgy6CQ0AJvNupJMm9C5kvv8amYfowA",
+              image: apiData.image || doctor?.image,
+              gender: apiData.gender || doctor?.gender,
             });
           }
         } catch (error) {
@@ -239,7 +239,7 @@ export default function DocterDetails() {
                   <img
                     alt="Doctor Profile"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    src={doctor?.image}
+                    src={getDoctorAvatarUrl(doctor)}
                   />
                 </div>
                 <div className="absolute bottom-2 right-2 bg-linear-to-r from-green-400 to-green-500 w-6 h-6 rounded-full border-4 border-white dark:border-slate-800 animate-pulse"></div>

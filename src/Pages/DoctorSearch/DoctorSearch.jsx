@@ -13,6 +13,7 @@ import CustomModal from "../../componenets/common/CustomModal";
 import { FaStethoscope } from "react-icons/fa";
 import api from "../../libs/api";
 import { searchDoctors } from "../../features/DoctorSlice";
+import { getDoctorAvatarUrl } from "../../utils/doctorAvatar";
 
 const DoctorSearch = () => {
   const location = useLocation();
@@ -114,7 +115,7 @@ const DoctorSearch = () => {
   return (
     <div className="min-h-screen bg-neutral-light">
       {/* Hero Search Section - Full Width */}
-      <div className="bg-primary py-6 px-4 mb-4 relative overflow-hidden">
+      <div className="bg-primary py-6 px-4 mb-4 relative overflow-visible z-20">
         {/* Background Decorations */}
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/10 rounded-full blur-3xl"></div>
@@ -138,7 +139,7 @@ const DoctorSearch = () => {
           </div>
 
           {/* Search Bar - Full Width within Container */}
-          <div className="w-full search-component-container mb-3">
+          <div className="w-full search-component-container mb-3 relative z-50">
             <DoctorSearchBar
               initialQuery={currentQuery}
               initialCity={currentCity}
@@ -292,9 +293,8 @@ const DoctorSearch = () => {
                 _id: doctor._id, // CRITICAL: Required for checking appointment pre-selection
                 id: doctor.doctorId || doctor.id || "NA",
                 name: doctor.name || "NA",
-                image:
-                  doctor.image ||
-                  "https://images.pexels.com/photos/5215024/pexels-photo-5215024.jpeg?auto=compress&cs=tinysrgb&w=600",
+                image: getDoctorAvatarUrl(doctor),
+                gender: doctor.gender,
                 specialty: doctor.speciality || doctor.superSpeciality || "NA",
                 qualifications:
                   doctor.education?.length > 0
