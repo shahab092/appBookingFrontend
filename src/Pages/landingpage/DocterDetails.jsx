@@ -10,6 +10,7 @@ import { Video, MapPin } from "lucide-react";
 import api from "../../libs/api";
 import { getAddressFromCoords } from "../../libs/locationUtils";
 import { getDoctorAvatarUrl } from "../../utils/doctorAvatar";
+import { getDoctorReviews } from "../../services/reviewService";
 
 export default function DocterDetails() {
   const navigate = useNavigate();
@@ -20,6 +21,8 @@ export default function DocterDetails() {
   const [loading, setLoading] = useState(false);
   const [preSelectedLocationId, setPreSelectedLocationId] = useState(null);
   const [sideBarLocationId, setSideBarLocationId] = useState(null);
+  const [doctorReviews, setDoctorReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   useEffect(() => {
     if (doctor?.locations?.length > 0 && !sideBarLocationId) {
@@ -84,6 +87,25 @@ export default function DocterDetails() {
 
     fetchDoctorDetails();
   }, [location.state?.doctor]);
+
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!doctor?._id) return;
+
+      setReviewsLoading(true);
+      try {
+        const reviews = await getDoctorReviews(doctor._id);
+        setDoctorReviews(Array.isArray(reviews) ? reviews : []);
+      } catch (error) {
+        console.error("Error fetching doctor reviews:", error);
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, [doctor?._id]);
 
   // Resolve clinic addresses if they are missing
   useEffect(() => {
@@ -216,6 +238,42 @@ export default function DocterDetails() {
       "(0946) 744760"
     );
   };
+
+  const getReviewRating = (review) => review?.ratings?.overall || 0;
+
+  const getPatientName = (review) =>
+    review?.patientId?.name || review?.patientId?.fullName || "Anonymous Patient";
+
+  const getPatientInitials = (review) => {
+    const name = getPatientName(review);
+    const words = name.trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) return "AP";
+    if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+    return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
+  };
+
+  const formatReviewDate = (date) => {
+    if (!date) return "Recently";
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const reviewDistribution = [5, 4, 3, 2, 1].map((star) => {
+    const count = doctorReviews.filter(
+      (review) => Math.round(getReviewRating(review)) === star,
+    ).length;
+    const percentage = doctorReviews.length
+      ? Math.round((count / doctorReviews.length) * 100)
+      : 0;
+
+    return {
+      label: `${star} stars`,
+      value: `${percentage}%`,
+    };
+  });
 
   return (
     <div className="bg-gradient-to-b from-primary/5 to-white dark:from-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-300 flex flex-col">
@@ -628,40 +686,8 @@ export default function DocterDetails() {
                   </p>
                 </div>
                 <div className="md:col-span-8 space-y-3">
-                  {[
-                    {
-                      label: "5 stars",
-                      value: doctor?.rating >= 4.5 ? "90%" : "0%",
-                    },
-                    {
-                      label: "4 stars",
-                      value:
-                        doctor?.rating >= 3.5 && doctor?.rating < 4.5
-                          ? "8%"
-                          : "0%",
-                    },
-                    {
-                      label: "3 stars",
-                      value:
-                        doctor?.rating >= 2.5 && doctor?.rating < 3.5
-                          ? "2%"
-                          : "0%",
-                    },
-                    {
-                      label: "2 stars",
-                      value:
-                        doctor?.rating >= 1.5 && doctor?.rating < 2.5
-                          ? "0%"
-                          : "0%",
-                    },
-                    {
-                      label: "1 stars",
-                      value:
-                        doctor?.rating >= 0.5 && doctor?.rating < 1.5
-                          ? "0%"
-                          : "0%",
-                    },
-                  ].map((rating) => (
+                  {reviewDistribution.map((rating) => (
+
                     <div className="flex items-center gap-4" key={rating.label}>
                       <span className="text-xs font-medium text-typegray w-12">
                         {rating.label}
@@ -681,96 +707,76 @@ export default function DocterDetails() {
               </div>
 
               <div className="space-y-6">
-                {doctor?.reviews > 0 ? (
-                  // Show actual reviews if available
+                {reviewsLoading ? (
                   <p className="text-center text-typegray py-8">
-                    No detailed reviews available yet. Be the first to review!
+                    Loading patient reviews...
                   </p>
-                ) : (
-                  // Show placeholder reviews if no reviews
-                  <>
-                    {[
-                      {
-                        name: "James D.",
-                        time: "2 weeks ago",
-                        initials: "JD",
-                        rating: 5,
-                        comment:
-                          "Dr. Sarah is exceptional! She explained my skin condition clearly and the treatment plan she prescribed showed results within just a few days. Very professional and caring.",
-                      },
-                      {
-                        name: "Anonymous Patient",
-                        time: "1 month ago",
-                        initials: null,
-                        rating: 5,
-                        comment:
-                          "Great experience at the Central Medical Complex. The wait time was minimal and the doctor was very thorough with the checkup. Highly recommend for any skin-related issues.",
-                      },
-                      {
-                        name: "Maria Khan",
-                        time: "2 months ago",
-                        initials: "MK",
-                        rating: 4.5,
-                        comment:
-                          "I had a PRP session here. The clinic staff was polite and Dr. Thompson ensured I was comfortable throughout the process. Very happy with the service.",
-                      },
-                    ].map((review, idx) => (
-                      <div
-                        key={idx}
-                        className="p-6 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-700"
-                      >
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex items-center gap-3">
-                            {review.initials ? (
-                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                                {review.initials}
-                              </div>
-                            ) : (
-                              <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold">
-                                <span className="material-symbols-outlined">
-                                  person
-                                </span>
-                              </div>
-                            )}
-                            <div>
-                              <h4 className="text-gray-900 dark:text-white">
-                                {review.name}
-                              </h4>
-                              <p className="text-typegray">{review.time}</p>
-                            </div>
+                ) : doctorReviews.length > 0 ? (
+                  doctorReviews.map((review) => (
+                    <div
+                      key={review._id}
+                      className="p-6 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-700"
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                            {getPatientInitials(review)}
                           </div>
-                          <div className="flex text-yellow-400">
-                            {Array.from({
-                              length: Math.floor(review.rating),
-                            }).map((_, i) => (
-                              <span
-                                key={i}
-                                className="material-symbols-outlined text-sm"
-                              >
-                                star
-                              </span>
-                            ))}
-                            {review.rating % 1 !== 0 && (
-                              <span className="material-symbols-outlined text-sm">
-                                star_half
-                              </span>
-                            )}
+                          <div>
+                            <h4 className="text-gray-900 dark:text-white">
+                              {getPatientName(review)}
+                            </h4>
+                            <p className="text-typegray">
+                              {formatReviewDate(review.createdAt)}
+                            </p>
                           </div>
                         </div>
+                        <div className="flex text-yellow-400">
+                          {Array.from({ length: 5 }).map((_, index) => (
+                            <span
+                              key={index}
+                              className="material-symbols-outlined text-sm"
+                            >
+                              {index < Math.floor(getReviewRating(review))
+                                ? "star"
+                                : "star_border"}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      {review.comment ? (
                         <p className="text-typegray leading-relaxed">
                           {review.comment}
                         </p>
-                      </div>
-                    ))}
-                  </>
+                      ) : (
+                        <p className="text-typegray italic">
+                          No written comment was added.
+                        </p>
+                      )}
+                      {review.doctorReply?.text && (
+                        <div className="mt-4 rounded-xl border border-primary/10 bg-primary/5 p-4">
+                          <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                            Doctor reply
+                          </p>
+                          <p className="mt-2 text-sm text-slate-700 dark:text-slate-200">
+                            {review.doctorReply.text}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-typegray py-8">
+                    No patient reviews yet.
+                  </p>
                 )}
               </div>
 
               <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <button className="flex items-center gap-2 text-primary font-bold hover:underline">
+                <span className="flex items-center gap-2 text-sm font-semibold text-typegray">
                   <span className="material-symbols-outlined">edit_note</span>
-                  Post a Review
-                </button>
+                  Reviews can be posted from completed appointments
+                </span>
                 <button className="w-full sm:w-auto text-center px-8 py-3 bg-primary text-white rounded-xl font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20">
                   View All Reviews
                 </button>

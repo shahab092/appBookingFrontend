@@ -7,6 +7,7 @@ import {
   FiThermometer,
   FiVideo,
   FiHome,
+  FiStar,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import AppointmentModal from "./AppointmentModal";
@@ -15,7 +16,9 @@ import { useSelector } from "react-redux";
 import api from "../../libs/api";
 import { useToast } from "../../context/ToastContext";
 import AppointmentCard from "./AppointmentCard";
+import ReviewModal from "./ReviewModal";
 import { useVideoCall } from "../../context/VideoCallProvider";
+import { createReview } from "../../services/reviewService";
 
 const PatientDashboard = () => {
   const navigate = useNavigate();
@@ -25,6 +28,9 @@ const PatientDashboard = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [reviewModalVisible, setReviewModalVisible] = useState(false);
+  const [selectedReviewAppointment, setSelectedReviewAppointment] = useState(null);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
   const hasNavigatedRef = useRef(false);
   const incomingCallHandlerRef = useRef(null);
@@ -146,7 +152,7 @@ const PatientDashboard = () => {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const res = await api.get("appointments?upcoming=true");
+      const res = await api.get("appointments/patient");
       console.log(res,'appoiment res')
       setAppointments(res.data.data || []);
       console.log(res, "resp");
@@ -212,6 +218,7 @@ const PatientDashboard = () => {
 
     return {
       id: appt._id,
+      raw: appt,
       title: reason,
       time: formattedTime,
       doctor: `${doctorName} (${department})`,
@@ -223,6 +230,49 @@ const PatientDashboard = () => {
   };
 
   const { showToast } = useToast();
+
+  const openReviewModal = (appointment) => {
+    setSelectedReviewAppointment(appointment);
+    setReviewModalVisible(true);
+  };
+
+  const closeReviewModal = () => {
+    if (reviewSubmitting) return;
+    setReviewModalVisible(false);
+    setSelectedReviewAppointment(null);
+  };
+
+  const handleSubmitReview = async ({ ratings, comment }) => {
+    const appointment = selectedReviewAppointment;
+    const doctorMongoId = appointment?.doctorId?._id || appointment?.doctorId;
+
+    if (!appointment?._id || !doctorMongoId) {
+      showToast("Unable to submit review for this appointment", "error");
+      return;
+    }
+
+    setReviewSubmitting(true);
+    try {
+      await createReview({
+        appointmentId: appointment._id,
+        doctorId: doctorMongoId,
+        ratings,
+        comment,
+      });
+
+      showToast("Review submitted successfully", "success");
+      setReviewModalVisible(false);
+      setSelectedReviewAppointment(null);
+      fetchAppointments();
+    } catch (error) {
+      showToast(
+        error.response?.data?.message || "Failed to submit review",
+        "error",
+      );
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
 
   const handleCancelAppointment = async (appointmentId) => {
     try {
@@ -251,10 +301,10 @@ const PatientDashboard = () => {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-[#2F74AA]">
-                Upcoming Schedule
+                My Appointments
               </h2>
               <p className="text-sm text-gray-500 font-medium mt-1">
-                You have {appointments.length} upcoming appointment
+                You have {appointments.length} appointment
                 {appointments.length !== 1 && "s"}
               </p>
             </div>
@@ -304,16 +354,29 @@ const PatientDashboard = () => {
                     statusColor={formattedAppt.statusColor}
                     type={formattedAppt.type}
                     typeIcon={formattedAppt.typeIcon}
+                    showActions={! ["completed", "cancelled"].includes(formattedAppt.status.toLowerCase())}
                     handleOpenModal={handleOpenModal}
                     handleCancel={() =>
                       handleCancelAppointment(formattedAppt.id)
+                    }
+                    reviewAction={
+                      formattedAppt.status.toLowerCase() === "completed" ? (
+                        <button
+                          type="button"
+                          onClick={() => openReviewModal(formattedAppt.raw)}
+                          className="w-full sm:w-auto px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 border-2 border-yellow-200 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition-colors"
+                        >
+                          <FiStar className="text-lg" />
+                          Write Review
+                        </button>
+                      ) : null
                     }
                   />
                 );
               })
             ) : (
               <p className="text-gray-500 text-center">
-                No upcoming appointments
+                No appointments found
               </p>
             )}
           </div>
@@ -397,6 +460,14 @@ const PatientDashboard = () => {
           </div>
         </section>
       </div>
+
+      <ReviewModal
+        visible={reviewModalVisible}
+        onCancel={closeReviewModal}
+        loading={reviewSubmitting}
+        doctorName={selectedReviewAppointment?.doctorId?.name}
+        onSubmit={handleSubmitReview}
+      />
     </div>
   );
 };

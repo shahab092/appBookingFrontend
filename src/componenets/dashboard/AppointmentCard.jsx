@@ -20,7 +20,8 @@ const AppointmentCard = ({
   showActions = true,
   cancelled = false,
   handleOpenModal,
-  handleCancel
+  handleCancel,
+  reviewAction,
 }) => {
   const statusStyles = {
     green: "bg-green-100 text-green-800 border border-green-200",
@@ -118,22 +119,27 @@ const AppointmentCard = ({
           </div>
 
           {/* Actions */}
-          {showActions && !cancelled && (
+          {(showActions && !cancelled) || reviewAction ? (
             <div className="flex flex-col sm:flex-row gap-2 mt-3 sm:mt-0 flex-shrink-0">
-              <button
-                onClick={handleOpenModal}
-                className="w-full sm:w-auto px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 border-2 border-gray-200 hover:bg-blue-50 hover:border-[#2F74AA] transition-colors text-gray-700"
-              >
-                <FiCalendar className="text-lg" />
-                Reschedule
-              </button>
+              {showActions && !cancelled && (
+                <>
+                  <button
+                    onClick={handleOpenModal}
+                    className="w-full sm:w-auto px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 border-2 border-gray-200 hover:bg-blue-50 hover:border-[#2F74AA] transition-colors text-gray-700"
+                  >
+                    <FiCalendar className="text-lg" />
+                    Reschedule
+                  </button>
 
-              <button onClick={handleCancel} className="w-full sm:w-auto px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 text-red-600 border-2 border-gray-200 hover:bg-red-50 transition-colors">
-                <CloseOutlined />
-                Cancel
-              </button>
+                  <button onClick={handleCancel} className="w-full sm:w-auto px-3 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 text-red-600 border-2 border-gray-200 hover:bg-red-50 transition-colors">
+                    <CloseOutlined />
+                    Cancel
+                  </button>
+                </>
+              )}
+              {reviewAction}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
