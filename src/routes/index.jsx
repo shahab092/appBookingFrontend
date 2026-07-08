@@ -17,6 +17,8 @@ import DoctorSearch from "../Pages/DoctorSearch/DoctorSearch";
 import UnderConstruction from "../Pages/UnderConstruction/UnderConstruction";
 import TermsConditions from "../Pages/TermsConditions/TermsConditions";
 import ReturnRefundPolicy from "../Pages/ReturnRefundPolicy/ReturnRefundPolicy";
+import PrivacyPolicy from "../Pages/PrivacyPolicy/PrivacyPolicy";
+import Hospitals from "../Pages/Hospitals/Hospitals";
 
 export default function AppRoutes() {
   return (
@@ -26,13 +28,14 @@ export default function AppRoutes() {
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Landing />} />
           <Route path="/medicines" element={<UnderConstruction />} />
-          <Route path="/hospitals" element={<UnderConstruction />} />
+          <Route path="/hospitals" element={<Hospitals />} />
           <Route path="/order-medicines" element={<UnderConstruction />} />
           <Route path="//tests" element={<UnderConstruction />} />
           <Route path="/doctorDetail" element={<DocterDetails />} />
           <Route path="/doctorSearch" element={<DoctorSearch />} />
           <Route path="/terms-and-conditions" element={<TermsConditions />} />
           <Route path="/return-refund-policy" element={<ReturnRefundPolicy />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         </Route>
 
         {/* Admin routes */}

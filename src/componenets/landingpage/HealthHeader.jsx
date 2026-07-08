@@ -328,6 +328,7 @@ const SearchComponent = ({ cities = [] }) => {
 
   // Debounce logic for suggestions
   useEffect(() => {
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
       console.log("--- HealthHeader Suggestion Debounce Triggered ---");
       console.log("searchQuery:", searchQuery, "selectedCity:", selectedCity);
@@ -338,6 +339,7 @@ const SearchComponent = ({ cities = [] }) => {
           setIsSuggestionsLoading(true);
           const res = await api.get("/doctor/search", {
             params: { search: searchQuery, city: selectedCity },
+            signal: controller.signal,
           });
           console.log(
             "Suggestions API Success Response (HealthHeader):",
@@ -349,7 +351,9 @@ const SearchComponent = ({ cities = [] }) => {
           setSuggestions(Array.isArray(docs) ? docs : []);
           setShowSuggestions(true);
         } catch (error) {
-          console.error("Suggestions API Error (HealthHeader):", error);
+          if (error.name !== "CanceledError" && error.code !== "ERR_CANCELED") {
+            console.error("Suggestions API Error (HealthHeader):", error);
+          }
         } finally {
           setIsSuggestionsLoading(false);
         }
@@ -358,9 +362,12 @@ const SearchComponent = ({ cities = [] }) => {
         setSuggestions([]);
         setShowSuggestions(false);
       }
-    }, 2000);
+    }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [searchQuery, selectedCity]);
 
   // Handle outside click

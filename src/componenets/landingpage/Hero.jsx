@@ -110,7 +110,7 @@ const Hero = () => {
 
               <button
                 onClick={() =>
-                  window.open("https://wa.me/923000000000", "_blank")
+                  window.open("https://wa.me/92300744760", "_blank")
                 }
                 className="border-2 border-white text-white px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 rounded-xl sm:rounded-2xl hover:bg-white/20 transition-all duration-300 font-bold text-sm sm:text-base md:text-lg backdrop-blur-sm flex items-center justify-center space-x-2 sm:space-x-3 group w-full sm:w-auto"
               >
@@ -251,7 +251,7 @@ const Hero = () => {
               </div>
               <button
                 onClick={() =>
-                  window.open("https://wa.me/923000000000", "_blank")
+                  window.open("https://wa.me/92300744760", "_blank")
                 }
                 className="w-full mt-2 sm:mt-3 bg-green-500 hover:bg-green-600 text-white py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base transition-colors duration-200 flex items-center justify-center space-x-2"
               >

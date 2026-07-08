@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import DoctorCard from "../../componenets/DoctorSearch/DoctorCard";
-import { SearchComponent } from "../../componenets/landingpage/HealthHeader";
+import DoctorSearchBar from "../../componenets/DoctorSearch/DoctorSearchBar";
 import CustomModal from "../../componenets/common/CustomModal";
 import { FaStethoscope } from "react-icons/fa";
 import api from "../../libs/api";
@@ -139,7 +139,13 @@ const DoctorSearch = () => {
 
           {/* Search Bar - Full Width within Container */}
           <div className="w-full search-component-container mb-3">
-            <SearchComponent cities={cities} />
+            <DoctorSearchBar
+              initialQuery={currentQuery}
+              initialCity={currentCity}
+              cities={cities}
+              onSearch={handleSearchUpdate}
+              onCityChange={handleCityUpdate}
+            />
           </div>
 
           {/* Speciality Pills */}

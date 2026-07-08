@@ -127,7 +127,7 @@ const UnderConstruction = () => {
               <p className="text-sm text-gray-500">
                 Need immediate assistance?{" "}
                 <a
-                  href="mailto:support@medicare.com"
+                  href="mailto:info@ashfaqhospitals.com"
                   className="text-blue-600 hover:underline font-medium"
                 >
                   Contact our support team

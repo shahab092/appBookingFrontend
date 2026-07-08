@@ -8,13 +8,13 @@ const TERMS_SECTIONS = [
     id: "acceptance",
     number: "1",
     title: "Acceptance of Terms",
-    content: "By using our telemedicine platform, booking appointments, or accessing any healthcare services provided by AshfqHospital, you agree to these Terms & Conditions. If you do not agree with any part of these terms, please do not use our services."
+    content: "By using our telemedicine platform, booking appointments, or accessing any healthcare services provided by AshfaqHospital, you agree to these Terms & Conditions. If you do not agree with any part of these terms, please do not use our services."
   },
   {
     id: "services",
     number: "2",
     title: "Telemedicine Services",
-    content: "AshfqHospital provides online healthcare services including but not limited to:\n\n• Online doctor consultations\n• Medical advice and follow-ups\n• Digital prescriptions\n• Appointment booking\n• Health guidance services\n\nTelemedicine services are intended for non-emergency medical situations only."
+    content: "AshfaqHospital provides online healthcare services including but not limited to:\n\n• Online doctor consultations\n• Medical advice and follow-ups\n• Digital prescriptions\n• Appointment booking\n• Health guidance services\n\nTelemedicine services are intended for non-emergency medical situations only."
   },
   {
     id: "disclaimer",
@@ -26,7 +26,7 @@ const TERMS_SECTIONS = [
     id: "responsibilities",
     number: "4",
     title: "User Responsibilities",
-    content: "By using our platform, you agree to:\n\n• Provide accurate and complete information\n• Use the platform lawfully and respectfully\n• Maintain confidentiality of your login credentials\n• Follow the doctor's medical advice responsibly\n\nAshfqHospital is not responsible for issues caused by inaccurate patient information."
+    content: "By using our platform, you agree to:\n\n• Provide accurate and complete information\n• Use the platform lawfully and respectfully\n• Maintain confidentiality of your login credentials\n• Follow the doctor's medical advice responsibly\n\nAshfaqHospital is not responsible for issues caused by inaccurate patient information."
   },
   {
     id: "appointment-policy",
@@ -62,19 +62,19 @@ const TERMS_SECTIONS = [
     id: "liability",
     number: "10",
     title: "Limitation of Liability",
-    content: "AshfqHospital shall not be held responsible for:\n\n• Internet or technical disruptions\n• Delays caused by third-party services\n• User device failures\n• Misuse of medical advice\n• Incomplete information provided by users"
+    content: "AshfaqHospital shall not be held responsible for:\n\n• Internet or technical disruptions\n• Delays caused by third-party services\n• User device failures\n• Misuse of medical advice\n• Incomplete information provided by users"
   },
   {
     id: "intellectual-property",
     number: "11",
     title: "Intellectual Property",
-    content: "All website content including logos, text, graphics, and software are the property of AshfqHospital and may not be copied or reused without permission."
+    content: "All website content including logos, text, graphics, and software are the property of AshfaqHospital and may not be copied or reused without permission."
   },
   {
     id: "changes",
     number: "12",
     title: "Changes to Terms",
-    content: "AshfqHospital reserves the right to modify these Terms & Conditions at any time without prior notice. Continued use of the platform after updates means acceptance of revised terms."
+    content: "AshfaqHospital reserves the right to modify these Terms & Conditions at any time without prior notice. Continued use of the platform after updates means acceptance of revised terms."
   },
   {
     id: "governing-law",
@@ -86,7 +86,7 @@ const TERMS_SECTIONS = [
     id: "contact",
     number: "14",
     title: "Contact Information",
-    content: "AshfqHospital Telemedicine Services\n\n• Phone: +92-XXXXXXXXXX\n• Email: support@ashfqhospital.com\n• Address: Your Hospital Address, Pakistan"
+    content: "AshfaqHospital Telemedicine Services\n\n• Phone: 0946 744760\n• Email: info@ashfaqhospitals.com\n• Address: Kotanai main Madyan GT Road Tehsil Khwaza Khela Swat, Khwazakhela, Pakistan"
   }
 ];
 
@@ -137,17 +137,17 @@ const TermsConditions = () => {
       <TopBar />
       <div className="min-h-screen bg-background-light flex flex-col font-sans">
         {/* Header Hero Section using solid color bg-accent */}
-        <div className="relative bg-primary py-16 text-white text-center px-4 overflow-hidden">
+        <div className="relative bg-primary py-16 text-center px-4 overflow-hidden">
           <div className="relative max-w-4xl mx-auto z-10">
-            <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-1.5 rounded-[4px] border border-white/20 text-xs font-semibold uppercase tracking-wider mb-4">
+            <div className="inline-flex items-center gap-2 bg-white/10  px-4 py-1.5 rounded-[4px] border border-white/20 text-xs font-semibold uppercase tracking-wider mb-4">
               <FaFileContract size={14} />
               Legal Documents
             </div>
             <h1 className="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight leading-tight">
               Terms & Conditions
             </h1>
-            <p className="text-white/95 text-sm md:text-base max-w-2xl mx-auto font-medium">
-              AshfqHospital Telemedicine Services • Last Updated: May 2026
+            <p className=" text-sm md:text-base max-w-2xl mx-auto font-medium">
+              AshfaqHospital Telemedicine Services • Last Updated: May 2026
             </p>
           </div>
         </div>
@@ -257,15 +257,15 @@ const TermsConditions = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3 bg-white/10 rounded-[4px] p-3 backdrop-blur-sm border border-white/15">
                     <FaPhone className="text-white" size={14} />
-                    <span className="text-xs md:text-sm font-semibold truncate">+92-XXXXXXXXXX</span>
+                    <span className="text-xs md:text-sm font-semibold truncate">0946 744760</span>
                   </div>
                   <div className="flex items-center gap-3 bg-white/10 rounded-[4px] p-3 backdrop-blur-sm border border-white/15">
                     <FaEnvelope className="text-white" size={14} />
-                    <span className="text-xs md:text-sm font-semibold truncate">support@ashfqhospital.com</span>
+                    <span className="text-xs md:text-sm font-semibold truncate">info@ashfaqhospitals.com</span>
                   </div>
                   <div className="flex items-center gap-3 bg-white/10 rounded-[4px] p-3 backdrop-blur-sm border border-white/15">
                     <FaMapMarkerAlt className="text-white" size={14} />
-                    <span className="text-xs md:text-sm font-semibold truncate">Hospital Address, PK</span>
+                    <span className="text-xs md:text-sm font-semibold truncate">Kotanai main Madyan GT Road Tehsil Khwaza Khela Swat, Khwazakhela, Pakistan</span>
                   </div>
                 </div>
               </div>

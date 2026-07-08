@@ -7,7 +7,7 @@ const AppButtons = ({ className = "" }) => {
         <span className="material-symbols-outlined text-lg sm:text-xl animate-bounce">
           download
         </span>
-        <span>Download MediCare</span>
+        <span>Download AshfaqHospital</span>
       </button>
       <button className="btn-outline group">
         <span>Watch Demo</span>

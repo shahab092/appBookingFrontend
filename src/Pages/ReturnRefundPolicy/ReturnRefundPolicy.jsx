@@ -8,13 +8,13 @@ const POLICY_SECTIONS = [
     id: "nature-of-services",
     number: "1",
     title: "Nature of Services",
-    content: "AshfqHospital provides digital healthcare and telemedicine services including online doctor consultations, follow-up consultations, digital prescriptions, and appointment booking. As these are service-based digital consultations, no physical products are shipped."
+    content: "AshfaqHospital provides digital healthcare and telemedicine services including online doctor consultations, follow-up consultations, digital prescriptions, and appointment booking. As these are service-based digital consultations, no physical products are shipped."
   },
   {
     id: "refund-eligibility",
     number: "2",
     title: "Refund Eligibility",
-    content: "Refunds may be considered in the following situations:\n\n• Payment was deducted but appointment was not confirmed\n• Duplicate payment was made by mistake\n• Doctor was unavailable for the scheduled consultation\n• Technical issues from AshfqHospital prevented the consultation\n• Appointment was cancelled by AshfqHospital\n\nApproved refunds will be processed through the original payment method."
+    content: "Refunds may be considered in the following situations:\n\n• Payment was deducted but appointment was not confirmed\n• Duplicate payment was made by mistake\n• Doctor was unavailable for the scheduled consultation\n• Technical issues from AshfaqHospital prevented the consultation\n• Appointment was cancelled by AshfaqHospital\n\nApproved refunds will be processed through the original payment method."
   },
   {
     id: "non-refundable",
@@ -44,13 +44,13 @@ const POLICY_SECTIONS = [
     id: "policy-changes",
     number: "7",
     title: "Changes to This Policy",
-    content: "AshfqHospital reserves the right to update or modify this Refund Policy at any time without prior notice."
+    content: "AshfaqHospital reserves the right to update or modify this Refund Policy at any time without prior notice."
   },
   {
     id: "contact",
     number: "8",
     title: "Contact Us",
-    content: "For refund or billing-related queries, please contact:\n\n• Phone: +92-XXXXXXXXXX\n• Email: billing@ashfqhospital.com\n• Address: Your Hospital Address, Pakistan"
+    content: "For refund or billing-related queries, please contact:\n\n• Phone: 0946 744760\n• Email: info@ashfaqhospitals.com\n• Address: Kotanai main Madyan GT Road Tehsil Khwaza Khela Swat, Khwazakhela, Pakistan"
   }
 ];
 
@@ -111,7 +111,7 @@ const ReturnRefundPolicy = () => {
               Return & Refund Policy
             </h1>
             <p className="text-white/95 text-sm md:text-base max-w-2xl mx-auto font-medium">
-              AshfqHospital Telemedicine Services • Last Updated: May 2026
+              AshfaqHospital Telemedicine Services • Last Updated: May 2026
             </p>
           </div>
         </div>
@@ -280,15 +280,15 @@ const ReturnRefundPolicy = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3 bg-white/10 rounded-[4px] p-3 backdrop-blur-sm border border-white/15">
                     <FaPhone className="text-white" size={14} />
-                    <span className="text-xs md:text-sm font-semibold truncate">+92-XXXXXXXXXX</span>
+                    <span className="text-xs md:text-sm font-semibold truncate">0946 744760</span>
                   </div>
                   <div className="flex items-center gap-3 bg-white/10 rounded-[4px] p-3 backdrop-blur-sm border border-white/15">
                     <FaEnvelope className="text-white" size={14} />
-                    <span className="text-xs md:text-sm font-semibold truncate">billing@ashfqhospital.com</span>
+                    <span className="text-xs md:text-sm font-semibold truncate">info@ashfaqhospitals.com</span>
                   </div>
                   <div className="flex items-center gap-3 bg-white/10 rounded-[4px] p-3 backdrop-blur-sm border border-white/15">
                     <FaMapMarkerAlt className="text-white" size={14} />
-                    <span className="text-xs md:text-sm font-semibold truncate">Hospital Address, PK</span>
+                    <span className="text-xs md:text-sm font-semibold truncate">Kotanai main Madyan GT Road Tehsil Khwaza Khela Swat, Khwazakhela, Pakistan</span>
                   </div>
                 </div>
               </div>
